@@ -796,6 +796,7 @@ dependencies = [
 [[package]]
 name = "dos-uid-derive"
 version = "5.0.1"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -971,6 +972,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 [[package]]
 name = "fem-cuda-solver"
 version = "0.1.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "bindgen 0.71.1",
  "cc",
@@ -1287,6 +1289,7 @@ checksum = "a8d1add55171497b4705a648c6b583acafb01d58050a51727785f0b2c8e0a2b2"
 [[package]]
 name = "gmt-fem"
 version = "5.1.1"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "anyhow",
  "arrow",
@@ -1308,7 +1311,8 @@ dependencies = [
 
 [[package]]
 name = "gmt-fem-code-builder"
-version = "2.2.1"
+version = "2.3.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "anyhow",
  "arrow",
@@ -1331,14 +1335,17 @@ dependencies = [
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
  "gmt_dos-clients_m1-ctrl",
+ "gmt_dos-clients_m2-ctrl",
  "gmt_dos-clients_mount",
  "gmt_dos-systems_m1",
+ "gmt_dos-systems_m2",
  "tokio",
 ]
 
 [[package]]
 name = "gmt_dos-actors"
 version = "11.2.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1361,6 +1368,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors-clients_interface"
 version = "1.3.2"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "bincode",
  "dos-uid-derive",
@@ -1373,6 +1381,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors_dsl"
 version = "2.1.3"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "prettyplease",
  "proc-macro2",
@@ -1384,9 +1393,11 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients"
 version = "5.0.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "gmt_dos-actors-clients_interface",
  "indicatif",
+ "matio-rs",
  "serde",
  "thiserror 1.0.69",
 ]
@@ -1394,6 +1405,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_arrow"
 version = "2.1.1"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "arrow",
  "gmt_dos-actors",
@@ -1408,6 +1420,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_fem"
 version = "5.1.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "anyhow",
  "arrow",
@@ -1434,6 +1447,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_io"
 version = "4.2.2"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "anyhow",
  "gmt-fem-code-builder",
@@ -1444,6 +1458,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_m1-ctrl"
 version = "5.0.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "gmt-fem",
  "gmt_dos-actors-clients_interface",
@@ -1458,8 +1473,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "gmt_dos-clients_m2-ctrl"
+version = "4.0.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
+dependencies = [
+ "bincode",
+ "gmt-fem",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors-clients_interface",
+ "gmt_dos-clients_fem",
+ "gmt_dos-clients_io",
+ "gmt_m2-ctrl_asm_pid-damping",
+ "gmt_m2-ctrl_asm_positionner",
+ "gmt_m2-ctrl_asm_preshape-filter",
+ "gmt_m2-ctrl_fsm-piezo-135",
+ "gmt_m2-ctrl_fsm-piezo-246",
+ "gmt_m2-ctrl_fsm-piezo-7",
+ "gmt_m2-ctrl_fsm_positionner",
+ "nalgebra",
+ "rayon",
+ "serde",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "gmt_dos-clients_mount"
 version = "4.1.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "anyhow",
  "gmt-fem-code-builder",
@@ -1478,6 +1518,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-systems_m1"
 version = "0.1.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
 dependencies = [
  "anyhow",
  "gmt-fem",
@@ -1490,6 +1531,32 @@ dependencies = [
  "log",
  "nalgebra",
  "serde",
+]
+
+[[package]]
+name = "gmt_dos-systems_m2"
+version = "0.1.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=fsms#3ffe1c6fedeaff3d50c19513239343fe97ff0c01"
+dependencies = [
+ "anyhow",
+ "gmt-fem",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface",
+ "gmt_dos-clients",
+ "gmt_dos-clients_fem",
+ "gmt_dos-clients_io",
+ "gmt_dos-clients_m2-ctrl",
+ "gmt_m2-ctrl_asm_pid-damping",
+ "gmt_m2-ctrl_asm_positionner",
+ "gmt_m2-ctrl_asm_preshape-filter",
+ "log",
+ "matio-rs",
+ "nalgebra",
+ "paste",
+ "rayon",
+ "serde",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -1521,6 +1588,76 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3d17ea20c9ea2f0b0b8574542e6ba41b879c45f1bada045d88ee5f394239416"
 dependencies = [
  "paste",
+ "serde",
+ "simulink-rs",
+]
+
+[[package]]
+name = "gmt_m2-ctrl_asm_pid-damping"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e0cab26019b6ae24d95fdabf4064f6e433c4b5f4eca117c5fa1de16f6d888ab"
+dependencies = [
+ "serde",
+ "simulink-rs",
+]
+
+[[package]]
+name = "gmt_m2-ctrl_asm_positionner"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2715c2a8ec8fd26b7e975e246e58b9cada615996bac8dbcfebbb73a145fb8f71"
+dependencies = [
+ "serde",
+ "simulink-rs",
+]
+
+[[package]]
+name = "gmt_m2-ctrl_asm_preshape-filter"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "021ddd0d2781d76695a5441d5af2e922de2d55052dbcc45f78a5641adaa4ac61"
+dependencies = [
+ "serde",
+ "simulink-rs",
+]
+
+[[package]]
+name = "gmt_m2-ctrl_fsm-piezo-135"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79c743f6311a1c3e47e2217c984777a9c56851b844ea758bf524f8fbcfaf5dc7"
+dependencies = [
+ "serde",
+ "simulink-rs",
+]
+
+[[package]]
+name = "gmt_m2-ctrl_fsm-piezo-246"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e13c04ac912bbe2fd3226865bd33bb24c9c945b7502b9bd22b74f556985796f7"
+dependencies = [
+ "serde",
+ "simulink-rs",
+]
+
+[[package]]
+name = "gmt_m2-ctrl_fsm-piezo-7"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb67dfc3c67312cdacb44f8422a892533a53a3f41a3ea44da79e00c46cbc9218"
+dependencies = [
+ "serde",
+ "simulink-rs",
+]
+
+[[package]]
+name = "gmt_m2-ctrl_fsm_positionner"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3dd7632b0217dfa6d122913169bd7173105ac343f2ae60c97ab6e1840a8233e2"
+dependencies = [
  "serde",
  "simulink-rs",
 ]
@@ -1899,6 +2036,7 @@ checksum = "4264eb3f0e20c212bfb98ae9aebad60163e4bf4309104b6785fc5570eb8054db"
 dependencies = [
  "matio-rs-sys",
  "matio-rs_derive",
+ "nalgebra",
  "paste",
  "thiserror 1.0.69",
 ]
