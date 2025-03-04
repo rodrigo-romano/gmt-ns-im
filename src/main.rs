@@ -1,25 +1,37 @@
 use std::time::Instant;
 
-use gmt_dos_actors::actorscript;
+use gmt_dos_actors::{actorscript, system::Sys};
 use gmt_dos_actors_clients_interface::Tick;
-use gmt_dos_clients::timer::Timer;
+use gmt_dos_clients::{gif, timer::Timer};
 use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     gmt_fem::outputs::{MCM2Lcl6D, OSSM1EdgeSensors, OSSM1Lcl},
-    gmt_m1::assembly,
-    gmt_m2::fsm::{M2FSMPiezoForces, M2FSMPiezoNodes},
+    gmt_m1::{M1RigidBodyMotions, assembly},
+    gmt_m2::{
+        M2RigidBodyMotions,
+        fsm::{M2FSMPiezoForces, M2FSMPiezoNodes},
+    },
     mount::{MountEncoders, MountTorques},
+    optics::{Frame, Host},
 };
 use gmt_dos_clients_m1_ctrl::Calibration;
 use gmt_dos_clients_mount::Mount;
+use gmt_dos_systems_agws::{
+    Agws,
+    agws::{sh24::Sh24, sh48::Sh48},
+};
 use gmt_dos_systems_m1::M1;
 use gmt_dos_systems_m2::M2;
 use gmt_fem::FEM;
 
 const ACTUATOR_RATE: usize = 10;
+const SH48_RATE: usize = 1000;
+const SH24_RATE: usize = 50;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    env_logger::init();
+
     println!("FEM  : {}", env!("FEM_REPO"));
     println!("MOUNT: {}", env!("MOUNT_MODEL"));
     // env::set_var(
@@ -37,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
     let n_step = sim_sampling_frequency * sim_duration;
 
     let mut fem = FEM::from_env()?;
-    println!("{fem}");
+    // println!("{fem}");
 
     let m1_calibration = Calibration::new(&mut fem);
 
@@ -68,12 +80,21 @@ async fn main() -> anyhow::Result<()> {
         .build()?;
     println!("{state_space}");
 
+    // AGWS
+    let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder().build()?;
+    println!("{agws}");
+
+    let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
+    let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 8);
+
     println!("Model built in {}s", now.elapsed().as_secs());
 
     let fem = state_space;
     let timer: Timer = Timer::new(n_step);
+    type AgwsSh48 = Sh48<SH48_RATE>;
+    type AgwsSh24 = Sh24<SH24_RATE>;
     actorscript! {
-    #[labels(fem = "GMT FEM")]
+    #[labels(fem = "GMT FEM" , sh48_frame = "SH48\nframe", sh24_frame = "SH24\nframe")]
     1: timer[Tick] -> fem
     1:  mount[MountTorques] -> fem[MountEncoders]! -> mount
 
@@ -82,6 +103,14 @@ async fn main() -> anyhow::Result<()> {
     1: {m1}[assembly::M1ActuatorAppliedForces] -> fem
 
     1: {m2}[M2FSMPiezoForces] -> fem[M2FSMPiezoNodes]! -> {m2}
+
+    1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh48}
+    1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh24}
+    1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh48}
+    1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh24}
+
+    1000: {agws::AgwsSh48}[Frame<Host>] -> sh48_frame
+    50: {agws::AgwsSh24}[Frame<Host>] -> sh24_frame
 
     }
 
