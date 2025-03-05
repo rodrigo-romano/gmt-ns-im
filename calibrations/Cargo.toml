@@ -1,0 +1,11 @@
+[package]
+name = "calibrations"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+gmt_dos-clients_crseo.workspace = true
+gmt_dos-systems_agws.workspace = true
+matio-rs.workspace = true
+skyangle = "0.3.1"
