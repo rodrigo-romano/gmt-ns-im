@@ -27,11 +27,16 @@ gmt_dos-clients_arrow = { git = "https://github.com/rconan/dos-actors.git", bran
 gmt_dos-clients_m1-ctrl = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.0.0" }
 gmt_dos-clients_m2-ctrl = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.0.0" }
 gmt_dos-clients_mount = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.1.0" }
+gmt_dos-clients_scope= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = ["server"], optional = true}
+gmt_dos-clients_scope-client= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2", optional = true}
 gmt_dos-systems_m1 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
 gmt_dos-systems_m2 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
 gmt_dos-systems_agws.workspace = true
 tokio = { version = "1.43.0", features = ["full"] }
 env_logger = "0.11.6"
+
+[features]
+scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 
 [patch."https://github.com/rconan/dos-actors.git"]
 gmt-fem = { path = "/home/rconan/projects/dos-actors/clients/fem/model"}

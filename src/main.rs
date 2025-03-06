@@ -2,19 +2,23 @@ use std::time::Instant;
 
 use gmt_dos_actors::{actorscript, system::Sys};
 use gmt_dos_actors_clients_interface::Tick;
-use gmt_dos_clients::{gif, timer::Timer};
+use gmt_dos_clients::{gif, signals::Signals, timer::Timer};
 use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
-    gmt_fem::outputs::{MCM2Lcl6D, OSSM1EdgeSensors, OSSM1Lcl},
+    gmt_fem::{
+        inputs::{MCM2PZTF, MCM2SmHexF},
+        outputs::{MCM2Lcl6D, MCM2PZTD, MCM2SmHexD, OSSM1EdgeSensors, OSSM1Lcl},
+    },
     gmt_m1::{M1RigidBodyMotions, assembly},
     gmt_m2::{
-        M2RigidBodyMotions,
+        M2PositionerForces, M2PositionerNodes, M2RigidBodyMotions,
         fsm::{M2FSMFsmCommand, M2FSMPiezoForces, M2FSMPiezoNodes},
     },
     mount::{MountEncoders, MountTorques},
     optics::{Frame, Host},
 };
 use gmt_dos_clients_m1_ctrl::Calibration;
+use gmt_dos_clients_m2_ctrl::Positioners;
 use gmt_dos_clients_mount::Mount;
 use gmt_dos_systems_agws::{
     Agws,
@@ -66,6 +70,8 @@ async fn main() -> anyhow::Result<()> {
     let m1 = M1::<ACTUATOR_RATE>::new(&m1_calibration)?;
     // M2 CONTROL
     let m2 = M2::new()?;
+    // M2 POSITIONER CONTROL
+    let m2_pos = Positioners::new(&mut fem)?;
 
     // FEM MODEL
     let sids: Vec<u8> = vec![1, 2, 3, 4, 5, 6, 7];
@@ -74,6 +80,10 @@ async fn main() -> anyhow::Result<()> {
         .proportional_damping(2. / 100.)
         .including_mount()
         .including_m1(Some(sids.clone()))?
+        .ins::<MCM2PZTF>()
+        .ins::<MCM2SmHexF>()
+        .outs::<MCM2PZTD>()
+        .outs::<MCM2SmHexD>()
         .outs::<OSSM1Lcl>()
         .outs::<MCM2Lcl6D>()
         .outs::<OSSM1EdgeSensors>()
@@ -92,6 +102,8 @@ async fn main() -> anyhow::Result<()> {
 
     println!("Model built in {}s", now.elapsed().as_secs());
 
+    let m2_rbm = Signals::new(42, n_step).channel(3, 1e-6);
+
     let fem = state_space;
     let timer: Timer = Timer::new(n_step);
     type AgwsSh48 = Sh48<SH48_RATE>;
@@ -106,6 +118,8 @@ async fn main() -> anyhow::Result<()> {
         -> fem[assembly::M1HardpointsMotion]! -> {m1}
     1: {m1}[assembly::M1ActuatorAppliedForces] -> fem
 
+    1: m2_rbm[M2RigidBodyMotions]
+        -> m2_pos[M2PositionerForces] -> fem[M2PositionerNodes]! -> m2_pos
     1: {m2}[M2FSMPiezoForces] -> fem[M2FSMPiezoNodes]! -> {m2}
 
     1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh48}
