@@ -1,8 +1,8 @@
-use std::time::Instant;
+use std::{fs::File, time::Instant};
 
 use gmt_dos_actors::{actorscript, system::Sys};
-use gmt_dos_actors_clients_interface::Tick;
-use gmt_dos_clients::{gif, signals::Signals, timer::Timer};
+use gmt_dos_clients::{gif, select::Select, signals::Signals, timer::Timer};
+use gmt_dos_clients_crseo::calibration::Reconstructor;
 use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     gmt_fem::{
@@ -28,10 +28,11 @@ use gmt_dos_systems_agws::{
 use gmt_dos_systems_m1::M1;
 use gmt_dos_systems_m2::M2;
 use gmt_fem::FEM;
+use interface::{Tick, UID};
 
 const ACTUATOR_RATE: usize = 10;
 const SH48_RATE: usize = 1000;
-const SH24_RATE: usize = 50;
+const SH24_RATE: usize = 1;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -92,8 +93,12 @@ async fn main() -> anyhow::Result<()> {
     println!("{state_space}");
 
     // AGWS
+    let recon: Reconstructor = serde_pickle::from_reader(
+        File::open("calibrations/recon_sh24.pkl")?,
+        Default::default(),
+    )?;
     let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()
-        .sh24_calibration("calibrations/recon_sh24.pkl")
+        .sh24_calibration(recon)
         .build()?;
     println!("{agws}");
 
@@ -104,13 +109,15 @@ async fn main() -> anyhow::Result<()> {
 
     let m2_rbm = Signals::new(42, n_step).channel(3, 1e-6);
 
+    // let m2s1 = Select::new(0..6);
+
     let fem = state_space;
     let timer: Timer = Timer::new(n_step);
     type AgwsSh48 = Sh48<SH48_RATE>;
     type AgwsSh24 = Sh24<SH24_RATE>;
     type AgwsSh24Kernel = Kernel<Sh24<SH24_RATE>>;
     actorscript! {
-    #[labels(fem = "GMT FEM" , sh48_frame = "SH48\nframe", sh24_frame = "SH24\nframe")]
+    #[labels(fem = "GMT FEM")]// , sh48_frame = "SH48\nframe", sh24_frame = "SH24\nframe")]
     1: timer[Tick] -> fem
     1:  mount[MountTorques] -> fem[MountEncoders]! -> mount
 
@@ -127,11 +134,14 @@ async fn main() -> anyhow::Result<()> {
     1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh48}
     1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh24}
 
-    1000: {agws::AgwsSh48}[Frame<Host>] -> sh48_frame
-    50: {agws::AgwsSh24}[Frame<Host>] -> sh24_frame
-    50: {agws::AgwsSh24Kernel}[M2FSMFsmCommand]${21}
+    1000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
+    1: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
+    1: {agws::AgwsSh24Kernel}[M2FSMFsmCommand]~ // -> m2s1[M2S1]~ //mnt${21}
 
     }
 
     Ok(())
 }
+
+#[derive(UID)]
+pub enum M2S1 {}

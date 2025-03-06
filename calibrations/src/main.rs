@@ -14,7 +14,7 @@ fn main() -> anyhow::Result<()> {
     let omb = Agws::<1, 1>::builder()
         .sh24()
         // calibration source with FWHM roughly the size of the seeing
-        .source(AgwsGuideStar::sh24().fwhm(12f64));
+        .source(AgwsGuideStar::sh24().fwhm(6f64));
     // dbg!(&omb);
 
     // Calibration of M2 Tz,Rx,Ry RBMs with AGWS SH24
@@ -40,6 +40,7 @@ fn main() -> anyhow::Result<()> {
         let mat = MatRef::from_row_major_slice(&var, 3, 3);
         pinv.transform(|x| mat * x);
     });
+    println!("{recon}");
 
     let mut file = File::create("recon_sh24.pkl")?;
     serde_pickle::to_writer(&mut file, &recon, Default::default())?;
