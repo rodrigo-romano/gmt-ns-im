@@ -38,17 +38,3 @@ env_logger = "0.11.6"
 [features]
 scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 
-[patch."https://github.com/rconan/dos-actors.git"]
-gmt-fem = { path = "/home/rconan/projects/dos-actors/clients/fem/model"}
-gmt_dos-actors= { path = "/home/rconan/projects/dos-actors/actors"}
-gmt_dos-clients = { path = "/home/rconan/projects/dos-actors/clients/core"}
-gmt_dos-clients_io = { path = "/home/rconan/projects/dos-actors/clients/io"}
-gmt_dos-clients_arrow = { path = "/home/rconan/projects/dos-actors/clients/arrow"}
-gmt_dos-clients_fem = { path = "/home/rconan/projects/dos-actors/clients/fem"}
-gmt_dos-clients_crseo = { path = "/home/rconan/projects/dos-actors/clients/crseo"}
-gmt_dos-clients_mount = { path = "/home/rconan/projects/dos-actors/clients/mount"}
-gmt_dos-clients_m1-ctrl = { path = "/home/rconan/projects/dos-actors/clients/m1-ctrl"}
-gmt_dos-actors-clients_interface = { path = "/home/rconan/projects/dos-actors/interface"}
-gmt_dos-systems_m1 = { path = "/home/rconan/projects/dos-actors/systems/m1"}
-gmt_dos-systems_m2 = { path = "/home/rconan/projects/dos-actors/systems/m2"}
-gmt_dos-systems_agws = { path = "/home/rconan/projects/dos-actors/systems/agws"}
