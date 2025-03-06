@@ -23,6 +23,7 @@ gmt_dos-clients = { git = "https://github.com/rconan/dos-actors.git", branch = "
 gmt_dos-clients_fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.1.0", features = ["cuda"] }
 gmt_dos-clients_crseo.workspace = true
 gmt_dos-clients_io = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.2.2" }
+gmt_dos-clients_arrow = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "2.1.1" }
 gmt_dos-clients_m1-ctrl = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.0.0" }
 gmt_dos-clients_m2-ctrl = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.0.0" }
 gmt_dos-clients_mount = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.1.0" }
@@ -37,6 +38,7 @@ gmt-fem = { path = "/home/rconan/projects/dos-actors/clients/fem/model"}
 gmt_dos-actors= { path = "/home/rconan/projects/dos-actors/actors"}
 gmt_dos-clients = { path = "/home/rconan/projects/dos-actors/clients/core"}
 gmt_dos-clients_io = { path = "/home/rconan/projects/dos-actors/clients/io"}
+gmt_dos-clients_arrow = { path = "/home/rconan/projects/dos-actors/clients/arrow"}
 gmt_dos-clients_fem = { path = "/home/rconan/projects/dos-actors/clients/fem"}
 gmt_dos-clients_crseo = { path = "/home/rconan/projects/dos-actors/clients/crseo"}
 gmt_dos-clients_mount = { path = "/home/rconan/projects/dos-actors/clients/mount"}

@@ -9,7 +9,7 @@ use gmt_dos_clients_io::{
     gmt_m1::{M1RigidBodyMotions, assembly},
     gmt_m2::{
         M2RigidBodyMotions,
-        fsm::{M2FSMPiezoForces, M2FSMPiezoNodes},
+        fsm::{M2FSMFsmCommand, M2FSMPiezoForces, M2FSMPiezoNodes},
     },
     mount::{MountEncoders, MountTorques},
     optics::{Frame, Host},
@@ -19,6 +19,7 @@ use gmt_dos_clients_mount::Mount;
 use gmt_dos_systems_agws::{
     Agws,
     agws::{sh24::Sh24, sh48::Sh48},
+    kernels::Kernel,
 };
 use gmt_dos_systems_m1::M1;
 use gmt_dos_systems_m2::M2;
@@ -81,7 +82,9 @@ async fn main() -> anyhow::Result<()> {
     println!("{state_space}");
 
     // AGWS
-    let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder().build()?;
+    let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()
+        .sh24_calibration("calibrations/recon_sh24.pkl")
+        .build()?;
     println!("{agws}");
 
     let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
@@ -93,6 +96,7 @@ async fn main() -> anyhow::Result<()> {
     let timer: Timer = Timer::new(n_step);
     type AgwsSh48 = Sh48<SH48_RATE>;
     type AgwsSh24 = Sh24<SH24_RATE>;
+    type AgwsSh24Kernel = Kernel<Sh24<SH24_RATE>>;
     actorscript! {
     #[labels(fem = "GMT FEM" , sh48_frame = "SH48\nframe", sh24_frame = "SH24\nframe")]
     1: timer[Tick] -> fem
@@ -111,6 +115,7 @@ async fn main() -> anyhow::Result<()> {
 
     1000: {agws::AgwsSh48}[Frame<Host>] -> sh48_frame
     50: {agws::AgwsSh24}[Frame<Host>] -> sh24_frame
+    50: {agws::AgwsSh24Kernel}[M2FSMFsmCommand]${21}
 
     }
 
