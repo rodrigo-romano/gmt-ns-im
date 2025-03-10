@@ -31,6 +31,8 @@ fn main() -> anyhow::Result<()> {
     )?;
     recon.pseudoinverse();
     println!("{recon}");
+    let mut file = File::create("recon_sh24-to-rbm.pkl")?;
+    serde_pickle::to_writer(&mut file, &recon, Default::default())?;
 
     // Segment-wise multiplication of poke matrix pseudo-inverse
     // with [Tz,Rx,Ry]->(PZT actuators) matrix
@@ -38,11 +40,11 @@ fn main() -> anyhow::Result<()> {
     recon.pinv().enumerate().for_each(|(i, pinv)| {
         let var: Vec<f64> = matfile.var(format!("var{i}")).unwrap();
         let mat = MatRef::from_row_major_slice(&var, 3, 3);
-        pinv.transform(|x| mat * x);
+        pinv.transform(|x| mat.transpose() * x).reset_mode();
     });
     println!("{recon}");
 
-    let mut file = File::create("recon_sh24.pkl")?;
+    let mut file = File::create("recon_sh24-to-pzt.pkl")?;
     serde_pickle::to_writer(&mut file, &recon, Default::default())?;
 
     Ok(())

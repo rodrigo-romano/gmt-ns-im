@@ -10,5 +10,5 @@ k1p = k1[:,::2] - k1[:,1::2]
 k2p = k2[::2,::2] - k2[1::2,1::2]
 l = np.diag(np.diag(k2p))
 
-rbm_2_pzt= {f"var{i}":l[i*3:(i+1)*3,i*3:(i+1)*3] @ np.linalg.inv(k1p[i*6+3:(i+1)*6,i*3:(i+1)*3])   for i in range(7)}
+rbm_2_pzt= {f"var{i}":l[i*3:(i+1)*3,i*3:(i+1)*3] @ np.linalg.inv(k1p[i*6+2:i*6+5,i*3:(i+1)*3])   for i in range(7)}
 savemat("rbm_2_pzt.mat",rbm_2_pzt)

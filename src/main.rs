@@ -1,7 +1,7 @@
 use std::{fs::File, time::Instant};
 
 use gmt_dos_actors::{actorscript, system::Sys};
-use gmt_dos_clients::{gif, select::Select, signals::Signals, timer::Timer};
+use gmt_dos_clients::{gif, integrator::Integrator, signals::Signals, timer::Timer};
 use gmt_dos_clients_crseo::calibration::Reconstructor;
 use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
@@ -28,11 +28,11 @@ use gmt_dos_systems_agws::{
 use gmt_dos_systems_m1::M1;
 use gmt_dos_systems_m2::M2;
 use gmt_fem::FEM;
-use interface::{Tick, UID};
+use interface::Tick;
 
 const ACTUATOR_RATE: usize = 10;
 const SH48_RATE: usize = 1000;
-const SH24_RATE: usize = 1;
+const SH24_RATE: usize = 50;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -51,7 +51,7 @@ async fn main() -> anyhow::Result<()> {
     let now = Instant::now();
 
     let sim_sampling_frequency = 1000;
-    let sim_duration = 1_usize; // second
+    let sim_duration = 3_usize; // second
     let n_step = sim_sampling_frequency * sim_duration;
 
     let mut fem = FEM::from_env()?;
@@ -94,7 +94,7 @@ async fn main() -> anyhow::Result<()> {
 
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/recon_sh24.pkl")?,
+        File::open("calibrations/recon_sh24-to-pzt.pkl")?,
         Default::default(),
     )?;
     let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()
@@ -105,11 +105,12 @@ async fn main() -> anyhow::Result<()> {
     let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
     let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 8);
 
+    // FSM command integrator
+    let fsm_pzt_int = Integrator::new(21).gain(0.01);
+
     println!("Model built in {}s", now.elapsed().as_secs());
 
-    let m2_rbm = Signals::new(42, n_step).channel(3, 1e-6);
-
-    // let m2s1 = Select::new(0..6);
+    let m2_rbm = Signals::new(42, n_step).channel(3, 1e-7);
 
     let fem = state_space;
     let timer: Timer = Timer::new(n_step);
@@ -117,31 +118,36 @@ async fn main() -> anyhow::Result<()> {
     type AgwsSh24 = Sh24<SH24_RATE>;
     type AgwsSh24Kernel = Kernel<Sh24<SH24_RATE>>;
     actorscript! {
-    #[labels(fem = "GMT FEM")]// , sh48_frame = "SH48\nframe", sh24_frame = "SH24\nframe")]
+    #[labels(fem = "GMT FEM", sh48_frame = "SH48\nframe", sh24_frame = "SH24\nframe")]
     1: timer[Tick] -> fem
+
+    // Mount control
     1:  mount[MountTorques] -> fem[MountEncoders]! -> mount
 
+    // M1 control
     1: {m1}[assembly::M1HardpointsForces]
         -> fem[assembly::M1HardpointsMotion]! -> {m1}
     1: {m1}[assembly::M1ActuatorAppliedForces] -> fem
 
+    // M2 (positioner & FSMS) control
     1: m2_rbm[M2RigidBodyMotions]
         -> m2_pos[M2PositionerForces] -> fem[M2PositionerNodes]! -> m2_pos
     1: {m2}[M2FSMPiezoForces] -> fem[M2FSMPiezoNodes]! -> {m2}
 
+    // FEM state transfer to optical model
     1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh48}
     1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh24}
     1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh48}
     1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh24}
 
+    // AGWS SH24 to FSMS feedback loop
+    50: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
+    1: fsm_pzt_int[M2FSMFsmCommand]! -> {m2}
+
     1000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
-    1: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
-    1: {agws::AgwsSh24Kernel}[M2FSMFsmCommand]~ // -> m2s1[M2S1]~ //mnt${21}
+    50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
     }
 
     Ok(())
 }
-
-#[derive(UID)]
-pub enum M2S1 {}
