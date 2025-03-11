@@ -2,7 +2,15 @@ use std::{fs::File, time::Instant};
 
 use gmt_dos_actors::{actorscript, system::Sys};
 use gmt_dos_clients::{gif, integrator::Integrator, signals::Signals, timer::Timer};
-use gmt_dos_clients_crseo::{OpticalModel, calibration::Reconstructor, sensors::NoSensor};
+use gmt_dos_clients_crseo::{
+    OpticalModel,
+    calibration::Reconstructor,
+    crseo::{
+        FromBuilder,
+        imaging::{Detector, LensletArray},
+    },
+    sensors::{Camera, NoSensor},
+};
 use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     gmt_fem::{
@@ -24,6 +32,7 @@ use gmt_dos_clients_scope::server::{Monitor, Scope};
 use gmt_dos_systems_agws::{
     Agws,
     agws::{sh24::Sh24, sh48::Sh48},
+    builder::shack_hartmann::ShackHartmannBuilder,
     kernels::Kernel,
 };
 use gmt_dos_systems_m1::M1;
@@ -33,7 +42,7 @@ use interface::Tick;
 
 const ACTUATOR_RATE: usize = 10;
 const SH48_RATE: usize = 5000;
-const SH24_RATE: usize = 5000;
+const SH24_RATE: usize = 1000;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -95,11 +104,19 @@ async fn main() -> anyhow::Result<()> {
 
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/recon_sh24-to-rbm.pkl")?,
+        File::open("calibrations/recon_sh24-to-pzt.pkl")?,
         Default::default(),
     )?;
     let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()
         .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+        .sh24(
+            ShackHartmannBuilder::<SH24_RATE>::new().sensor(
+                Camera::builder()
+                    .lenslet_array(LensletArray::default().n_side_lenslet(24).n_px_lenslet(36))
+                    .detector(Detector::default().n_px_framelet(36))
+                    .lenslet_flux(0.75),
+            ),
+        )
         .sh24_calibration(recon)
         .build()?;
     println!("{agws}");
@@ -108,7 +125,7 @@ async fn main() -> anyhow::Result<()> {
     let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
 
     // FSM command integrator
-    // let fsm_pzt_int = Integrator::new(21).gain(0.5);
+    let fsm_pzt_int = Integrator::new(21).gain(0.);
 
     // On-axis scoring star
     let on_axis = OpticalModel::<NoSensor>::builder().build()?;
@@ -122,9 +139,36 @@ async fn main() -> anyhow::Result<()> {
     let scope_fsm_cmd = Scope::<M2FSMFsmCommand>::builder(&mut monitor).build()?;
     // ---
 
-    let m2_rbm = Signals::new(42, n_step).channel(3, 1e-7);
-
     let fem = state_space;
+    let timer: Timer = Timer::new(4000);
+    actorscript! {
+        #[model(name=bootstrap)]
+    #[labels(fem = "GMT FEM" )]
+    1: timer[Tick] -> fem
+
+    // Mount control
+    1:  mount[MountTorques] -> fem[MountEncoders]! -> mount
+
+    // M1 control
+    1: {m1}[assembly::M1HardpointsForces]
+        -> fem[assembly::M1HardpointsMotion]! -> {m1}
+    1: {m1}[assembly::M1ActuatorAppliedForces] -> fem
+
+    // M2 (positioner & FSMS) control
+    1: m2_pos[M2PositionerForces] -> fem[M2PositionerNodes]! -> m2_pos
+    1: {m2}[M2FSMPiezoForces] -> fem[M2FSMPiezoNodes]! -> {m2}
+
+    // FEM state transfer to optical model
+    1: fem[M1RigidBodyMotions]! -> on_axis
+    1: fem[M2RigidBodyMotions]! -> on_axis
+
+    1: on_axis[WfeRms<-9>] -> scope_wfe_rms
+    1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
+    1000: on_axis[Wavefront]${512*512}
+    }
+
+    let m2_rbm = Signals::new(42, n_step); //.channel(3, 1e-7);
+
     let timer: Timer = Timer::new(n_step);
     type AgwsSh48 = Sh48<SH48_RATE>;
     type AgwsSh24 = Sh24<SH24_RATE>;
@@ -149,15 +193,15 @@ async fn main() -> anyhow::Result<()> {
 
     // FEM state transfer to optical model
     1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh48}
-    1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh24}
-    1: fem[M1RigidBodyMotions]! -> on_axis
     1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh48}
+    1: fem[M1RigidBodyMotions]! -> {agws::AgwsSh24}
     1: fem[M2RigidBodyMotions]! -> {agws::AgwsSh24}
+    1: fem[M1RigidBodyMotions]! -> on_axis
     1: fem[M2RigidBodyMotions]! -> on_axis
 
-    // AGWS SH24 to FSMS feedback loop
-    5000: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> scope_fsm_cmd //fsm_pzt_int
-    // 1: fsm_pzt_int[M2FSMFsmCommand] -> {m2}
+    // // AGWS SH24 to FSMS feedback loop
+    1000: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
+    1: fsm_pzt_int[M2FSMFsmCommand] -> {m2}
 
     5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame

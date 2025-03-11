@@ -9,5 +9,5 @@ faer = "0.21.7"
 gmt_dos-clients_crseo.workspace = true
 gmt_dos-systems_agws.workspace = true
 matio-rs.workspace = true
-serde-pickle = "1.2.0"
+serde-pickle.workspace = true
 skyangle = "0.3.1"
