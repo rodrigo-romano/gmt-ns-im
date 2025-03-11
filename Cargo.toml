@@ -5,13 +5,15 @@ edition = "2024"
 
 [workspace]
 resolver = "3"
-members = ["calibrations"]
+members = [ "atmosphere","calibrations"]
 
 [workspace.dependencies]
 anyhow = "1.0.96"
 matio-rs = "1.3.3"
 gmt_dos-clients_crseo = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.3.0"  }
 gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
+serde-pickle = "1.2.0"
+skyangle = "0.3.1"
 
 [dependencies]
 anyhow.workspace = true 
@@ -34,9 +36,10 @@ gmt_dos-systems_m2 = { git = "https://github.com/rconan/dos-actors.git", branch 
 gmt_dos-systems_agws.workspace = true
 tokio = { version = "1.43.0", features = ["full"] }
 env_logger = "0.11.6"
-serde-pickle = "1.2.0"
+serde-pickle.workspace = true
 
 [features]
+default = ["scope"]
 scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 
 [patch."https://github.com/rconan/dos-actors.git"]
