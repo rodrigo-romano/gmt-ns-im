@@ -5,7 +5,7 @@ edition = "2024"
 
 [workspace]
 resolver = "3"
-members = [ "atmosphere","calibrations", "sh24", "web_server"]
+members = [ "atmosphere","calibrations", "scopes", "sh24", "web_server"]
 
 [workspace.dependencies]
 anyhow = "1.0.96"
@@ -16,12 +16,12 @@ gmt_dos-clients_io = { git = "https://github.com/rconan/dos-actors.git", branch 
 gmt_dos-clients_arrow = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "2.1.1" }
 gmt_dos-clients_crseo = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.3.0"  }
 gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
+gmt_dos-clients_scope-client= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2"}
 serde-pickle = "1.2.0"
 skyangle = "0.3.1"
 tokio = { version = "1.43.0", features = ["full"] }
 
 [dependencies]
-anyhow.workspace = true 
 chrono = "=0.4.34"
 gmt-fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.1.1" }
 gmt_dos-actors.workspace = true 
@@ -38,21 +38,9 @@ tokio.workspace = true
 env_logger = "0.11.6"
 serde-pickle.workspace = true
 gmt_dos-clients_windloads= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "2.2.1" }
+anyhow.workspace = true
 
 [features]
 default = ["scope"]
 scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 
-[patch."https://github.com/rconan/dos-actors.git"]
-gmt-fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem/model"}
-gmt_dos-actors= { path = "/home/ubuntu/projects/dos-actors/actors"}
-gmt_dos-actors_dsl= { path = "/home/ubuntu/projects/dos-actors/actors/dsl"}
-gmt_dos-clients = { path = "/home/ubuntu/projects/dos-actors/clients/core"}
-gmt_dos-clients_io = { path = "/home/ubuntu/projects/dos-actors/clients/io"}
-gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads"}
-gmt_dos-clients_crseo = { path = "/home/ubuntu/projects/dos-actors/clients/crseo"}
-gmt_dos-clients_servos = { path = "/home/ubuntu/projects/dos-actors/clients/servos"}
-gmt_dos-clients_transceiver = { path = "/home/ubuntu/projects/dos-actors/clients/transceiver"}
-gmt_dos-clients_scope= { path = "/home/ubuntu/projects/dos-actors/clients/scope"}
-gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/interface"}
-gmt_dos-systems_agws = { path = "/home/ubuntu/projects/dos-actors/systems/agws"}
