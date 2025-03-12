@@ -1,0 +1,15 @@
+[package]
+name = "sh24"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+gmt_dos-actors.workspace = true
+gmt_dos-clients.workspace = true
+gmt_dos-clients_arrow.workspace = true
+gmt_dos-clients_crseo.workspace = true
+gmt_dos-clients_io.workspace = true
+gmt_dos-systems_agws.workspace = true
+serde-pickle.workspace = true
+tokio.workspace = true

@@ -5545,6 +5545,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "sh24"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "gmt_dos-actors",
+ "gmt_dos-clients",
+ "gmt_dos-clients_arrow",
+ "gmt_dos-clients_crseo",
+ "gmt_dos-clients_io",
+ "gmt_dos-systems_agws",
+ "serde-pickle 1.2.0",
+ "tokio",
+]
+
+[[package]]
 name = "sha1"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
