@@ -1741,9 +1741,9 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "crseo"
-version = "2.3.1"
+version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d273eafa04673065b41f61f7efd220f43752a71117b5ee9839f53e63bb5df6d"
+checksum = "e24012f395d2780a614acf9bc7b1ab1e368d56cf23ca909a4f87fa7e7769c305"
 dependencies = [
  "crseo-sys",
  "indicatif",
@@ -2886,13 +2886,14 @@ dependencies = [
  "bincode 2.0.1",
  "bytes",
  "geotrans 0.1.1",
- "gmt-fem-code-builder 2.3.0",
+ "gmt-fem-code-builder",
  "log",
  "matio-rs",
  "nalgebra 0.33.2",
  "num-complex",
  "parquet",
  "rayon",
+ "serde",
  "serde-pickle 0.6.3",
  "tempfile",
  "thiserror 1.0.69",
@@ -2902,19 +2903,6 @@ dependencies = [
 [[package]]
 name = "gmt-fem-code-builder"
 version = "2.3.0"
-dependencies = [
- "anyhow",
- "arrow",
- "bytes",
- "parquet",
- "thiserror 1.0.69",
- "zip",
-]
-
-[[package]]
-name = "gmt-fem-code-builder"
-version = "2.3.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#5a69272b201e70e8e3f9197f95451c2f0bc9c65e"
 dependencies = [
  "anyhow",
  "arrow",
@@ -2937,16 +2925,11 @@ dependencies = [
  "gmt_dos-clients",
  "gmt_dos-clients_arrow",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
- "gmt_dos-clients_m1-ctrl",
- "gmt_dos-clients_m2-ctrl 4.0.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-clients_mount",
  "gmt_dos-clients_scope",
  "gmt_dos-clients_scope-client",
+ "gmt_dos-clients_servos",
  "gmt_dos-systems_agws",
- "gmt_dos-systems_m1",
- "gmt_dos-systems_m2",
  "serde-pickle 1.2.0",
  "tokio",
 ]
@@ -3070,13 +3053,14 @@ version = "5.1.0"
 dependencies = [
  "anyhow",
  "arrow",
+ "bincode 2.0.1",
  "bytes",
  "faer",
  "faer-ext",
  "fem-cuda-solver",
  "geotrans 0.2.2",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.0",
+ "gmt-fem-code-builder",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
  "gmt_dos-clients_io",
@@ -3085,6 +3069,7 @@ dependencies = [
  "num-complex",
  "parquet",
  "rayon",
+ "serde",
  "serde-pickle 1.2.0",
  "thiserror 1.0.69",
  "zip",
@@ -3096,7 +3081,7 @@ version = "4.2.2"
 dependencies = [
  "anyhow",
  "crseo",
- "gmt-fem-code-builder 2.3.0",
+ "gmt-fem-code-builder",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
 ]
@@ -3123,30 +3108,7 @@ version = "4.0.0"
 dependencies = [
  "bincode 2.0.1",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.0",
- "gmt_dos-actors-clients_interface",
- "gmt_dos-clients_fem",
- "gmt_dos-clients_io",
- "gmt_m2-ctrl_asm_pid-damping",
- "gmt_m2-ctrl_asm_positionner",
- "gmt_m2-ctrl_asm_preshape-filter",
- "gmt_m2-ctrl_fsm-piezo-135",
- "gmt_m2-ctrl_fsm-piezo-246",
- "gmt_m2-ctrl_fsm-piezo-7",
- "gmt_m2-ctrl_fsm_positionner",
- "nalgebra 0.33.2",
- "rayon",
- "serde",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "gmt_dos-clients_m2-ctrl"
-version = "4.0.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#5a69272b201e70e8e3f9197f95451c2f0bc9c65e"
-dependencies = [
- "gmt-fem",
- "gmt-fem-code-builder 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
@@ -3168,7 +3130,7 @@ name = "gmt_dos-clients_mount"
 version = "4.1.0"
 dependencies = [
  "anyhow",
- "gmt-fem-code-builder 2.3.0",
+ "gmt-fem-code-builder",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients_arrow",
@@ -3206,6 +3168,32 @@ version = "0.2.2"
 source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#5a69272b201e70e8e3f9197f95451c2f0bc9c65e"
 dependencies = [
  "gmt_dos-clients_scope",
+]
+
+[[package]]
+name = "gmt_dos-clients_servos"
+version = "3.0.0"
+dependencies = [
+ "gmt-fem",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface",
+ "gmt_dos-clients",
+ "gmt_dos-clients_arrow",
+ "gmt_dos-clients_fem",
+ "gmt_dos-clients_io",
+ "gmt_dos-clients_m2-ctrl",
+ "gmt_dos-clients_mount",
+ "gmt_dos-systems_m1",
+ "gmt_dos-systems_m2",
+ "log",
+ "matio-rs",
+ "nalgebra 0.33.2",
+ "rayon",
+ "serde",
+ "serde-pickle 1.2.0",
+ "thiserror 1.0.69",
+ "tokio",
 ]
 
 [[package]]
@@ -3249,6 +3237,7 @@ dependencies = [
 name = "gmt_dos-systems_m1"
 version = "0.1.0"
 dependencies = [
+ "bincode 2.0.1",
  "gmt-fem",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
@@ -3266,14 +3255,15 @@ dependencies = [
 name = "gmt_dos-systems_m2"
 version = "0.1.0"
 dependencies = [
+ "bincode 2.0.1",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.0",
+ "gmt-fem-code-builder",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
- "gmt_dos-clients_m2-ctrl 4.0.0",
+ "gmt_dos-clients_m2-ctrl",
  "gmt_m2-ctrl_asm_pid-damping",
  "gmt_m2-ctrl_asm_positionner",
  "gmt_m2-ctrl_asm_preshape-filter",
