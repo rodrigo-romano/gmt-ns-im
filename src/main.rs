@@ -7,6 +7,7 @@ use gmt_dos_clients_crseo::{
     calibration::Reconstructor,
     crseo::{
         FromBuilder,
+        builders::AtmosphereBuilder,
         imaging::{Detector, LensletArray},
     },
     sensors::{Camera, NoSensor},
@@ -23,7 +24,7 @@ use gmt_dos_clients_io::{
         fsm::{M2FSMFsmCommand, M2FSMPiezoForces, M2FSMPiezoNodes},
     },
     mount::{MountEncoders, MountTorques},
-    optics::{Frame, Host, SegmentPiston, Wavefront, WfeRms},
+    optics::{Frame, Host, SegmentPiston, SegmentWfeRms, Wavefront, WfeRms},
 };
 use gmt_dos_clients_m1_ctrl::Calibration;
 use gmt_dos_clients_m2_ctrl::Positioners;
@@ -42,7 +43,7 @@ use interface::Tick;
 
 const ACTUATOR_RATE: usize = 10;
 const SH48_RATE: usize = 5000;
-const SH24_RATE: usize = 1000;
+const SH24_RATE: usize = 100;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -104,19 +105,19 @@ async fn main() -> anyhow::Result<()> {
 
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/recon_sh24-to-pzt.pkl")?,
+        File::open("calibrations/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
     )?;
     let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()
         .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
-        .sh24(
-            ShackHartmannBuilder::<SH24_RATE>::new().sensor(
-                Camera::builder()
-                    .lenslet_array(LensletArray::default().n_side_lenslet(24).n_px_lenslet(36))
-                    .detector(Detector::default().n_px_framelet(36))
-                    .lenslet_flux(0.75),
-            ),
-        )
+        // .sh24(
+        //     ShackHartmannBuilder::<SH24_RATE>::new().sensor(
+        //         Camera::builder()
+        //             .lenslet_array(LensletArray::default().n_side_lenslet(24).n_px_lenslet(36))
+        //             .detector(Detector::default().n_px_framelet(36))
+        //             .lenslet_flux(0.75),
+        //     ),
+        // )
         .sh24_calibration(recon)
         .build()?;
     println!("{agws}");
@@ -125,20 +126,26 @@ async fn main() -> anyhow::Result<()> {
     let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
 
     // FSM command integrator
-    let fsm_pzt_int = Integrator::new(21).gain(0.);
+    let fsm_pzt_int = Integrator::new(21).gain(0.2);
 
     // On-axis scoring star
-    let on_axis = OpticalModel::<NoSensor>::builder().build()?;
+    let atm = AtmosphereBuilder::load("atmosphere/atmosphere.toml")?;
+    let on_axis = OpticalModel::<NoSensor>::builder()
+        .atmosphere(atm)
+        .sampling_frequency(sim_sampling_frequency as f64)
+        .build()?;
 
     println!("Model built in {}s", now.elapsed().as_secs());
 
     // SCOPES
     let mut monitor = Monitor::new();
     let scope_segment_piston = Scope::<SegmentPiston<-9>>::builder(&mut monitor).build()?;
+    let scope_segment_wfe_rms = Scope::<SegmentWfeRms<-9>>::builder(&mut monitor).build()?;
     let scope_wfe_rms = Scope::<WfeRms<-9>>::builder(&mut monitor).build()?;
     let scope_fsm_cmd = Scope::<M2FSMFsmCommand>::builder(&mut monitor).build()?;
     // ---
 
+    // Bootstrapping the FEM and associated controls
     let fem = state_space;
     let timer: Timer = Timer::new(4000);
     actorscript! {
@@ -159,12 +166,12 @@ async fn main() -> anyhow::Result<()> {
     1: {m2}[M2FSMPiezoForces] -> fem[M2FSMPiezoNodes]! -> {m2}
 
     // FEM state transfer to optical model
-    1: fem[M1RigidBodyMotions]! -> on_axis
-    1: fem[M2RigidBodyMotions]! -> on_axis
+    // 1: fem[M1RigidBodyMotions]! -> on_axis
+    // 1: fem[M2RigidBodyMotions]! -> on_axis
 
-    1: on_axis[WfeRms<-9>] -> scope_wfe_rms
-    1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
-    1000: on_axis[Wavefront]${512*512}
+    // 1: on_axis[WfeRms<-9>] -> scope_wfe_rms
+    // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
+    // 1000: on_axis[Wavefront]${512*512}
     }
 
     let m2_rbm = Signals::new(42, n_step); //.channel(3, 1e-7);
@@ -200,18 +207,19 @@ async fn main() -> anyhow::Result<()> {
     1: fem[M2RigidBodyMotions]! -> on_axis
 
     // // AGWS SH24 to FSMS feedback loop
-    1000: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
+    100: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {m2}
 
     5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
     1: on_axis[WfeRms<-9>] -> scope_wfe_rms
+    1: on_axis[SegmentWfeRms<-9>] -> scope_segment_wfe_rms
     1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
     1000: on_axis[Wavefront]${512*512}
     }
 
-    model_logging_1000.lock().await.save();
+    // model_logging_1000.lock().await.save();
     monitor.await?;
 
     Ok(())

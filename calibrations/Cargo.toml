@@ -11,3 +11,8 @@ gmt_dos-systems_agws.workspace = true
 matio-rs.workspace = true
 serde-pickle.workspace = true
 skyangle = "0.3.1"
+
+[features]
+default = ["pth"]
+pth = []
+rco = []
