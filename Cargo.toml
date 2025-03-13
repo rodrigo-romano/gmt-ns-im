@@ -5,7 +5,7 @@ edition = "2024"
 
 [workspace]
 resolver = "3"
-members = [ "atmosphere","calibrations", "sh24"]
+members = [ "atmosphere","calibrations", "sh24", "web_server"]
 
 [workspace.dependencies]
 anyhow = "1.0.96"
