@@ -7,12 +7,17 @@ use gmt_dos_clients_crseo::{
 };
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
+    cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
     gmt_m1::M1RigidBodyMotions,
     gmt_m2::{M2RigidBodyMotions, fsm::M2FSMFsmCommand},
     optics::{Frame, Host, SegmentPiston, SegmentWfeRms, Wavefront, WfeRms},
 };
 use gmt_dos_clients_scope::server::{Monitor, Scope};
 use gmt_dos_clients_servos::{GmtFem, GmtM2, GmtServoMechanisms};
+use gmt_dos_clients_windloads::{
+    CfdLoads,
+    system::{M1, M2, Mount, SigmoidCfdLoads},
+};
 use gmt_dos_systems_agws::{
     Agws,
     agws::{sh24::Sh24, sh48::Sh48},
@@ -38,8 +43,16 @@ async fn main() -> anyhow::Result<()> {
     let sim_duration = 10_usize; // second
     let n_step = sim_sampling_frequency * sim_duration;
 
-    let fem = FEM::from_env()?;
+    let mut fem = FEM::from_env()?;
     // println!("{fem}");
+
+    let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
+        CfdLoads::foh(".", sim_sampling_frequency)
+            .duration(sim_duration as f64)
+            .mount(&mut fem, 0, None)
+            .m1_segments()
+            .m2_segments(),
+    )?;
 
     let servos =
         GmtServoMechanisms::<ACTUATOR_RATE, 1>::new(sim_sampling_frequency as f64, fem).build()?;
@@ -55,8 +68,8 @@ async fn main() -> anyhow::Result<()> {
         .build()?;
     println!("{agws}");
 
-    let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
-    let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
+    // let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
+    // let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
 
     // FSM command integrator
     let fsm_pzt_int = Integrator::new(21).gain(0.2);
@@ -84,6 +97,9 @@ async fn main() -> anyhow::Result<()> {
     actorscript! {
         #[model(name=bootstrap)]
     1: timer[Tick] -> {servos::GmtFem}
+    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
     }
 
     let timer: Timer = Timer::new(n_step);
@@ -92,9 +108,14 @@ async fn main() -> anyhow::Result<()> {
     type AgwsSh24Kernel = Kernel<Sh24<SH24_RATE>>;
     actorscript! {
         // #[model(state=running)]
-    #[labels(on_axis = "On-axis Star",
-         sh48_frame = "SH48\nframe")]//, sh24_frame = "SH24\nframe")]
+    #[labels(on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
+         fsm_pzt_int="Integrator",
+         scope_wfe_rms="Scope", scope_segment_wfe_rms="Scope")]
+         // sh48_frame = "SH48\nframe")]//, sh24_frame = "SH24\nframe")]
     1: timer[Tick] -> {servos::GmtFem}
+    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
     // FEM state transfer to optical model
     1: {servos::GmtFem}[M1RigidBodyMotions]! -> {agws::AgwsSh48}
@@ -108,13 +129,13 @@ async fn main() -> anyhow::Result<()> {
     100: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
-    5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
+    // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
     1: on_axis[WfeRms<-9>] -> scope_wfe_rms
     1: on_axis[SegmentWfeRms<-9>] -> scope_segment_wfe_rms
-    1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
-    1000: on_axis[Wavefront]${512*512}
+    // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
+    // 1000: on_axis[Wavefront]${512*512}
     }
 
     // model_logging_1000.lock().await.save();

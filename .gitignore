@@ -5,4 +5,5 @@
 *.parquet
 *.mat
 *.bin
+*.z
 expanded.rs
