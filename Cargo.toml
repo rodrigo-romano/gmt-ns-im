@@ -61,6 +61,3 @@ gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/in
 gmt_dos-systems_m1 = { path = "/home/ubuntu/projects/dos-actors/systems/m1"}
 gmt_dos-systems_m2 = { path = "/home/ubuntu/projects/dos-actors/systems/m2"}
 gmt_dos-systems_agws = { path = "/home/ubuntu/projects/dos-actors/systems/agws"}
-
-[patch.crates-io]
-crseo = {path = "/home/ubuntu/projects/crseo"}

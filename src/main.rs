@@ -3,14 +3,7 @@ use std::{fs::File, time::Instant};
 use gmt_dos_actors::{actorscript, system::Sys};
 use gmt_dos_clients::{gif, integrator::Integrator, signals::Signals, timer::Timer};
 use gmt_dos_clients_crseo::{
-    OpticalModel,
-    calibration::Reconstructor,
-    crseo::{
-        FromBuilder,
-        builders::AtmosphereBuilder,
-        imaging::{Detector, LensletArray},
-    },
-    sensors::{Camera, NoSensor},
+    OpticalModel, calibration::Reconstructor, crseo::builders::AtmosphereBuilder, sensors::NoSensor,
 };
 use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
@@ -33,7 +26,6 @@ use gmt_dos_clients_scope::server::{Monitor, Scope};
 use gmt_dos_systems_agws::{
     Agws,
     agws::{sh24::Sh24, sh48::Sh48},
-    builder::shack_hartmann::ShackHartmannBuilder,
     kernels::Kernel,
 };
 use gmt_dos_systems_m1::M1;
@@ -164,17 +156,7 @@ async fn main() -> anyhow::Result<()> {
     // M2 (positioner & FSMS) control
     1: m2_pos[M2PositionerForces] -> fem[M2PositionerNodes]! -> m2_pos
     1: {m2}[M2FSMPiezoForces] -> fem[M2FSMPiezoNodes]! -> {m2}
-
-    // FEM state transfer to optical model
-    // 1: fem[M1RigidBodyMotions]! -> on_axis
-    // 1: fem[M2RigidBodyMotions]! -> on_axis
-
-    // 1: on_axis[WfeRms<-9>] -> scope_wfe_rms
-    // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
-    // 1000: on_axis[Wavefront]${512*512}
     }
-
-    let m2_rbm = Signals::new(42, n_step); //.channel(3, 1e-7);
 
     let timer: Timer = Timer::new(n_step);
     type AgwsSh48 = Sh48<SH48_RATE>;
@@ -182,7 +164,8 @@ async fn main() -> anyhow::Result<()> {
     type AgwsSh24Kernel = Kernel<Sh24<SH24_RATE>>;
     actorscript! {
         // #[model(state=running)]
-    // #[labels(fem = "GMT FEM", sh48_frame = "SH48\nframe", sh24_frame = "SH24\nframe")]
+    #[labels(on_axis = "On-axis Star",
+         sh48_frame = "SH48\nframe")]//, sh24_frame = "SH24\nframe")]
     1: timer[Tick] -> fem
 
     // Mount control
@@ -194,8 +177,7 @@ async fn main() -> anyhow::Result<()> {
     1: {m1}[assembly::M1ActuatorAppliedForces] -> fem
 
     // M2 (positioner & FSMS) control
-    1: m2_rbm[M2RigidBodyMotions]
-        -> m2_pos[M2PositionerForces] -> fem[M2PositionerNodes]! -> m2_pos
+    1: m2_pos[M2PositionerForces] -> fem[M2PositionerNodes]! -> m2_pos
     1: {m2}[M2FSMPiezoForces] -> fem[M2FSMPiezoNodes]! -> {m2}
 
     // FEM state transfer to optical model

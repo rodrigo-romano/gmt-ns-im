@@ -48,5 +48,5 @@ width = 25.5
 n_width_px = 865
 field_size = 0.002908881986513734
 duration = 30.0
-filepath = "atmosphere.bin"
+filepath = "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im/atmosphere/atmosphere.bin"
 n_duration = 1
