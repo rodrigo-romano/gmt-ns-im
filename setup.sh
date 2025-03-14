@@ -14,3 +14,5 @@ export FLOWCHART=dot
 export CUDACXX=/usr/local/cuda/bin/nvcc
 # IP address to data server for scopes (only for AWS machine, comment out otherwise)
 export SCOPE_SERVER_IP=`ec2metadata | sed -n 's/^local-ipv4: \(.*\)/\1/p'`
+# location where the model write its data
+export DATA_REPO=$HOME/projects/gmt-ns-im/web_server/static

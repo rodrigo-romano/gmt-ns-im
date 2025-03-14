@@ -41,14 +41,15 @@ async fn main() -> anyhow::Result<()> {
 
     let sim_sampling_frequency = 1000;
     let sim_duration = 10_usize; // second
-    let n_step = sim_sampling_frequency * sim_duration;
+    let bootstrapping_duration = 4_usize; // second
+    let n_bootstrapping = sim_sampling_frequency * bootstrapping_duration;
 
     let mut fem = FEM::from_env()?;
     // println!("{fem}");
 
     let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
         CfdLoads::foh(".", sim_sampling_frequency)
-            .duration(sim_duration as f64)
+            .duration((sim_duration + bootstrapping_duration) as f64)
             .mount(&mut fem, 0, None)
             .m1_segments()
             .m2_segments(),
@@ -85,15 +86,15 @@ async fn main() -> anyhow::Result<()> {
 
     // SCOPES
     let mut monitor = Monitor::new();
-    let scope_segment_piston = Scope::<SegmentPiston<-9>>::builder(&mut monitor).build()?;
+    // let scope_segment_piston = Scope::<SegmentPiston<-9>>::builder(&mut monitor).build()?;
     let scope_segment_wfe_rms = Scope::<SegmentWfeRms<-9>>::builder(&mut monitor).build()?;
     let scope_wfe_rms = Scope::<WfeRms<-9>>::builder(&mut monitor).build()?;
-    let scope_fsm_cmd = Scope::<M2FSMFsmCommand>::builder(&mut monitor).build()?;
+    // let scope_fsm_cmd = Scope::<M2FSMFsmCommand>::builder(&mut monitor).build()?;
     // ---
 
     // Bootstrapping the FEM and associated controls
     // let fem = state_space;
-    let timer: Timer = Timer::new(4000);
+    let timer: Timer = Timer::new(n_bootstrapping);
     actorscript! {
         #[model(name=bootstrap)]
     1: timer[Tick] -> {servos::GmtFem}
@@ -102,7 +103,6 @@ async fn main() -> anyhow::Result<()> {
     1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
     }
 
-    let timer: Timer = Timer::new(n_step);
     type AgwsSh48 = Sh48<SH48_RATE>;
     type AgwsSh24 = Sh24<SH24_RATE>;
     type AgwsSh24Kernel = Kernel<Sh24<SH24_RATE>>;
@@ -112,7 +112,6 @@ async fn main() -> anyhow::Result<()> {
          fsm_pzt_int="Integrator",
          scope_wfe_rms="Scope", scope_segment_wfe_rms="Scope")]
          // sh48_frame = "SH48\nframe")]//, sh24_frame = "SH24\nframe")]
-    1: timer[Tick] -> {servos::GmtFem}
     1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
     1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
     1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
@@ -132,14 +131,17 @@ async fn main() -> anyhow::Result<()> {
     // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
-    1: on_axis[WfeRms<-9>] -> scope_wfe_rms
-    1: on_axis[SegmentWfeRms<-9>] -> scope_segment_wfe_rms
+    1: on_axis[WfeRms<-9>].. -> scope_wfe_rms
+    1: on_axis[SegmentWfeRms<-9>].. -> scope_segment_wfe_rms
     // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
     // 1000: on_axis[Wavefront]${512*512}
     }
 
     // model_logging_1000.lock().await.save();
-    monitor.await?;
+
+    scope_wfe_rms.lock().await.end_transmission();
+    scope_segment_wfe_rms.lock().await.end_transmission();
+    monitor.join().await?;
 
     Ok(())
 }
