@@ -3,17 +3,20 @@ use std::{fs::File, time::Instant};
 use gmt_dos_actors::{actorscript, system::Sys};
 use gmt_dos_clients::{gif, integrator::Integrator, timer::Timer};
 use gmt_dos_clients_crseo::{
-    OpticalModel, calibration::Reconstructor, crseo::builders::AtmosphereBuilder, sensors::NoSensor,
+    OpticalModel,
+    calibration::Reconstructor,
+    crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder},
+    sensors::NoSensor,
 };
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
     gmt_m1::M1RigidBodyMotions,
     gmt_m2::{M2RigidBodyMotions, fsm::M2FSMFsmCommand},
-    optics::{Frame, Host, SegmentPiston, SegmentWfeRms, Wavefront, WfeRms},
+    optics::{SegmentWfeRms, Wavefront, WfeRms},
 };
 use gmt_dos_clients_scope::server::{Monitor, Scope};
-use gmt_dos_clients_servos::{GmtFem, GmtM2, GmtServoMechanisms};
+use gmt_dos_clients_servos::{GmtFem, GmtM2, GmtServoMechanisms, M1SegmentFigure};
 use gmt_dos_clients_windloads::{
     CfdLoads,
     system::{M1, M2, Mount, SigmoidCfdLoads},
@@ -29,6 +32,7 @@ use interface::Tick;
 const ACTUATOR_RATE: usize = 10;
 const SH48_RATE: usize = 5000;
 const SH24_RATE: usize = 100;
+const SH24_INTEGRATOR_GAIN: f64 = 0.2;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -55,8 +59,9 @@ async fn main() -> anyhow::Result<()> {
             .m2_segments(),
     )?;
 
-    let servos =
-        GmtServoMechanisms::<ACTUATOR_RATE, 1>::new(sim_sampling_frequency as f64, fem).build()?;
+    let servos = GmtServoMechanisms::<ACTUATOR_RATE, 1>::new(sim_sampling_frequency as f64, fem)
+        .m1_segment_figure(M1SegmentFigure::new())
+        .build()?;
 
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
@@ -64,6 +69,10 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )?;
     let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()
+        .gmt(Gmt::builder().m1(
+            gmt_ns_im::config::m1::RAW_MODES,
+            gmt_ns_im::config::m1::N_RAW_MODE,
+        ))
         .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
         .sh24_calibration(recon)
         .build()?;
@@ -71,13 +80,18 @@ async fn main() -> anyhow::Result<()> {
 
     // let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
     // let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
+    let on_axis_wavefront: gif::Frame<f64> = gif::Frame::new("on-axis_wavefront.png", 512);
 
     // FSM command integrator
-    let fsm_pzt_int = Integrator::new(21).gain(0.2);
+    let fsm_pzt_int = Integrator::new(21).gain(SH24_INTEGRATOR_GAIN);
 
     // On-axis scoring star
     let atm = AtmosphereBuilder::load("atmosphere/atmosphere.toml")?;
     let on_axis = OpticalModel::<NoSensor>::builder()
+        .gmt(Gmt::builder().m1(
+            gmt_ns_im::config::m1::RAW_MODES,
+            gmt_ns_im::config::m1::N_RAW_MODE,
+        ))
         .atmosphere(atm)
         .sampling_frequency(sim_sampling_frequency as f64)
         .build()?;
@@ -131,10 +145,10 @@ async fn main() -> anyhow::Result<()> {
     // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
-    1: on_axis[WfeRms<-9>].. -> scope_wfe_rms
-    1: on_axis[SegmentWfeRms<-9>].. -> scope_segment_wfe_rms
+    1: on_axis[WfeRms<-9>]$.. -> scope_wfe_rms
+    1: on_axis[SegmentWfeRms<-9>]$.. -> scope_segment_wfe_rms
     // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
-    // 1000: on_axis[Wavefront]${512*512}
+    1000: on_axis[Wavefront] -> on_axis_wavefront
     }
 
     // model_logging_1000.lock().await.save();

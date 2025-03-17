@@ -1,0 +1,13 @@
+[package]
+name = "m1-modes"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+gmt-ns-im = { version = "0.1.0", path = "..", default-features = false }
+gmt_dos-actors.workspace = true
+gmt_dos-clients.workspace = true
+gmt_dos-clients_crseo.workspace = true
+gmt_dos-clients_io = { workspace = true, features = ["crseo"] }
+tokio.workspace = true
