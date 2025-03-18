@@ -10,7 +10,7 @@ Integrated Model implementation of the GMT Natural Seeing Observatory Performanc
     1. follows the steps in `calibrations/README.md` to generate the FEM gain matrices
     2. then:
   ```shell
-  cd sh24
+  cd calibrations
   python pzt_2_rbm.py
   cargo r -r  
   ```
