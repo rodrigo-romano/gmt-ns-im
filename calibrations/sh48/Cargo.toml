@@ -1,0 +1,12 @@
+[package]
+name = "calibrations-sh48"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+gmt-ns-im = { version = "0.1.0", path = "../..", default-features = false }
+gmt_dos-clients_crseo.workspace = true
+gmt_dos-systems_agws.workspace = true
+serde-pickle.workspace = true
+skyangle.workspace = true

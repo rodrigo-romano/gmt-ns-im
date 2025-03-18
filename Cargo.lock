@@ -1387,6 +1387,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "calibrations-sh48"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "gmt-ns-im",
+ "gmt_dos-clients_crseo",
+ "gmt_dos-systems_agws",
+ "serde-pickle 1.2.0",
+ "skyangle 0.3.1",
+]
+
+[[package]]
 name = "calloop"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
