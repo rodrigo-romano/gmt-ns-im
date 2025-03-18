@@ -27,12 +27,8 @@ use gmt_dos_systems_agws::{
     kernels::Kernel,
 };
 use gmt_fem::FEM;
+use gmt_ns_im::config;
 use interface::Tick;
-
-const ACTUATOR_RATE: usize = 10;
-const SH48_RATE: usize = 5000;
-const SH24_RATE: usize = 100;
-const SH24_INTEGRATOR_GAIN: f64 = 0.2;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -59,23 +55,27 @@ async fn main() -> anyhow::Result<()> {
             .m2_segments(),
     )?;
 
-    let servos = GmtServoMechanisms::<ACTUATOR_RATE, 1>::new(sim_sampling_frequency as f64, fem)
-        .m1_segment_figure(M1SegmentFigure::new())
-        .build()?;
+    let servos = GmtServoMechanisms::<{ config::m1::ACTUATOR_RATE }, 1>::new(
+        sim_sampling_frequency as f64,
+        fem,
+    )
+    .m1_segment_figure(M1SegmentFigure::new())
+    .build()?;
 
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
         File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
     )?;
-    let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()
-        .gmt(Gmt::builder().m1(
-            gmt_ns_im::config::m1::RAW_MODES,
-            gmt_ns_im::config::m1::N_RAW_MODE,
-        ))
-        .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
-        .sh24_calibration(recon)
-        .build()?;
+    let agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> =
+        Agws::<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>::builder()
+            .gmt(Gmt::builder().m1(
+                gmt_ns_im::config::m1::RAW_MODES,
+                gmt_ns_im::config::m1::N_RAW_MODE,
+            ))
+            .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+            .sh24_calibration(recon)
+            .build()?;
     println!("{agws}");
 
     // let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
@@ -83,15 +83,12 @@ async fn main() -> anyhow::Result<()> {
     let on_axis_wavefront: gif::Frame<f64> = gif::Frame::new("on-axis_wavefront.png", 512);
 
     // FSM command integrator
-    let fsm_pzt_int = Integrator::new(21).gain(SH24_INTEGRATOR_GAIN);
+    let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
 
     // On-axis scoring star
     let atm = AtmosphereBuilder::load("atmosphere/atmosphere.toml")?;
     let on_axis = OpticalModel::<NoSensor>::builder()
-        .gmt(Gmt::builder().m1(
-            gmt_ns_im::config::m1::RAW_MODES,
-            gmt_ns_im::config::m1::N_RAW_MODE,
-        ))
+        .gmt(Gmt::builder().m1(config::m1::RAW_MODES, config::m1::N_RAW_MODE))
         .atmosphere(atm)
         .sampling_frequency(sim_sampling_frequency as f64)
         .build()?;
@@ -117,9 +114,9 @@ async fn main() -> anyhow::Result<()> {
     1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
     }
 
-    type AgwsSh48 = Sh48<SH48_RATE>;
-    type AgwsSh24 = Sh24<SH24_RATE>;
-    type AgwsSh24Kernel = Kernel<Sh24<SH24_RATE>>;
+    type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
+    type AgwsSh24 = Sh24<{ config::agws::sh24::RATE }>;
+    type AgwsSh24Kernel = Kernel<Sh24<{ config::agws::sh24::RATE }>>;
     actorscript! {
         // #[model(state=running)]
     #[labels(on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
