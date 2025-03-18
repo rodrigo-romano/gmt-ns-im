@@ -7,10 +7,10 @@ Integrated Model implementation of the GMT Natural Seeing Observatory Performanc
  1. Check the `setup.sh` script and update the path to reflect your own setup and run with `. setup.sh`
  2. Calibrations:
   * SH24 to FSM piezostack actuators displacement:
-    1. follows the steps in `calibrations/README.md` to generate the FEM gain matrices
+    1. follows the steps in `calibrations/sh24/README.md` to generate the FEM gain matrices
     2. then:
   ```shell
-  cd calibrations
+  cd calibrations/sh24
   python pzt_2_rbm.py
   cargo r -r  
   ```

@@ -65,7 +65,7 @@ async fn main() -> anyhow::Result<()> {
 
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/recon_sh24-to-pzt_pth.pkl")?,
+        File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
     )?;
     let agws: Sys<Agws<SH48_RATE, SH24_RATE>> = Agws::<SH48_RATE, SH24_RATE>::builder()

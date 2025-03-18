@@ -5,7 +5,7 @@ edition = "2024"
 
 [workspace]
 resolver = "3"
-members = [ "atmosphere","calibrations", "scopes", "m1-modes", "web_server"]
+members = [ "atmosphere","calibrations/sh24", "scopes", "m1-modes", "web_server"]
 
 [workspace.dependencies]
 anyhow = "1.0.96"
@@ -47,6 +47,9 @@ scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 [patch."https://github.com/rconan/dos-actors.git"]
 gmt_dos-clients_io= {path="/home/ubuntu/projects/dos-actors/clients/io"}
 gmt_dos-clients_crseo= {path="/home/ubuntu/projects/dos-actors/clients/crseo"}
+gmt_dos-clients_fem= {path="/home/ubuntu/projects/dos-actors/clients/fem"}
+gmt_dos-clients_servos= {path="/home/ubuntu/projects/dos-actors/clients/servos"}
+gmt-fem = {path="/home/ubuntu/projects/dos-actors/clients/fem/model"}
 gmt_dos-systems_agws = {path="/home/ubuntu/projects/dos-actors/systems/agws"}
 gmt_dos-actors= {path="/home/ubuntu/projects/dos-actors/actors"}
 gmt_dos-actors-clients_interface = {path="/home/ubuntu/projects/dos-actors/interface"}
