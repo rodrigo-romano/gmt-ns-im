@@ -8,7 +8,7 @@ pub mod config {
     }
     pub mod agws {
         pub mod sh24 {
-            pub const RATE: usize = 100;
+            pub const RATE: usize = 5;
             pub const INTEGRATOR_GAIN: f64 = 0.2;
         }
         pub mod sh48 {

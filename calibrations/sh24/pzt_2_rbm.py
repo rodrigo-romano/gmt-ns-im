@@ -19,3 +19,8 @@ T = [ k1p[i*6+3:i*6+5,i*3:(i+1)*3]@l[i*3:(i+1)*3,i*3:(i+1)*3]@V   for i in range
 rbm_2_pzt= {f"var{i}":V@np.linalg.inv(x)   for (i,x) in enumerate(T)}
 savemat("rbm_2_pzt_pth.mat",rbm_2_pzt)
 
+
+# PZT displacement to M2 RBM
+O = np.kron(np.eye(3),[1,-1])
+m2_pzt_r = {f"var{i}": k1p[i*6:i*6+6,i*3:(i+1)*3]@l[i*3:(i+1)*3,i*3:(i+1)*3]@O   for i in range(7)}
+savemat("m2_pzt_r.mat",m2_pzt_r)
