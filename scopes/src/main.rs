@@ -27,9 +27,32 @@ async fn main() -> anyhow::Result<()> {
     loop {
         if let Ok(scope) = env::var("SCOPE") {
             match scope.as_str() {
-                "FSM" => Scope::new()
-                    .name("Segment Piston from M1 RBM")
-                    .signal::<M2FSMFsmCommand>()?
+                // "FSM" => Scope::new()
+                //     .name("FSM Command")
+                //     .signal::<M2FSMFsmCommand>()?
+                //     .show(),
+                // "M2 RBM" => Scope::new()
+                //     .name("M2 RBM")
+                //     .signal::<MuM<M2RigidBodyMotions>>()?
+                //     .show(),
+                "SegmentPiston" => Scope::new()
+                    .name("Segment Piston")
+                    .signal::<SegmentPiston<-9>>()?
+                    .show(),
+                "TipTilt" => Scope::new()
+                    .name("Tip-Tilt")
+                    .signal::<Mas<TipTilt>>()?
+                    .signal::<Mas<SegmentTipTilt>>()?
+                    .show(),
+                "M1 M2 SegmentPiston" => Scope::new()
+                    .name("M1 & M2 Segment Piston")
+                    .signal::<M1SegmentPiston>()?
+                    .signal::<M2SegmentPiston>()?
+                    .show(),
+                "M1 M2 SegmentTipTilt" => Scope::new()
+                    .name("M1 & M2 Segment TipTilt")
+                    .signal::<M1SegmentTipTilt>()?
+                    .signal::<M2SegmentTipTilt>()?
                     .show(),
                 // "M2" => Scope::new()
                 //     .name("Segment Piston from M2 RBM")
@@ -47,7 +70,7 @@ async fn main() -> anyhow::Result<()> {
             }
         } else {
             Scope::new()
-                .name("WFE RMS & Segment Piston")
+                .name("WFE RMS")
                 .signal::<SegmentWfeRms<-9>>()?
                 .signal::<WfeRms<-9>>()?
                 .show();

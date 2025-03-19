@@ -280,6 +280,8 @@ async fn main() -> anyhow::Result<()> {
     }
 
     shub.lock().await.close().await?;
+    m1_scopes.lock().await.close().await?;
+    m2_scopes.lock().await.close().await?;
 
     Ok(())
 }
