@@ -12,7 +12,7 @@ use gmt_dos_clients_crseo::{
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
-    gmt_m1::M1RigidBodyMotions,
+    gmt_m1::{M1EdgeSensors, M1RigidBodyMotions},
     gmt_m2::{
         M2PositionerNodes, M2RigidBodyMotions,
         fsm::{M2FSMFsmCommand, M2FSMPiezoNodes},
@@ -22,7 +22,7 @@ use gmt_dos_clients_io::{
 };
 use gmt_dos_clients_scope::server::{Monitor, Scope};
 use gmt_dos_clients_servos::{
-    GmtFem, GmtM2, GmtM2Hex, GmtMount, GmtServoMechanisms, M1SegmentFigure,
+    EdgeSensors, GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtMount, GmtServoMechanisms, M1SegmentFigure,
 };
 use gmt_dos_clients_windloads::{
     CfdLoads,
@@ -65,6 +65,11 @@ async fn main() -> anyhow::Result<()> {
             .m2_segments(),
     )?;
 
+    // M1 EDGE SENSORS TO RIGID-BODY MOTIONS TRANSFORM
+    let m1_es_2_rbm: nalgebra::DMatrix<f64> =
+        MatFile::load("m1-edge-sensors/es_2_rbm.mat")?.var("m1_r_es")?;
+
+    dbg!(m1_es_2_rbm.shape());
     // let servos =
     //     Sys::<GmtServoMechanisms<{ config::m1::ACTUATOR_RATE }, 1>>::from_data_repo_or_else(
     //         "servos.bin",
@@ -80,6 +85,7 @@ async fn main() -> anyhow::Result<()> {
         sim_sampling_frequency as f64,
         fem,
     )
+    .edge_sensors(EdgeSensors::both().m1_with(m1_es_2_rbm))
     // .m1_segment_figure(M1SegmentFigure::new())
     .build()?;
     // serde_pickle::to_writer(
@@ -126,7 +132,11 @@ async fn main() -> anyhow::Result<()> {
         })
         .collect();
     let pzt_to_rbm = Gain::<f64>::new(pzt_to_rbm);
+    // FSM off-load integrator
     let pzt_to_rbm_int = Integrator::new(42).gain(1e-3);
+
+    // M1 edge sensors to RBMs integrator
+    let m1_es_to_rbm_int = Integrator::new(42).gain(0e-3);
 
     // On-axis scoring star
     // let atm = AtmosphereBuilder::load("atmosphere/atmosphere.toml")?;
@@ -167,6 +177,8 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
 
+    1: {servos::GmtFem}[M1EdgeSensors]${42}
+
     1: on_axis[WfeRms<-9>]$.. -> scope_wfe_rms
     1: on_axis[SegmentWfeRms<-9>]$.. -> scope_segment_wfe_rms
     1: on_axis[Mas<TipTilt>]$.. -> scope_tiptilt
@@ -195,11 +207,17 @@ async fn main() -> anyhow::Result<()> {
     // 1: m2_rbm[M2RigidBodyMotions] -> {servos::GmtM2Hex}
     // 1: {servos::GmtFem}[MuM<M2RigidBodyMotions>]! -> scope_m2_rbm
 
+    // FSM to positionner off-load
     1: {servos::GmtFem}[M2FSMPiezoNodes]${42}
         -> pzt_to_rbm[M2RigidBodyMotions] //-> scope_fsm_cmd
             -> pzt_to_rbm_int[M2RigidBodyMotions]
                 -> {servos::GmtM2Hex}
     1: {servos::GmtFem}[M2PositionerNodes]${84}
+
+    // M1 edge sensor to RBMs feedback loop
+    1: {servos::GmtFem}[M1EdgeSensors]${42}
+        -> m1_es_to_rbm_int[M1RigidBodyMotions]!
+            -> {servos::GmtM1}
 
     // FEM state transfer to optical model
     1: {servos::GmtFem}[M1RigidBodyMotions]! -> {agws::AgwsSh48}
