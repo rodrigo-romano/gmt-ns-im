@@ -20,7 +20,7 @@ use gmt_dos_clients_io::{
     mount::MountSetPoint,
     optics::{SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront, WfeRms},
 };
-use gmt_dos_clients_scope::server::{Monitor, Scope};
+use gmt_dos_clients_scope::scopehub;
 use gmt_dos_clients_servos::{
     EdgeSensors, GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtMount, GmtServoMechanisms, M1SegmentFigure,
 };
@@ -149,14 +149,7 @@ async fn main() -> anyhow::Result<()> {
     println!("Model built in {}s", now.elapsed().as_secs());
 
     // SCOPES
-    let mut monitor = Monitor::new();
-    // let scope_segment_piston = Scope::<SegmentPiston<-9>>::builder(&mut monitor).build()?;
-    let scope_segment_wfe_rms = Scope::<SegmentWfeRms<-9>>::builder(&mut monitor).build()?;
-    let scope_wfe_rms = Scope::<WfeRms<-9>>::builder(&mut monitor).build()?;
-    let scope_tiptilt = Scope::<Mas<TipTilt>>::builder(&mut monitor).build()?;
-    let scope_segment_tiptilt = Scope::<Mas<SegmentTipTilt>>::builder(&mut monitor).build()?;
-    // let scope_fsm_cmd = Scope::<M2FSMFsmCommand>::builder(&mut monitor).build()?;
-    // let scope_m2_rbm = Scope::<MuM<M2RigidBodyMotions>>::builder(&mut monitor).build()?;
+    let shub = ScopeHub::new()?;
     // ---
 
     // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
@@ -179,10 +172,10 @@ async fn main() -> anyhow::Result<()> {
 
     1: {servos::GmtFem}[M1EdgeSensors]${42}
 
-    1: on_axis[WfeRms<-9>]$.. -> scope_wfe_rms
-    1: on_axis[SegmentWfeRms<-9>]$.. -> scope_segment_wfe_rms
-    1: on_axis[Mas<TipTilt>]$.. -> scope_tiptilt
-    1: on_axis[Mas<SegmentTipTilt>]$.. -> scope_segment_tiptilt
+    1: on_axis[WfeRms<-9>]$.. -> shub
+    1: on_axis[SegmentWfeRms<-9>]$.. -> shub
+    1: on_axis[Mas<TipTilt>]$.. -> shub
+    1: on_axis[Mas<SegmentTipTilt>]$.. -> shub
     // // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
     1000: on_axis[Wavefront].. -> on_axis_wavefront
     }
@@ -194,7 +187,11 @@ async fn main() -> anyhow::Result<()> {
     actorscript! {
         // #[model(state=running)]
     #[labels(on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
-         fsm_pzt_int="Integrator")]//,
+         fsm_pzt_int="FSM\nIntegrator",
+         pzt_to_rbm="FSM\nto\nPositioner",
+         pzt_to_rbm_int="Positioner\nIntegrator",
+         m1_es_to_rbm_int="M1 RBM\nIntegrator"
+         )]//,
          // scope_wfe_rms="Scope", scope_segment_wfe_rms="Scope")]
          // sh48_frame = "SH48\nframe")]//, sh24_frame = "SH24\nframe")]
     // 1: timer[Tick] -> {servos::GmtFem}
@@ -234,23 +231,32 @@ async fn main() -> anyhow::Result<()> {
     // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
-    1: on_axis[WfeRms<-9>]$.. -> scope_wfe_rms
-    1: on_axis[SegmentWfeRms<-9>]$.. -> scope_segment_wfe_rms
-    1: on_axis[Mas<TipTilt>]$.. -> scope_tiptilt
-    1: on_axis[Mas<SegmentTipTilt>]$.. -> scope_segment_tiptilt
+    1: on_axis[WfeRms<-9>]$.. -> shub
+    1: on_axis[SegmentWfeRms<-9>]$.. -> shub
+    1: on_axis[Mas<TipTilt>]$.. -> shub
+    1: on_axis[Mas<SegmentTipTilt>]$.. -> shub
     // // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
     1000: on_axis[Wavefront].. -> on_axis_wavefront
     }
 
     // model_logging_1000.lock().await.save();
 
-    scope_wfe_rms.lock().await.end_transmission();
+    /* scope_wfe_rms.lock().await.end_transmission();
     scope_segment_wfe_rms.lock().await.end_transmission();
     scope_tiptilt.lock().await.end_transmission();
     scope_segment_tiptilt.lock().await.end_transmission();
     // scope_fsm_cmd.end_transmission();
     // scope_m2_rbm.lock().await.end_transmission();
-    monitor.join().await?;
+    monitor.join().await?; */
+    shub.lock().await.close().await?;
 
     Ok(())
+}
+
+#[scopehub]
+pub enum ScopeHub {
+    Scope(WfeRms<-9>),
+    Scope(SegmentWfeRms<-9>),
+    Scope(Mas<TipTilt>),
+    Scope(Mas<SegmentTipTilt>),
 }
