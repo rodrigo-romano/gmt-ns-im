@@ -2,10 +2,25 @@
 
 use gmt_dos_clients_io::{
     gmt_m2::fsm::M2FSMFsmCommand,
-    optics::{SegmentPiston, SegmentWfeRms, WfeRms},
+    optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms},
 };
+use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_scope_client::Scope;
+use interface::{UID, units::Mas};
 use std::env;
+
+#[derive(UID)]
+#[alias(port = 5001, name = SegmentPiston<-9>, client = LinearOpticalModel, traits = Write, Size)]
+pub enum M1SegmentPiston {}
+#[derive(UID)]
+#[alias(port = 5002, name = SegmentPiston<-9>, client = LinearOpticalModel, traits = Write, Size)]
+pub enum M2SegmentPiston {}
+#[derive(UID)]
+#[alias(port = 5003, name = Mas<SegmentTipTilt>, client = LinearOpticalModel, traits = Write, Size)]
+pub enum M1SegmentTipTilt {}
+#[derive(UID)]
+#[alias(port = 5004, name = Mas<SegmentTipTilt>, client = LinearOpticalModel, traits = Write, Size)]
+pub enum M2SegmentTipTilt {}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

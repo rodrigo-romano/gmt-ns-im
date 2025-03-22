@@ -21,13 +21,13 @@ use gmt_dos_clients_io::{
     // cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
     gmt_m1::{M1EdgeSensors, M1RigidBodyMotions},
     gmt_m2::{
-        M2PositionerNodes, M2RigidBodyMotions,
+        M2RigidBodyMotions,
         fsm::{M2FSMFsmCommand, M2FSMPiezoNodes},
     },
     mount::MountSetPoint,
-    optics::{SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront, WfeRms},
+    optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront, WfeRms},
 };
-use gmt_dos_clients_scope::scopehub;
+use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_servos::{
     EdgeSensors, GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtMount, GmtServoMechanisms,
 };
@@ -42,9 +42,8 @@ use gmt_dos_systems_agws::{
     kernels::Kernel,
 };
 use gmt_fem::FEM;
-use gmt_ns_im::config;
-use interface::Tick;
-use interface::units::Mas;
+use gmt_ns_im::{config, scopes::*};
+use interface::{Tick, units::Mas};
 use matio_rs::MatFile;
 
 #[tokio::main]
@@ -126,7 +125,8 @@ async fn main() -> anyhow::Result<()> {
     // let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
     // let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
     // let on_axis_wavefront: gif::Frame<f64> = gif::Frame::new("on-axis_wavefront.png", 512);
-    let on_axis_wavefront: gif::Gif<f64> = gif::Gif::new("on-axis_wavefront.gif", 512, 512)?;
+    let on_axis_wavefront: gif::Gif<f64> =
+        gif::Gif::new("on-axis_wavefront.gif", 512, 512)?.delay(200);
 
     // FSM command integrator
     let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
@@ -161,15 +161,23 @@ async fn main() -> anyhow::Result<()> {
     .sampling_frequency(sim_sampling_frequency as f64)
     .build()?;
 
+    // Linear Optical Models
+    let m1_lom = LinearOpticalModel::new()?;
+    let m2_lom = LinearOpticalModel::new()?;
+
     println!("Model built in {}s", now.elapsed().as_secs());
 
     // SCOPES
-    let shub = ScopeHub::new()?;
+    let shub = OnAxisScopes::new()?;
+    let m1_scopes = M1Scopes::new()?;
+    let m2_scopes = M2Scopes::new()?;
     // ---
 
     // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
     let mount_cmd = Signals::new(3, 6000 + n_bootstrapping); //.channel(1, 1e-6);
-    let m1_rbm = Signals::new(42, 6000 + n_bootstrapping).channel(3 + 6 * 6, 1e-6);
+    let mut m1_rbm = vec![vec![0f64; 6]; 7];
+    m1_rbm[6][3] = 1e-6;
+    let m1_rbm = Signals::from((m1_rbm, 6000 + n_bootstrapping));
     let adder = Operator::new("+");
     // Bootstrapping the FEM and associated controls
     // let fem = state_space;
@@ -187,8 +195,14 @@ async fn main() -> anyhow::Result<()> {
 
     1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
+    1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
+    1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
+    1: m1_lom[M1SegmentPiston].. -> m1_scopes
+    1: m2_lom[M2SegmentPiston].. -> m2_scopes
+    1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
+    1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
 
-    1: {servos::GmtFem}[M1EdgeSensors]${42}
+    // 1: {servos::GmtFem}[M1EdgeSensors]
 
     1: on_axis[WfeRms<-9>].. -> shub
     1: on_axis[SegmentWfeRms<-9>].. -> shub
@@ -210,7 +224,8 @@ async fn main() -> anyhow::Result<()> {
          fsm_pzt_int="FSM\nIntegrator",
          pzt_to_rbm="FSM\nto\nPositioner",
          pzt_to_rbm_int="Positioner\nIntegrator",
-         m1_es_to_rbm_int="M1 RBM\nIntegrator"
+         m1_es_to_rbm_int="M1 RBM\nIntegrator",
+         adder="Adder"
          )]
     // 1: timer[Tick] -> {servos::GmtFem}
 
@@ -222,25 +237,31 @@ async fn main() -> anyhow::Result<()> {
     1: m1_rbm[Left<M1RigidBodyMotions>] -> adder[M1RigidBodyMotions] -> {servos::GmtM1}
 
     // FSM to positionner off-load
-    1: {servos::GmtFem}[M2FSMPiezoNodes]${42}
+    1: {servos::GmtFem}[M2FSMPiezoNodes]
         -> pzt_to_rbm[M2RigidBodyMotions] //-> scope_fsm_cmd
             -> pzt_to_rbm_int[M2RigidBodyMotions]
                 -> {servos::GmtM2Hex}
-    1: {servos::GmtFem}[M2PositionerNodes]${84}
+    1: {servos::GmtFem}[M2PositionerNodes]
 
     // M1 edge sensor to RBMs feedback loop
-    1: {servos::GmtFem}[M1EdgeSensors]${42}!
+    1: {servos::GmtFem}[M1EdgeSensors]!
         -> m1_es_to_rbm_int[Right<M1RigidBodyMotions>]
             -> adder
             // -> {servos::GmtM1}
 
     // FEM state transfer to optical model
-    1: {servos::GmtFem}[M1RigidBodyMotions]! -> {agws::AgwsSh48}
-    1: {servos::GmtFem}[M2RigidBodyMotions]! -> {agws::AgwsSh48}
-    1: {servos::GmtFem}[M1RigidBodyMotions]! -> {agws::AgwsSh24}
-    1: {servos::GmtFem}[M2RigidBodyMotions]! -> {agws::AgwsSh24}
+    1: {servos::GmtFem}[M1RigidBodyMotions] -> {agws::AgwsSh48}
+    1: {servos::GmtFem}[M2RigidBodyMotions] -> {agws::AgwsSh48}
+    1: {servos::GmtFem}[M1RigidBodyMotions] -> {agws::AgwsSh24}
+    1: {servos::GmtFem}[M2RigidBodyMotions] -> {agws::AgwsSh24}
     1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
+    1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
+    1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
+    1: m1_lom[M1SegmentPiston].. -> m1_scopes
+    1: m2_lom[M2SegmentPiston].. -> m2_scopes
+    1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
+    1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
 
     // // AGWS SH24 to FSMS feedback loop
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
@@ -251,21 +272,14 @@ async fn main() -> anyhow::Result<()> {
 
     1: on_axis[WfeRms<-9>].. -> shub
     1: on_axis[SegmentWfeRms<-9>].. -> shub
+    1: on_axis[SegmentPiston<-9>].. -> shub
     1: on_axis[Mas<TipTilt>].. -> shub
     1: on_axis[Mas<SegmentTipTilt>].. -> shub
     // // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
-    1000: on_axis[Wavefront].. -> on_axis_wavefront
+    50: on_axis[Wavefront].. -> on_axis_wavefront
     }
 
     shub.lock().await.close().await?;
 
     Ok(())
-}
-
-#[scopehub]
-pub enum ScopeHub {
-    Scope(WfeRms<-9>),
-    Scope(SegmentWfeRms<-9>),
-    Scope(Mas<TipTilt>),
-    Scope(Mas<SegmentTipTilt>),
 }

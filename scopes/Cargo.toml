@@ -6,5 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow.workspace = true
 gmt_dos-clients_io.workspace = true
+gmt_dos-clients_lom.workspace = true
 gmt_dos-clients_scope-client.workspace = true
+interface.workspace = true
 tokio.workspace = true
