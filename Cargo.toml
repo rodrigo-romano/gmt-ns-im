@@ -47,14 +47,14 @@ nalgebra = "0.33.2"
 default = ["scope"]
 scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 
-[patch."https://github.com/rconan/dos-actors.git"]
-gmt_dos-clients= {path="/home/ubuntu/projects/dos-actors/clients/core"}
-gmt_dos-clients_io= {path="/home/ubuntu/projects/dos-actors/clients/io"}
-gmt_dos-clients_crseo= {path="/home/ubuntu/projects/dos-actors/clients/crseo"}
-gmt_dos-clients_fem= {path="/home/ubuntu/projects/dos-actors/clients/fem"}
-gmt_dos-clients_servos= {path="/home/ubuntu/projects/dos-actors/clients/servos"}
-gmt_dos-clients_scope= {path="/home/ubuntu/projects/dos-actors/clients/scope"}
-gmt-fem = {path="/home/ubuntu/projects/dos-actors/clients/fem/model"}
-gmt_dos-systems_agws = {path="/home/ubuntu/projects/dos-actors/systems/agws"}
-gmt_dos-actors= {path="/home/ubuntu/projects/dos-actors/actors"}
-gmt_dos-actors-clients_interface = {path="/home/ubuntu/projects/dos-actors/interface"}
+# [patch."https://github.com/rconan/dos-actors.git"]
+# gmt_dos-clients= {path="/home/ubuntu/projects/dos-actors/clients/core"}
+# gmt_dos-clients_io= {path="/home/ubuntu/projects/dos-actors/clients/io"}
+# gmt_dos-clients_crseo= {path="/home/ubuntu/projects/dos-actors/clients/crseo"}
+# gmt_dos-clients_fem= {path="/home/ubuntu/projects/dos-actors/clients/fem"}
+# gmt_dos-clients_servos= {path="/home/ubuntu/projects/dos-actors/clients/servos"}
+# gmt_dos-clients_scope= {path="/home/ubuntu/projects/dos-actors/clients/scope"}
+# gmt-fem = {path="/home/ubuntu/projects/dos-actors/clients/fem/model"}
+# gmt_dos-systems_agws = {path="/home/ubuntu/projects/dos-actors/systems/agws"}
+# gmt_dos-actors= {path="/home/ubuntu/projects/dos-actors/actors"}
+# gmt_dos-actors-clients_interface = {path="/home/ubuntu/projects/dos-actors/interface"}
