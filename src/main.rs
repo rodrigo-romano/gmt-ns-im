@@ -7,6 +7,7 @@ use gmt_dos_clients::{
     gif,
     integrator::Integrator,
     operator::{Left, Operator, Right},
+    print::Print,
     signals::Signals,
     timer::Timer,
 };
@@ -18,14 +19,17 @@ use gmt_dos_clients_crseo::{
 };
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
+    Estimate,
     // cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
     gmt_m1::{M1EdgeSensors, M1RigidBodyMotions},
     gmt_m2::{
         M2RigidBodyMotions,
         fsm::{M2FSMFsmCommand, M2FSMPiezoNodes},
     },
-    mount::MountSetPoint,
-    optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront, WfeRms},
+    mount::{MountSetPoint, MountTorques},
+    optics::{
+        SegmentPiston, SegmentTipTilt, SegmentWfeRms, SensorData, TipTilt, Wavefront, WfeRms,
+    },
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_servos::{
@@ -107,12 +111,15 @@ async fn main() -> anyhow::Result<()> {
         File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
     )?;
+    println!("SH24 to FSM reconstructor:\n{recon}");
     let agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> =
         if config::ATMOSPHERE {
             Agws::builder()
                 .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
         } else {
-            Agws::builder().sh24(ShackHartmannBuilder::sh24().use_calibration_src())
+            Agws::builder()
+                .sh24(ShackHartmannBuilder::sh24().use_calibration_src())
+                .sh48(ShackHartmannBuilder::sh48().use_calibration_src())
         }
         .gmt(Gmt::builder().m1(
             gmt_ns_im::config::m1::segment::RAW_MODES,
@@ -165,6 +172,13 @@ async fn main() -> anyhow::Result<()> {
     let m1_lom = LinearOpticalModel::new()?;
     let m2_lom = LinearOpticalModel::new()?;
 
+    // Mount reconstructor
+    let mount_recon: Reconstructor = serde_pickle::from_reader(
+        File::open("calibrations/mount/recon_sh48-to-mount.pkl")?,
+        Default::default(),
+    )?;
+    println!("SH48 to Mount reconstructor:\n{mount_recon}");
+
     println!("Model built in {}s", now.elapsed().as_secs());
 
     // SCOPES
@@ -174,10 +188,12 @@ async fn main() -> anyhow::Result<()> {
     // ---
 
     // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
-    let mount_cmd = Signals::new(3, 6000 + n_bootstrapping); //.channel(1, 1e-6);
+    let mount_cmd = Signals::new(3, 16001 + n_bootstrapping)
+        .channel(0, -1e-5)
+        .channel(1, 1e-5);
     let mut m1_rbm = vec![vec![0f64; 6]; 7];
-    m1_rbm[6][3] = 1e-6;
-    let m1_rbm = Signals::from((m1_rbm, 6000 + n_bootstrapping));
+    // m1_rbm[0][3] = 1e-6;
+    let m1_rbm = Signals::from((m1_rbm, 16001 + n_bootstrapping));
     let adder = Operator::new("+");
     // Bootstrapping the FEM and associated controls
     // let fem = state_space;
@@ -197,10 +213,10 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
     1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
-    1: m1_lom[M1SegmentPiston].. -> m1_scopes
-    1: m2_lom[M2SegmentPiston].. -> m2_scopes
-    1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
-    1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
+    // 1: m1_lom[M1SegmentPiston].. -> m1_scopes
+    // 1: m2_lom[M2SegmentPiston].. -> m2_scopes
+    // 1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
+    // 1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
 
     // 1: {servos::GmtFem}[M1EdgeSensors]
 
@@ -212,10 +228,12 @@ async fn main() -> anyhow::Result<()> {
     1000: on_axis[Wavefront].. -> on_axis_wavefront
     }
 
-    // let timer: Timer = Timer::new(6000);
+    let print = Print::new(8);
+    // let timer: Timer = Timer::new(6001);
     type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
     type AgwsSh24 = Sh24<{ config::agws::sh24::RATE }>;
     type AgwsSh24Kernel = Kernel<Sh24<{ config::agws::sh24::RATE }>>;
+    type AgwsSh48Kernel = Kernel<Sh48<{ config::agws::sh48::RATE }>>;
     actorscript! {
         // #[model(state=running)]
     #[labels(on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
@@ -229,8 +247,7 @@ async fn main() -> anyhow::Result<()> {
          )]
     // 1: timer[Tick] -> {servos::GmtFem}
 
-    // 1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
-    // 1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::M1}[C10_DM1WindLoads] -AgwsSh48Kernel> SensorDa${cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
     // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
     1: mount_cmd[MountSetPoint] -> {servos::GmtMount}
@@ -258,15 +275,16 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
     1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
-    1: m1_lom[M1SegmentPiston].. -> m1_scopes
-    1: m2_lom[M2SegmentPiston].. -> m2_scopes
-    1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
-    1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
+    // 1: m1_lom[M1SegmentPiston].. -> m1_scopes
+    // 1: m2_lom[M2SegmentPiston].. -> m2_scopes
+    // 1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
+    // 1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
 
     // // AGWS SH24 to FSMS feedback loop
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
+    10_000: {agws::AgwsSh48Kernel}[SensorData]${48*48*6} -> mount_recon[Estimate] -> print
     // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
@@ -280,8 +298,8 @@ async fn main() -> anyhow::Result<()> {
     }
 
     shub.lock().await.close().await?;
-    m1_scopes.lock().await.close().await?;
-    m2_scopes.lock().await.close().await?;
+    // m1_scopes.lock().await.close().await?;
+    // m2_scopes.lock().await.close().await?;
 
     Ok(())
 }

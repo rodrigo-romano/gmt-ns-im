@@ -1,3 +1,4 @@
+#[cfg(feature = "scope")]
 pub mod scopes;
 
 pub mod config {
@@ -11,7 +12,7 @@ pub mod config {
             pub const ACTUATOR_RATE: usize = 10;
         }
         pub mod edge_sensor {
-            pub const RBM_INTEGRATOR_GAIN: f64 = 1e-3;
+            pub const RBM_INTEGRATOR_GAIN: f64 = 0e-3;
         }
     }
     pub mod agws {
@@ -20,10 +21,29 @@ pub mod config {
             pub const INTEGRATOR_GAIN: f64 = 0.2;
         }
         pub mod sh48 {
-            pub const RATE: usize = 5000;
+            pub const RATE: usize = 10_000;
         }
     }
     pub mod fsm {
         pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 1e-3;
     }
 }
+// static agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> = {
+//     let recon: Reconstructor = serde_pickle::from_reader(
+//         File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
+//         Default::default(),
+//     )?;
+
+//     if config::ATMOSPHERE {
+//         Agws::builder()
+//             .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+//     } else {
+//         Agws::builder().sh24(ShackHartmannBuilder::sh24().use_calibration_src())
+//     }
+//     .gmt(Gmt::builder().m1(
+//         gmt_ns_im::config::m1::segment::RAW_MODES,
+//         gmt_ns_im::config::m1::segment::N_RAW_MODE,
+//     ))
+//     .sh24_calibration(recon)
+//     .build()?
+// };
