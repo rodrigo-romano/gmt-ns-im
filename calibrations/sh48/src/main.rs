@@ -15,7 +15,7 @@ use skyangle::Conversion;
 fn main() -> anyhow::Result<()> {
     let sh48 = ShackHartmannBuilder::<1>::sh48().use_calibration_src();
     let omb = OpticalModelBuilder::<_>::from(sh48)
-        .gmt(Gmt::builder().m1(gmt_ns_im::config::m1::MODES, gmt_ns_im::config::m1::N_MODE));
+        .gmt(Gmt::builder().m1(gmt_ns_im::config::m1::segment::MODES, gmt_ns_im::config::m1::segment::N_MODE));
     dbg!(&omb);
 
     // Calibration of M1 RBMs with AGWS SH48
@@ -38,7 +38,7 @@ fn main() -> anyhow::Result<()> {
     // Calibration of M1 BMs with AGWS SH48
     let mut recon = <CentroidsProcessing as Calibration<GmtM1>>::calibrate(
         &(omb.clone().into()),
-        CalibrationMode::modes(gmt_ns_im::config::m1::N_MODE, 1e-6),
+        CalibrationMode::modes(gmt_ns_im::config::m1::segment::N_MODE, 1e-6),
     )?;
     recon.pseudoinverse();
     println!("{recon}");
