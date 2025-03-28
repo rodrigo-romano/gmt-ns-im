@@ -179,6 +179,13 @@ async fn main() -> anyhow::Result<()> {
     )?;
     println!("SH48 to Mount reconstructor:\n{mount_recon}");
 
+    // M1 assembly tip-tilt reconstructor
+    let m1_recon: Reconstructor = serde_pickle::from_reader(
+        File::open("calibrations/m1-assembly/recon_sh48-to-m1-assembly.pkl")?,
+        Default::default(),
+    )?;
+    println!("SH48 to Mount reconstructor:\n{m1_recon}");
+
     println!("Model built in {}s", now.elapsed().as_secs());
 
     // SCOPES
@@ -188,11 +195,12 @@ async fn main() -> anyhow::Result<()> {
     // ---
 
     // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
-    let mount_cmd = Signals::new(3, 16001 + n_bootstrapping)
-        .channel(0, -1e-5)
-        .channel(1, 1e-5);
+    let mount_cmd = Signals::new(3, 16001 + n_bootstrapping);
+    // .channel(0, -1e-5)
+    // .channel(1, 1e-5);
     let mut m1_rbm = vec![vec![0f64; 6]; 7];
-    // m1_rbm[0][3] = 1e-6;
+    m1_rbm[6][4] = 1e-6;
+    // m1_rbm[6][4] = 1e-6;
     let m1_rbm = Signals::from((m1_rbm, 16001 + n_bootstrapping));
     let adder = Operator::new("+");
     // Bootstrapping the FEM and associated controls
@@ -264,7 +272,6 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M1EdgeSensors]!
         -> m1_es_to_rbm_int[Right<M1RigidBodyMotions>]
             -> adder
-            // -> {servos::GmtM1}
 
     // FEM state transfer to optical model
     1: {servos::GmtFem}[M1RigidBodyMotions] -> {agws::AgwsSh48}
@@ -284,7 +291,7 @@ async fn main() -> anyhow::Result<()> {
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
-    10_000: {agws::AgwsSh48Kernel}[SensorData]${48*48*6} -> mount_recon[Estimate] -> print
+    10_000: {agws::AgwsSh48Kernel}[SensorData]${48*48*6} -> m1_recon[Estimate] -> print
     // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 

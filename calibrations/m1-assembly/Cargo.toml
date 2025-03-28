@@ -1,0 +1,23 @@
+[package]
+name = "m1-assembly"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+gmt-fem.workspace = true
+gmt-ns-im = { version = "0.1.0", path = "../..", default-features = false }
+gmt_dos-actors.workspace = true
+gmt_dos-clients.workspace = true
+gmt_dos-clients_arrow.workspace = true
+gmt_dos-clients_crseo.workspace = true
+gmt_dos-clients_fem.workspace = true
+gmt_dos-clients_io.workspace = true
+gmt_dos-clients_mount = "4.1.0"
+gmt_dos-systems_agws.workspace = true
+gmt_dos-systems_m1.workspace = true
+gmt_dos-systems_m2.workspace = true
+matio-rs.workspace = true
+nalgebra = "0.33.2"
+serde-pickle.workspace = true
+tokio.workspace = true

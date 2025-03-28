@@ -12,7 +12,7 @@ pub mod config {
             pub const ACTUATOR_RATE: usize = 10;
         }
         pub mod edge_sensor {
-            pub const RBM_INTEGRATOR_GAIN: f64 = 0e-3;
+            pub const RBM_INTEGRATOR_GAIN: f64 = 1e-3;
         }
     }
     pub mod agws {
