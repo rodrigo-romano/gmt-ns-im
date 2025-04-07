@@ -53,7 +53,7 @@ async fn calibrate(channel: usize, path: impl AsRef<Path>) -> anyhow::Result<()>
     let m1 = M1::<{ config::m1::segment::ACTUATOR_RATE }>::new(&mut fem)?;
 
     let m1_es_2_rbm: nalgebra::DMatrix<f64> =
-        MatFile::load("../../m1-edge-sensors/es_2_rbm.mat")?.var("m1_r_es")?;
+        MatFile::load("../edge-sensors/es_2_rbm.mat")?.var("m1_r_es")?;
     let fem: DiscreteModalSolver<_> = DiscreteStateSpace::<ExponentialMatrix>::from(fem)
         .sampling(gmt_dos_clients_mount::sampling_frequency() as f64)
         .proportional_damping(2e-2)
@@ -76,7 +76,7 @@ async fn calibrate(channel: usize, path: impl AsRef<Path>) -> anyhow::Result<()>
     let om24 = OpticalModel::<_>::try_from(sh24)?;
 
     let recon: Reconstructor = serde_pickle::from_reader(
-        File::open("../sh24/recon_sh24-to-pzt_pth.pkl")?,
+        File::open("../../sh24/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
     )?;
     let int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);

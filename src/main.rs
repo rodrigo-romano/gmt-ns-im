@@ -77,7 +77,7 @@ async fn main() -> anyhow::Result<()> {
 
     // M1 EDGE SENSORS TO RIGID-BODY MOTIONS TRANSFORM
     let m1_es_2_rbm: nalgebra::DMatrix<f64> =
-        MatFile::load("m1-edge-sensors/es_2_rbm.mat")?.var("m1_r_es")?;
+        MatFile::load("calibrations/m1/edge-sensors/es_2_rbm.mat")?.var("m1_r_es")?;
     // let servos =
     //     Sys::<GmtServoMechanisms<{ config::m1::ACTUATOR_RATE }, 1>>::from_data_repo_or_else(
     //         "servos.bin",
@@ -181,7 +181,7 @@ async fn main() -> anyhow::Result<()> {
 
     // M1 assembly tip-tilt reconstructor
     let m1_recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/m1-assembly/recon_sh48-to-m1-assembly.pkl")?,
+        File::open("calibrations/m1/assembly/recon_sh48-to-m1-assembly.pkl")?,
         Default::default(),
     )?;
     println!("SH48 to Mount reconstructor:\n{m1_recon}");

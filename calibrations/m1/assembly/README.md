@@ -6,6 +6,6 @@ has reached steady state.
 
 THe calibration steps are:
 
- 1. calibrate [M1 edge sensors](../../m1-edge-sensors/README.md)
+ 1. calibrate [M1 edge sensors](../edge-sensors/README.md)
  2. calibrate [SH24](../sh24/README.md)
  3. run `cargo r -r`

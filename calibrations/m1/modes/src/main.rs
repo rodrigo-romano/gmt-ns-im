@@ -10,11 +10,14 @@ use gmt_dos_clients_io::optics::{M1Modes, Wavefront};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let on_axis = OpticalModel::<NoSensor>::builder()
-        .gmt(Gmt::builder().m1(gmt_ns_im::config::m1::MODES, gmt_ns_im::config::m1::N_MODE))
+        .gmt(Gmt::builder().m1(
+            gmt_ns_im::config::m1::segment::MODES,
+            gmt_ns_im::config::m1::segment::N_MODE,
+        ))
         .build()?;
     let on_axis_wavefront: gif::Frame<f64> = gif::Frame::new("on-axis_wavefront.png", 512);
     let i_mode = 9;
-    let m1_bm_cmd: Vec<_> = vec![vec![0.; gmt_ns_im::config::m1::N_MODE]; 7]
+    let m1_bm_cmd: Vec<_> = vec![vec![0.; gmt_ns_im::config::m1::segment::N_MODE]; 7]
         .into_iter()
         .flat_map(|mut c| {
             c[i_mode] = 100e-9;
