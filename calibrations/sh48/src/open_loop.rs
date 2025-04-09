@@ -34,6 +34,25 @@ pub fn m1_rbm() -> Result<(), SH48CalibrationError> {
     serde_pickle::to_writer(&mut file, &recon, Default::default())?;
     Ok(())
 }
+pub fn m1_rxy() -> Result<(), SH48CalibrationError> {
+    println!("SH48 OPEN-LOOP CALIBRATION OF M1 RXY");
+
+    let sh48 = ShackHartmannBuilder::<1>::sh48().use_calibration_src();
+    let omb48 = OpticalModelBuilder::<_>::from(sh48).gmt(Gmt::builder().m1(
+        gmt_ns_im::config::m1::segment::MODES,
+        gmt_ns_im::config::m1::segment::N_MODE,
+    ));
+
+    let mut recon = <CentroidsProcessing as Calibration<GmtM1>>::calibrate(
+        &(omb48.clone().into()),
+        CalibrationMode::r_xy(1e-6),
+    )?;
+    recon.pseudoinverse();
+    println!("{recon}");
+    let mut file = File::create("open_loop_recon_sh48-to-m1-rxy.pkl")?;
+    serde_pickle::to_writer(&mut file, &recon, Default::default())?;
+    Ok(())
+}
 pub fn m1_bm() -> Result<(), SH48CalibrationError> {
     println!("SH48 OPEN-LOOP CALIBRATION OF M1 BM");
 

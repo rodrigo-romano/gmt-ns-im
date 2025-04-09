@@ -1,5 +1,8 @@
 fn main() -> anyhow::Result<()> {
-    #[cfg(any(feature = "all", feature = "closed_loop", feature = "open_loop"))]
+    #[cfg(all(
+        any(feature = "all", feature = "closed_loop", feature = "open_loop"),
+        not(feature = "m1_rxy")
+    ))]
     {
         #[cfg(feature = "closed_loop")]
         {
@@ -20,6 +23,10 @@ fn main() -> anyhow::Result<()> {
             calibrations_sh48::open_loop::m1_bm()?;
         }
     }
+
+    #[cfg(all(feature = "open_loop", feature = "m1_rxy"))]
+    calibrations_sh48::open_loop::m1_rxy()?;
+
     Ok(())
 }
 /* fn main() -> anyhow::Result<()> {

@@ -1,5 +1,11 @@
+#[derive(interface::UID)]
+pub enum M2RBMasSH48 {}
+
 #[cfg(feature = "scope")]
 pub mod scopes;
+
+mod pseudo_open_loop;
+pub use pseudo_open_loop::{PseudoOpenLoop, PseudoSensorData};
 
 pub mod config {
     pub const ATMOSPHERE: bool = false;
@@ -12,7 +18,7 @@ pub mod config {
             pub const ACTUATOR_RATE: usize = 10;
         }
         pub mod edge_sensor {
-            pub const RBM_INTEGRATOR_GAIN: f64 = 1e-3;
+            pub const RBM_INTEGRATOR_GAIN: f64 = 0.; //1e-3;
         }
     }
     pub mod agws {
@@ -25,7 +31,7 @@ pub mod config {
         }
     }
     pub mod fsm {
-        pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 1e-3;
+        pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 0.; //1e-3;
     }
 }
 // static agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> = {

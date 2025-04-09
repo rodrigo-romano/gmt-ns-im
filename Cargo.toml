@@ -49,6 +49,7 @@ matio-rs.workspace = true
 faer = "0.21.9"
 nalgebra = "0.33.2"
 gmt_dos-clients_lom.workspace = true
+skyangle.workspace = true
 
 [features]
 default = ["scope"]
@@ -56,6 +57,7 @@ scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 
 [patch."https://github.com/rconan/dos-actors.git"]
 gmt_dos-actors = {path="/home/ubuntu/projects/dos-actors/actors"}
+gmt_dos-clients= {path="/home/ubuntu/projects/dos-actors/clients/core"}
 gmt_dos-clients_io= {path="/home/ubuntu/projects/dos-actors/clients/io"}
 gmt_dos-clients_crseo= {path="/home/ubuntu/projects/dos-actors/clients/crseo"}
 gmt_dos-clients_fem= {path="/home/ubuntu/projects/dos-actors/clients/fem"}
@@ -68,3 +70,5 @@ gmt_dos-systems_agws = {path="/home/ubuntu/projects/dos-actors/systems/agws"}
 
 [patch.crates-io]
 gmt_dos-clients_mount= {path="/home/ubuntu/projects/dos-actors/clients/mount"}
+crseo = {path="/home/ubuntu/projects/crseo"}
+gmt-fem-code-builder = {path="/home/ubuntu/projects/dos-actors/clients/fem/builder"}

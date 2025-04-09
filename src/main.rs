@@ -8,15 +8,17 @@ use gmt_dos_clients::{
     integrator::Integrator,
     operator::{Left, Operator, Right},
     print::Print,
+    sampler::Sampler,
     signals::Signals,
     timer::Timer,
 };
 use gmt_dos_clients_crseo::{
     OpticalModel,
-    calibration::Reconstructor,
+    calibration::{Reconstructor, algebra::CalibProps},
     crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder},
     sensors::NoSensor,
 };
+use skyangle::Conversion;
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     Estimate,
@@ -46,7 +48,7 @@ use gmt_dos_systems_agws::{
     kernels::Kernel,
 };
 use gmt_fem::FEM;
-use gmt_ns_im::{config, scopes::*};
+use gmt_ns_im::{M2RBMasSH48, PseudoOpenLoop, PseudoSensorData, config, scopes::*};
 use interface::{Tick, units::Mas};
 use matio_rs::MatFile;
 
@@ -112,7 +114,7 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )?;
     println!("SH24 to FSM reconstructor:\n{recon}");
-    let agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> =
+    let mut agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> =
         if config::ATMOSPHERE {
             Agws::builder()
                 .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
@@ -127,6 +129,8 @@ async fn main() -> anyhow::Result<()> {
         ))
         .sh24_calibration(recon)
         .build()?;
+    agws.sh24_pointing((150f64.from_mas(), -100f64.from_mas()))
+        .await;
     println!("{agws}");
 
     // let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
@@ -199,7 +203,7 @@ async fn main() -> anyhow::Result<()> {
     // .channel(0, -1e-5)
     // .channel(1, 1e-5);
     let mut m1_rbm = vec![vec![0f64; 6]; 7];
-    m1_rbm[6][4] = 1e-6;
+    // m1_rbm[0][4] = 1e-6;
     // m1_rbm[6][4] = 1e-6;
     let m1_rbm = Signals::from((m1_rbm, 16001 + n_bootstrapping));
     let adder = Operator::new("+");
@@ -235,6 +239,21 @@ async fn main() -> anyhow::Result<()> {
     // // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
     1000: on_axis[Wavefront].. -> on_axis_wavefront
     }
+
+    // M2 RBM SH48 calibration
+    let sh48_m2_rbm_recon: Reconstructor = serde_pickle::from_reader(
+        File::open("calibrations/sh48/open_loop_recon_sh48-to-m2-rbm.pkl")?,
+        Default::default(),
+    )?;
+    println!("SH48 to M2 RBM reconstructor:\n{sh48_m2_rbm_recon}");
+    let pol = PseudoOpenLoop::new(sh48_m2_rbm_recon);
+    // M1 RBM SH48 calibration
+    let sh48_m1_rbm_recon: Reconstructor = serde_pickle::from_reader(
+        File::open("calibrations/sh48/open_loop_recon_sh48-to-m1-rxy.pkl")?,
+        Default::default(),
+    )?;
+    println!("SH48 to M1 RBM reconstructor:\n{sh48_m1_rbm_recon}");
+    // let sampler = Sampler::default();
 
     let print = Print::new(8);
     // let timer: Timer = Timer::new(6001);
@@ -280,8 +299,8 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M2RigidBodyMotions] -> {agws::AgwsSh24}
     1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
-    1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
-    1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
+    // 1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
+    // 1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
     // 1: m1_lom[M1SegmentPiston].. -> m1_scopes
     // 1: m2_lom[M2SegmentPiston].. -> m2_scopes
     // 1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
@@ -291,7 +310,9 @@ async fn main() -> anyhow::Result<()> {
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
-    10_000: {agws::AgwsSh48Kernel}[SensorData]${48*48*6} -> m1_recon[Estimate] -> print
+    10_000: {agws::AgwsSh48Kernel}[SensorData] -> pol//m1_recon//[Estimate] -> print
+    10_000: pzt_to_rbm[M2RigidBodyMotions]
+             -> pol[PseudoSensorData] -> sh48_m1_rbm_recon[Estimate]${42}->print
     // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 
