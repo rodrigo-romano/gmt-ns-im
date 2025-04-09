@@ -10,3 +10,11 @@ gmt_dos-clients_crseo.workspace = true
 gmt_dos-systems_agws.workspace = true
 serde-pickle.workspace = true
 skyangle.workspace = true
+
+[features]
+all = ["closed_loop", "open_loop"]
+open_loop = ["m1_rbm", "m2_rbm", "m1_bm"]
+closed_loop = ["m1_rbm", "m2_rbm", "m1_bm"]
+m1_rbm = []
+m2_rbm = []
+m1_bm = []

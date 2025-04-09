@@ -1,18 +1,28 @@
-use std::fs::File;
-
-use gmt_dos_clients_crseo::{
-    OpticalModelBuilder,
-    calibration::{Calibration, CalibrationMode},
-    centroiding::CentroidsProcessing,
-    crseo::{
-        FromBuilder, Gmt,
-        gmt::{GmtM1, GmtM2},
-    },
-};
-use gmt_dos_systems_agws::builder::shack_hartmann::ShackHartmannBuilder;
-use skyangle::Conversion;
-
 fn main() -> anyhow::Result<()> {
+    #[cfg(any(feature = "all", feature = "closed_loop", feature = "open_loop"))]
+    {
+        #[cfg(feature = "closed_loop")]
+        {
+            #[cfg(feature = "m1_rbm")]
+            calibrations_sh48::closed_loop::m1_rbm()?;
+            #[cfg(feature = "m2_rbm")]
+            calibrations_sh48::closed_loop::m2_rbm()?;
+            #[cfg(feature = "m1_bm")]
+            calibrations_sh48::closed_loop::m1_bm()?;
+        }
+        #[cfg(feature = "open_loop")]
+        {
+            #[cfg(feature = "m1_rbm")]
+            calibrations_sh48::open_loop::m1_rbm()?;
+            #[cfg(feature = "m2_rbm")]
+            calibrations_sh48::open_loop::m2_rbm()?;
+            #[cfg(feature = "m1_bm")]
+            calibrations_sh48::open_loop::m1_bm()?;
+        }
+    }
+    Ok(())
+}
+/* fn main() -> anyhow::Result<()> {
     let sh48 = ShackHartmannBuilder::<1>::sh48().use_calibration_src();
     let omb = OpticalModelBuilder::<_>::from(sh48)
         .gmt(Gmt::builder().m1(gmt_ns_im::config::m1::segment::MODES, gmt_ns_im::config::m1::segment::N_MODE));
@@ -63,4 +73,4 @@ fn main() -> anyhow::Result<()> {
     serde_pickle::to_writer(&mut file, &recon, Default::default())?;
 
     Ok(())
-}
+} */
