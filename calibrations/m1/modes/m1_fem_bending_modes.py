@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+.unwrap().var("na_m").unwrap();
+
 # coding: utf-8
 
 # In[1]:

@@ -2974,6 +2974,7 @@ dependencies = [
  "gmt_dos-clients_servos",
  "gmt_dos-clients_windloads",
  "gmt_dos-systems_agws",
+ "gmt_dos-systems_m1",
  "matio-rs",
  "nalgebra 0.33.2",
  "serde-pickle 1.2.0",
@@ -3164,23 +3165,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gmt_dos-clients_m1-ctrl"
-version = "5.0.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#08f855b5fbfda1b650ba1cd0dfb27a6ced2060fe"
-dependencies = [
- "gmt-fem",
- "gmt_dos-actors-clients_interface",
- "gmt_dos-clients_fem",
- "gmt_dos-clients_io",
- "gmt_m1-ctrl_center-actuators",
- "gmt_m1-ctrl_hardpoints-dynamics",
- "gmt_m1-ctrl_outer-actuators",
- "log",
- "nalgebra 0.33.2",
- "serde",
-]
-
-[[package]]
 name = "gmt_dos-clients_m2-ctrl"
 version = "4.0.0"
 dependencies = [
@@ -3297,7 +3281,7 @@ dependencies = [
  "gmt_dos-clients_io",
  "gmt_dos-clients_m2-ctrl 4.0.0",
  "gmt_dos-clients_mount",
- "gmt_dos-systems_m1 0.1.0",
+ "gmt_dos-systems_m1",
  "gmt_dos-systems_m2 0.1.0",
  "log",
  "matio-rs",
@@ -3369,31 +3353,14 @@ name = "gmt_dos-systems_m1"
 version = "0.1.0"
 dependencies = [
  "bincode 2.0.1",
+ "faer",
  "gmt-fem",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
- "gmt_dos-clients_m1-ctrl 5.0.0",
- "log",
- "nalgebra 0.33.2",
- "serde",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "gmt_dos-systems_m1"
-version = "0.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#08f855b5fbfda1b650ba1cd0dfb27a6ced2060fe"
-dependencies = [
- "gmt-fem",
- "gmt_dos-actors",
- "gmt_dos-actors-clients_interface",
- "gmt_dos-clients",
- "gmt_dos-clients_fem",
- "gmt_dos-clients_io",
- "gmt_dos-clients_m1-ctrl 5.0.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_m1-ctrl",
  "log",
  "nalgebra 0.33.2",
  "serde",
@@ -4452,7 +4419,7 @@ dependencies = [
  "gmt_dos-clients_io",
  "gmt_dos-clients_mount",
  "gmt_dos-systems_agws",
- "gmt_dos-systems_m1 0.1.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-systems_m1",
  "gmt_dos-systems_m2 0.1.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "matio-rs",
  "nalgebra 0.33.2",
@@ -4485,9 +4452,8 @@ dependencies = [
 [[package]]
 name = "matio-rs"
 version = "1.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4264eb3f0e20c212bfb98ae9aebad60163e4bf4309104b6785fc5570eb8054db"
 dependencies = [
+ "faer",
  "matio-rs-sys",
  "matio-rs_derive",
  "nalgebra 0.33.2",
@@ -4498,8 +4464,6 @@ dependencies = [
 [[package]]
 name = "matio-rs-sys"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38885c9b2a39641b7c9a08abff16f4ec7b6dffb6a7ecac95a81c5fd803b86c30"
 dependencies = [
  "bindgen 0.59.2",
  "cmake",
@@ -4508,8 +4472,6 @@ dependencies = [
 [[package]]
 name = "matio-rs_derive"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e82d712167fd8528fd3736f9bf178e0d852e8fcbb44487e27b82c7e77ffbaf21"
 dependencies = [
  "proc-macro2",
  "quote",

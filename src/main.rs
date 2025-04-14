@@ -14,28 +14,29 @@ use gmt_dos_clients::{
 };
 use gmt_dos_clients_crseo::{
     OpticalModel,
-    calibration::{Reconstructor, algebra::CalibProps},
+    calibration::Reconstructor,
     crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder},
     sensors::NoSensor,
 };
-use skyangle::Conversion;
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     Estimate,
-    // cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
-    gmt_m1::{M1EdgeSensors, M1RigidBodyMotions},
+    gmt_m1::{
+        M1EdgeSensors, M1ModeShapes, M1RigidBodyMotions,
+        assembly::{M1ActuatorCommandForces, M1ModeCoefficients},
+    },
     gmt_m2::{
         M2RigidBodyMotions,
         fsm::{M2FSMFsmCommand, M2FSMPiezoNodes},
     },
-    mount::{MountSetPoint, MountTorques},
+    mount::MountSetPoint,
     optics::{
         SegmentPiston, SegmentTipTilt, SegmentWfeRms, SensorData, TipTilt, Wavefront, WfeRms,
     },
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_servos::{
-    EdgeSensors, GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtMount, GmtServoMechanisms,
+    EdgeSensors, GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtMount, GmtServoMechanisms, M1SegmentFigure,
 };
 // use gmt_dos_clients_windloads::{
 //     CfdLoads,
@@ -48,7 +49,9 @@ use gmt_dos_systems_agws::{
     kernels::Kernel,
 };
 use gmt_fem::FEM;
-use gmt_ns_im::{M2RBMasSH48, PseudoOpenLoop, PseudoSensorData, config, scopes::*};
+use gmt_ns_im::{
+    PseudoOpenLoop, PseudoSensorData, config, m1_bending_modes::M1BendingModes, scopes::*,
+};
 use interface::{Tick, units::Mas};
 use matio_rs::MatFile;
 
@@ -91,14 +94,16 @@ async fn main() -> anyhow::Result<()> {
     //             .m1_segment_figure(M1SegmentFigure::new())
     //         },
     //     )?;
+
     let servos = GmtServoMechanisms::<{ config::m1::segment::ACTUATOR_RATE }, 1>::new(
         sim_sampling_frequency as f64,
         fem,
     )
     .edge_sensors(EdgeSensors::m1().m1_with(m1_es_2_rbm))
     // .wind_loads(WindLoads::new())
-    // .m1_segment_figure(M1SegmentFigure::new())
+    .m1_segment_figure(M1SegmentFigure::new())
     .build()?;
+    println!("{servos}");
     // serde_pickle::to_writer(
     //     &mut File::create("servos.bin")?,
     //     &servos,
@@ -114,8 +119,11 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )?;
     println!("SH24 to FSM reconstructor:\n{recon}");
-    let mut agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> =
-        if config::ATMOSPHERE {
+    let (agws_wss, mut agws): (
+        _,
+        Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>>,
+    ) = {
+        let agws = if config::ATMOSPHERE {
             Agws::builder()
                 .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
         } else {
@@ -127,15 +135,19 @@ async fn main() -> anyhow::Result<()> {
             gmt_ns_im::config::m1::segment::RAW_MODES,
             gmt_ns_im::config::m1::segment::N_RAW_MODE,
         ))
-        .sh24_calibration(recon)
-        .build()?;
-    agws.sh24_pointing((150f64.from_mas(), -100f64.from_mas()))
-        .await;
+        .sh24_calibration(recon);
+        (agws.wave_sensor().build()?, agws.build()?)
+    };
+    if let Some(p24) = config::agws::sh24::POINTING_ERROR {
+        agws.sh24_pointing(p24).await;
+    }
     println!("{agws}");
+    println!("{agws_wss}");
 
     // let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
     // let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
     // let on_axis_wavefront: gif::Frame<f64> = gif::Frame::new("on-axis_wavefront.png", 512);
+    let agws_wavefronts: gif::Frame<f64> = gif::Frame::new("agws_wavefronts.png", 512);
     let on_axis_wavefront: gif::Gif<f64> =
         gif::Gif::new("on-axis_wavefront.gif", 512, 512)?.delay(200);
 
@@ -199,16 +211,38 @@ async fn main() -> anyhow::Result<()> {
     // ---
 
     // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
-    let mount_cmd = Signals::new(3, 16001 + n_bootstrapping);
+    let mount_cmd = Signals::new(3, 6001 + n_bootstrapping);
     // .channel(0, -1e-5)
     // .channel(1, 1e-5);
     let mut m1_rbm = vec![vec![0f64; 6]; 7];
     // m1_rbm[0][4] = 1e-6;
     // m1_rbm[6][4] = 1e-6;
-    let m1_rbm = Signals::from((m1_rbm, 16001 + n_bootstrapping));
+    let m1_rbm = Signals::from((m1_rbm, 6001 + n_bootstrapping));
     let adder = Operator::new("+");
     // Bootstrapping the FEM and associated controls
     // let fem = state_space;
+
+    let matfile = MatFile::load("calibrations/m1/modes/20230530_1756_m1_mode_to_force.mat")?;
+    let b2f: Vec<Mat<f64>> = (1..=7)
+        .map(|i| matfile.var(format!("B2F_{i}")).unwrap())
+        .collect();
+    println!(
+        "B2F: {:?}",
+        b2f.iter().map(|x| x.shape()).collect::<Vec<_>>()
+    );
+    let m1_bm_2_forces = Gain::<f64>::new(
+        b2f.iter()
+            .map(|x| x.subcols(0, config::m1::segment::N_MODE).to_owned())
+            .collect::<Vec<_>>(),
+    );
+    let mut m1_bm = vec![vec![0f64; config::m1::segment::N_MODE]; 7];
+    m1_bm
+        .iter_mut()
+        .enumerate()
+        .for_each(|(i, b)| b[26 - i] = 1e-5);
+    let m1_bm = Signals::from((m1_bm, 6001 + n_bootstrapping));
+    let m1_bms = M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?;
+
     let timer: Timer = Timer::new(n_bootstrapping);
     actorscript! {
         #[model(name=bootstrap)]
@@ -220,11 +254,13 @@ async fn main() -> anyhow::Result<()> {
 
     1: mount_cmd[MountSetPoint] -> {servos::GmtMount}
     1: m1_rbm[M1RigidBodyMotions] -> {servos::GmtM1}
+    1: m1_bm[M1ModeShapes] -> m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
+    1: {servos::GmtFem}[M1ModeShapes] -> m1_bms[M1ModeCoefficients] -> on_axis
 
     1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
-    1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
-    1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
+    // 1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
+    // 1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
     // 1: m1_lom[M1SegmentPiston].. -> m1_scopes
     // 1: m2_lom[M2SegmentPiston].. -> m2_scopes
     // 1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
@@ -253,7 +289,8 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )?;
     println!("SH48 to M1 RBM reconstructor:\n{sh48_m1_rbm_recon}");
-    // let sampler = Sampler::default();
+    let s1 = Sampler::default();
+    let s2 = Sampler::default();
 
     let print = Print::new(8);
     // let timer: Timer = Timer::new(6001);
@@ -270,7 +307,7 @@ async fn main() -> anyhow::Result<()> {
          pzt_to_rbm="FSM\nto\nPositioner",
          pzt_to_rbm_int="Positioner\nIntegrator",
          m1_es_to_rbm_int="M1 RBM\nIntegrator",
-         adder="Adder"
+         adder="Adder",s1="1:1000",s2="1:1000"
          )]
     // 1: timer[Tick] -> {servos::GmtFem}
 
@@ -279,6 +316,12 @@ async fn main() -> anyhow::Result<()> {
 
     1: mount_cmd[MountSetPoint] -> {servos::GmtMount}
     1: m1_rbm[Left<M1RigidBodyMotions>] -> adder[M1RigidBodyMotions] -> {servos::GmtM1}
+    1: m1_bm[M1ModeShapes] -> m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
+    1: {servos::GmtFem}[M1ModeShapes]
+        -> m1_bms[M1ModeCoefficients] -> on_axis
+    1:  m1_bms[M1ModeCoefficients] -> agws_wss
+    1:  m1_bms[M1ModeCoefficients] -> {agws::AgwsSh48}
+    1:  m1_bms[M1ModeCoefficients] -> {agws::AgwsSh24}
 
     // FSM to positionner off-load
     1: {servos::GmtFem}[M2FSMPiezoNodes]
@@ -299,6 +342,11 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M2RigidBodyMotions] -> {agws::AgwsSh24}
     1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M2RigidBodyMotions] -> on_axis
+    1: {servos::GmtFem}[M1RigidBodyMotions] -> s1
+    1000: s1[M1RigidBodyMotions] -> agws_wss
+    1: {servos::GmtFem}[M2RigidBodyMotions] -> s2
+    1000: s2[M2RigidBodyMotions] -> agws_wss[Wavefront] -> agws_wavefronts
+
     // 1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
     // 1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
     // 1: m1_lom[M1SegmentPiston].. -> m1_scopes
@@ -310,9 +358,11 @@ async fn main() -> anyhow::Result<()> {
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
-    10_000: {agws::AgwsSh48Kernel}[SensorData] -> pol//m1_recon//[Estimate] -> print
-    10_000: pzt_to_rbm[M2RigidBodyMotions]
-             -> pol[PseudoSensorData] -> sh48_m1_rbm_recon[Estimate]${42}->print
+    // 2_500: {agws::AgwsSh48Kernel}[SensorData] -> mount_recon[MountEstimate] -> print
+    2_500: {agws::AgwsSh48Kernel}[SensorData] -> pol//m1_recon//[Estimate] -> print
+    2_500: pzt_to_rbm[M2RigidBodyMotions]
+             -> pol[PseudoSensorData] -> mount_recon[Estimate]->print
+             // -> pol[PseudoSensorData] -> sh48_m1_rbm_recon[Estimate]${42}->print
     // 5000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
     // 50: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
 

@@ -1,10 +1,13 @@
 #[derive(interface::UID)]
 pub enum M2RBMasSH48 {}
+#[derive(interface::UID)]
+pub enum MountEstimate {}
 
 #[cfg(feature = "scope")]
 pub mod scopes;
 
 mod pseudo_open_loop;
+pub mod m1_bending_modes;
 pub use pseudo_open_loop::{PseudoOpenLoop, PseudoSensorData};
 
 pub mod config {
@@ -24,10 +27,12 @@ pub mod config {
     pub mod agws {
         pub mod sh24 {
             pub const RATE: usize = 5;
-            pub const INTEGRATOR_GAIN: f64 = 0.2;
+            pub const INTEGRATOR_GAIN: f64 = 0.;
+            pub const POINTING_ERROR: Option<(f64, f64)> = None;
+            // Some((150f64.from_mas(), -100f64.from_mas()));
         }
         pub mod sh48 {
-            pub const RATE: usize = 10_000;
+            pub const RATE: usize = 2_500;
         }
     }
     pub mod fsm {
