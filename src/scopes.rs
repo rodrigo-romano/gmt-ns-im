@@ -1,4 +1,7 @@
-use gmt_dos_clients_io::optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms};
+use gmt_dos_clients_io::{
+    mount::AverageMountEncoders,
+    optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms},
+};
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_scope::scopehub;
 use interface::{UID, units::Mas};
@@ -31,4 +34,8 @@ pub enum M1Scopes {
 pub enum M2Scopes {
     Scope(M2SegmentPiston),
     Scope(M2SegmentTipTilt),
+}
+#[scopehub]
+pub enum MountScopes {
+    Scope(Mas<AverageMountEncoders>),
 }

@@ -1,6 +1,6 @@
 # M1 & M2 RBM and M1 modes calibration with AGWS SH48
 
-There is 2 variants for the calibrations: open-loop and closed-loop, closed-loop assumes that M2 Rx and Ry RBMs are corrected using the AGWS SH44.
+There is 2 variants for the calibrations: open-loop and closed-loop, closed-loop assumes that M2 Rx and Ry RBMs are corrected using the AGWS SH48.
 
 The different calibrations are selected using `cargo` [features](https://doc.rust-lang.org/cargo/reference/features.html). 
 

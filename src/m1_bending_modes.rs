@@ -1,6 +1,9 @@
 use std::{fs::File, path::Path, sync::Arc};
 
-use gmt_dos_clients_io::gmt_m1::{M1ModeShapes, assembly::M1ModeCoefficients};
+use gmt_dos_clients_io::{
+    gmt_m1::{M1ModeShapes, assembly::M1ModeCoefficients},
+    optics::{M1State, MirrorState},
+};
 use gmt_dos_systems_m1::SingularModes;
 use interface::{Data, Read, Update, Write};
 
@@ -11,6 +14,7 @@ pub struct M1BendingModes {
     modes: Vec<SingularModes>,
     surfaces: Arc<Vec<f64>>,
     coefs: Arc<Vec<f64>>,
+    state: Arc<MirrorState>,
 }
 
 impl M1BendingModes {
@@ -46,6 +50,7 @@ impl Update for M1BendingModes {
         );
     }
 }
+
 impl Read<M1ModeShapes> for M1BendingModes {
     fn read(&mut self, data: Data<M1ModeShapes>) {
         self.surfaces = data.into_arc();
@@ -54,5 +59,21 @@ impl Read<M1ModeShapes> for M1BendingModes {
 impl Write<M1ModeCoefficients> for M1BendingModes {
     fn write(&mut self) -> Option<Data<M1ModeCoefficients>> {
         Some(self.coefs.clone().into())
+    }
+}
+
+impl Read<M1State> for M1BendingModes {
+    fn read(&mut self, data: Data<M1State>) {
+        self.state = data.into_arc();
+        self.surfaces = self.state.modes.as_ref().unwrap().clone();
+    }
+}
+impl Write<M1State> for M1BendingModes {
+    fn write(&mut self) -> Option<Data<M1State>> {
+        let state = MirrorState {
+            rbms: self.state.rbms.clone(),
+            modes: Some(self.coefs.clone()),
+        };
+        Some(Data::new(state))
     }
 }
