@@ -7,7 +7,9 @@ pub enum MountEstimate {}
 pub mod scopes;
 
 pub mod m1_bending_modes;
+mod merge;
 mod pseudo_open_loop;
+pub use merge::{MergeReconstructor, SplitEstimate};
 pub use pseudo_open_loop::{PseudoOpenLoop, PseudoSensorData};
 
 pub mod config {
@@ -21,13 +23,13 @@ pub mod config {
             pub const ACTUATOR_RATE: usize = 10;
         }
         pub mod edge_sensor {
-            pub const RBM_INTEGRATOR_GAIN: f64 = 0.; //1e-3;
+            pub const RBM_INTEGRATOR_GAIN: f64 = 0e-3;
         }
     }
     pub mod agws {
         pub mod sh24 {
             pub const RATE: usize = 5;
-            pub const INTEGRATOR_GAIN: f64 = 0.2;
+            pub const INTEGRATOR_GAIN: f64 = 0.;
             pub const POINTING_ERROR: Option<(f64, f64)> = None;
             // Some((150f64.from_mas(), -100f64.from_mas()));
         }

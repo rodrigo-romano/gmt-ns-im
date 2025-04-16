@@ -16,7 +16,7 @@ gmt-fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-i
 gmt_dos-clients_fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.1.0", features = ["cuda"] }
 gmt_dos-clients_io = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.2.2" }
 gmt_dos-clients_arrow = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "2.1.1" }
-gmt_dos-clients_crseo = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.3.0"  }
+gmt_dos-clients_crseo = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.3.1"  }
 gmt_dos-clients_lom = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.2.0"}
 gmt_dos-systems_m1= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
 gmt_dos-systems_m2= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
