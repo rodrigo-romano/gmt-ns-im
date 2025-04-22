@@ -5,9 +5,12 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
+geotrans = "1.1.0"
 gmt-ns-im = { version = "0.1.0", path = "../..", default-features = false }
 gmt_dos-clients_crseo.workspace = true
+gmt_dos-clients_io.workspace = true
 gmt_dos-systems_agws.workspace = true
+interface.workspace = true
 serde-pickle.workspace = true
 skyangle.workspace = true
 

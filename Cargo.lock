@@ -1392,8 +1392,11 @@ name = "calibrations-sh48"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "geotrans 1.1.0",
  "gmt-ns-im",
+ "gmt_dos-actors-clients_interface 1.3.2 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
+ "gmt_dos-clients_io 4.2.2",
  "gmt_dos-systems_agws",
  "serde-pickle 1.2.0",
  "skyangle 0.3.1",
@@ -2751,6 +2754,15 @@ dependencies = [
 name = "geotrans"
 version = "1.0.0"
 source = "git+https://github.com/rconan/geotrans.git?branch=main#d4cffc9412aad15cafc2e7516d53a369dc2844c5"
+dependencies = [
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "geotrans"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c77db5bb51c45c7c1452456d2de5a749cd6ed8708bd338e1d22c48638b38e16d"
 dependencies = [
  "thiserror 1.0.69",
 ]

@@ -85,11 +85,18 @@ pub fn m2_rbm() -> Result<(), SH48CalibrationError> {
     c7[5] = None;
     let c7 = CalibrationMode::RBM(c7);
     let c = MirrorMode::from(CalibrationMode::rbm(1e-6)).update((7, c7));
+    let c = MirrorMode::from(c7);
     let mut recon =
         <CentroidsProcessing as Calibration<GmtM2>>::calibrate(&(omb48.clone().into()), c)?;
     recon.pseudoinverse();
     println!("{recon}");
     let mut file = File::create("open_loop_recon_sh48-to-m2-rbm.pkl")?;
     serde_pickle::to_writer(&mut file, &recon, Default::default())?;
+    Ok(())
+}
+pub fn m2_clocking() -> Result<(), SH48CalibrationError> {
+    let rbm = geotrans::Mirror::<geotrans::M2>::clocking_2_rigidbodymotions(1e-6);
+    let mut file = File::create("m2_clocking_rbms.pkl")?;
+    serde_pickle::to_writer(&mut file, &rbm, Default::default())?;
     Ok(())
 }

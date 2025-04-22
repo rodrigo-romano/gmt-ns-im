@@ -26,7 +26,7 @@ pub fn m1_rbm() -> Result<(), SH48CalibrationError> {
         gmt_ns_im::config::m1::segment::MODES,
         gmt_ns_im::config::m1::segment::N_MODE,
     ));
-    
+
     let mut c7 = [Some(1e-6); 6];
     c7[5] = None;
     let c7 = CalibrationMode::RBM(c7);
@@ -56,7 +56,7 @@ pub fn m1_bm() -> Result<(), SH48CalibrationError> {
         gmt_ns_im::config::m1::segment::MODES,
         gmt_ns_im::config::m1::segment::N_MODE,
     ));
-    
+
     let mut recon = <CentroidsProcessing as ClosedLoopCalibration<GmtM1, Imaging>>::calibrate(
         &(omb48.clone().into()),
         CalibrationMode::modes(gmt_ns_im::config::m1::segment::N_MODE, 1e-6),
@@ -82,7 +82,7 @@ pub fn m2_rbm() -> Result<(), SH48CalibrationError> {
         gmt_ns_im::config::m1::segment::MODES,
         gmt_ns_im::config::m1::segment::N_MODE,
     ));
-    
+
     let mut c = [Some(1e-6); 6];
     c[3] = None;
     c[4] = None;
@@ -90,6 +90,7 @@ pub fn m2_rbm() -> Result<(), SH48CalibrationError> {
     c7[5] = None;
     let c7 = CalibrationMode::RBM(c7);
     let c = MirrorMode::from(CalibrationMode::RBM(c)).update((7, c7));
+    let c = MirrorMode::from(c7);
     let mut recon = <CentroidsProcessing as ClosedLoopCalibration<GmtM2, Imaging>>::calibrate(
         &(omb48.clone().into()),
         c,
