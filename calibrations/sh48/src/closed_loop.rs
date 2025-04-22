@@ -89,7 +89,7 @@ pub fn m2_rbm() -> Result<(), SH48CalibrationError> {
     let mut c7 = c.clone();
     c7[5] = None;
     let c7 = CalibrationMode::RBM(c7);
-    let c = MirrorMode::from(CalibrationMode::RBM(c)).update((7, c7));
+    // let c = MirrorMode::from(CalibrationMode::RBM(c)).update((7, c7));
     let c = MirrorMode::from(c7);
     let mut recon = <CentroidsProcessing as ClosedLoopCalibration<GmtM2, Imaging>>::calibrate(
         &(omb48.clone().into()),
