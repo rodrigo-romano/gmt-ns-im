@@ -29,16 +29,16 @@ pub mod config {
     pub mod agws {
         pub mod sh24 {
             pub const RATE: usize = 5;
-            pub const INTEGRATOR_GAIN: f64 = 0.;
+            pub const INTEGRATOR_GAIN: f64 = 0.2;
             pub const POINTING_ERROR: Option<(f64, f64)> = None;
             // Some((150f64.from_mas(), -100f64.from_mas()));
         }
         pub mod sh48 {
-            pub const RATE: usize = 50;
+            pub const RATE: usize = 5000;
         }
     }
     pub mod fsm {
-        pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 1e-3;
+        pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 0.8;
     }
 }
 // static agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> = {
