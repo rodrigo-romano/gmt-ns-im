@@ -9,7 +9,7 @@ members = [ "atmosphere","calibrations/sh24", "scopes", "web_server", "calibrati
 
 [workspace.dependencies]
 anyhow = "1.0.96"
-matio-rs = "1.3.3"
+matio-rs = "1.4.0"
 gmt_dos-actors = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "11.2.0" }
 gmt_dos-clients = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.0.0", features = ["gif", "faer"] }
 gmt-fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.1.1" }
@@ -56,4 +56,3 @@ skyangle.workspace = true
 [features]
 default = ["scope"]
 scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
-
