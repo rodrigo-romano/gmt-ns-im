@@ -13,3 +13,5 @@ gmt_dos-clients_scope = { git = "https://github.com/rconan/dos-actors.git", bran
 gmt_dos-clients_scope-client = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2" }
 interface.workspace = true
 tokio.workspace = true
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
