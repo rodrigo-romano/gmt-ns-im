@@ -157,10 +157,7 @@ async fn main() -> anyhow::Result<()> {
     recon.pseudoinverse();
     println!("{recon}");
     let path = Path::new("recon_sh48-to-mount.pkl");
-    println!(
-        "Saving SH48 to mount reconstructor to {:?}",
-        path.canonicalize()?
-    );
+    println!("Saving SH48 to mount reconstructor to {:?}", path);
     let mut file = File::create(path)?;
     serde_pickle::to_writer(&mut file, &recon, Default::default())?;
 
