@@ -61,7 +61,7 @@ impl<M: Modality + Display + Default, A, B, C> Display for MergeReconstructor<M,
     }
 }
 
-impl MergeReconstructor<SegmentMode, M2RigidBodyMotions, M1Modes> {
+impl<A> MergeReconstructor<SegmentMode, A, M1Modes> {
     pub fn new(
         a: impl AsRef<Path>,
         b: impl AsRef<Path>,
@@ -283,7 +283,7 @@ mod tests {
 
     #[test]
     fn merge() -> Result<(), Box<dyn Error>> {
-        let sh48_merge_recon = MergeReconstructor::new(
+        let sh48_merge_recon = MergeReconstructor::<_, M2RigidBodyMotions, _>::new(
             "calibrations/sh48/closed_loop_recon_sh48-to-m2-rbm.pkl",
             "calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl",
             None,
