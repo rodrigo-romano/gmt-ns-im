@@ -68,7 +68,7 @@ impl<A> MergeReconstructor<SegmentMode, A, M1Modes> {
         svd_truncation: Option<Vec<usize>>,
     ) -> Result<Self, MergeError> {
         let file = File::open(a.as_ref())?;
-        let mut recon_a: Reconstructor<CalibrationMode, ClosedLoopCalib> =
+        let mut recon_a: Reconstructor<CalibrationMode, Calib> =
             serde_pickle::from_reader(&file, Default::default())?;
         let file = File::open(b.as_ref())?;
         let mut recon_b: Reconstructor<CalibrationMode, ClosedLoopCalib> =
@@ -103,11 +103,8 @@ impl<A> MergeReconstructor<SegmentMode, A, M1Modes> {
         } else {
             recon.pseudoinverse()
         };
-        recon
-            .pinv()
-            .zip(&sizes)
-            .zip(&nrms)
-            .for_each(|((p, &(na, nb, _nc)), &(ca_nrm, cb_nrm))| {
+        recon.pinv_iter_mut().zip(&sizes).zip(&nrms).for_each(
+            |((p, &(na, nb, _nc)), &(ca_nrm, cb_nrm))| {
                 let mut l = faer::mat::Mat::<f64>::identity(nb + na, nb + na);
                 l.diagonal_mut()
                     .column_vector_mut()
@@ -120,7 +117,8 @@ impl<A> MergeReconstructor<SegmentMode, A, M1Modes> {
                     .skip(na)
                     .for_each(|x| *x /= cb_nrm);
                 p.transform(|x| &l * x);
-            });
+            },
+        );
         Ok(Self {
             recon,
             a: PhantomData,
@@ -164,7 +162,7 @@ impl MergeReconstructor<CalibrationMode, M1Modes, ()> {
         let mut recon = Reconstructor::new(calibs);
         let nrms = recon.normalize();
         recon.pseudoinverse();
-        recon.pinv().zip(&nrms).for_each(|(p, n)| {
+        recon.pinv_iter_mut().zip(&nrms).for_each(|(p, n)| {
             p.transform(|x| x / *n);
         });
         Ok(Self {

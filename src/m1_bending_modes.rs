@@ -9,11 +9,16 @@ use interface::{Data, Read, Update, Write};
 
 use crate::config;
 
+/// Projection of M1 segment figures onto M1 segment bending modes
 #[derive(Debug, Default, Clone)]
 pub struct M1BendingModes {
+    // bending modes data structure
     modes: Vec<SingularModes>,
+    // segment figures
     surfaces: Arc<Vec<f64>>,
+    // bending modes coefficients
     coefs: Arc<Vec<f64>>,
+    // M1 optical state
     state: Arc<MirrorState>,
 }
 
@@ -25,6 +30,15 @@ impl M1BendingModes {
             modes,
             ..Default::default()
         })
+    }
+}
+impl From<M1BendingModes> for Vec<nalgebra::DMatrix<f64>> {
+    fn from(m1_bms: M1BendingModes) -> Self {
+        m1_bms
+            .modes
+            .into_iter()
+            .map(|x| x.dmatrix().transpose())
+            .collect()
     }
 }
 impl Update for M1BendingModes {

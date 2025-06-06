@@ -47,11 +47,12 @@ use gmt_dos_systems_agws::{
     builder::shack_hartmann::ShackHartmannBuilder,
     kernels::Kernel,
 };
+use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
 use gmt_ns_im::{
     MergeReconstructor, SplitEstimate, config, m1_bending_modes::M1BendingModes, scopes::*,
 };
-use interface::{Tick, units::Mas};
+use interface::{Tick, filing::Filing, units::Mas};
 use matio_rs::MatFile;
 
 #[tokio::main]
@@ -101,7 +102,9 @@ async fn main() -> anyhow::Result<()> {
     )
     .edge_sensors(EdgeSensors::m1().m1_with(m1_es_2_rbm))
     // .wind_loads(WindLoads::new())
-    .m1_segment_figure(M1SegmentFigure::new())
+    .m1_segment_figure(
+        M1SegmentFigure::new(), // .transforms(M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?.into()),
+    )
     .build()?;
     println!("{servos}");
     // serde_pickle::to_writer(
@@ -116,6 +119,10 @@ async fn main() -> anyhow::Result<()> {
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
         File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
+        Default::default(),
+    )?;
+    let m1_bm_recon: Reconstructor<_, ClosedLoopCalib> = serde_pickle::from_reader(
+        File::open("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?,
         Default::default(),
     )?;
     println!("SH24 to FSM reconstructor:\n{recon}");
@@ -139,7 +146,8 @@ async fn main() -> anyhow::Result<()> {
             gmt_ns_im::config::m1::segment::RAW_MODES,
             gmt_ns_im::config::m1::segment::N_RAW_MODE,
         ))
-        .sh24_calibration(recon);
+        .sh24_calibration(recon)
+        .sh48_calibration(m1_bm_recon);
         (agws.wave_sensor().build()?, agws.build()?)
     };
     if let Some(p24) = config::agws::sh24::POINTING_ERROR {
@@ -169,7 +177,7 @@ async fn main() -> anyhow::Result<()> {
         .collect();
     let pzt_to_rbm = Gain::<f64>::new(pzt_to_rbm);
     // FSM off-load integrator
-    let pzt_to_rbm_int = Integrator::new(42).gain(config::fsm::OFFLOAD_INTEGRATOR_GAIN);
+    // let pzt_to_rbm_int = Integrator::new(42).gain(config::fsm::OFFLOAD_INTEGRATOR_GAIN);
 
     // M1 edge sensors to RBMs integrator
     let m1_es_to_rbm_int = Integrator::new(42).gain(config::m1::edge_sensor::RBM_INTEGRATOR_GAIN);
@@ -218,12 +226,10 @@ async fn main() -> anyhow::Result<()> {
 
     // PERTURBATIONS
     // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
-    let mount_cmd = Signals::new(3, n_sim);
-    // .channel(0, -1e-5)
-    // .channel(1, 1e-5);
+    let mount_cmd = Signals::new(3, n_sim); //.channel(0, -1e-5).channel(1, 1e-5);
     let mut m1_rbm = vec![vec![0f64; 6]; 7];
-    // m1_rbm[0][0] = 1e-6;
-    // m1_rbm[6][4] = 1e-6;
+    m1_rbm[0][0] = 1e-6;
+    m1_rbm[6][4] = 1e-6;
     let m1_rbm = Signals::from((m1_rbm, n_sim));
     let mut m2_rbm = vec![vec![0f64; 6]; 7];
     m2_rbm[0][0] = 1e-6;
@@ -238,7 +244,7 @@ async fn main() -> anyhow::Result<()> {
     // Bootstrapping the FEM and associated controls
     // let fem = state_space;
 
-    let matfile = MatFile::load("calibrations/m1/modes/20230530_1756_hp_m1_mode_to_force.mat")?;
+    let matfile = MatFile::load("calibrations/m1/modes/20230530_1756_m1_mode_to_force.mat")?;
     let b2f: Vec<Mat<f64>> = (1..=7)
         .map(|i| matfile.var(format!("B2F_{i}")).unwrap())
         .collect();
@@ -252,15 +258,15 @@ async fn main() -> anyhow::Result<()> {
             .collect::<Vec<_>>(),
     );
     let mut m1_bm = vec![vec![0f64; config::m1::segment::N_MODE]; 7];
+    // m1_bm[0][0] = 1e-6;
     m1_bm
         .iter_mut()
         .enumerate()
         // .skip(2)
         // .take(1)
-        .for_each(|(i, b)| b[i] = 1e-6);
+        .for_each(|(i, b)| b[0] = 1e-6);
     let m1_bm = Signals::from((m1_bm, n_sim));
-    let m1_bms = M1BendingModes::new("calibrations/m1/modes/hp_m1_singular_modes.pkl")?;
-
+    let m1_bms = M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?;
     let timer: Timer = Timer::new(n_bootstrapping);
     actorscript! {
         #[model(name=bootstrap)]
@@ -324,18 +330,23 @@ async fn main() -> anyhow::Result<()> {
     //     Default::default(),
     // )?;
     // println!("SH48 M2 RBM\n{sh48_m1_rbm_recon}");
-    let mut sh48_m2_rbm_m1_bm_recon = MergeReconstructor::new(
-        "calibrations/sh48/closed_loop_recon_sh48-to-m2-rbm.pkl",
-        "calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl",
-        None,
-    )?;
-    // sh48_m2_rbm_recon.truncated_pseudoinverse(vec![1   // sh48_m2_r
-    // bm_rrecon.truncated_p
-    // seudoinverse(vec![1, 1, 1, 1, 1, 1, 0]);
-    println!("CLOSED LOOP SH48 M2 RBM & M1 BM {sh48_m2_rbm_m1_bm_recon}");
-    let m2_rbm_adder = Operator::<f64>::new("+");
+    // let mut sh48_m2_rbm_m1_bm_recon: MergeReconstructor<_, M1RigidBodyMotions, _> =
+    //     MergeReconstructor::new(
+    //         // "calibrations/sh48/closed_loop_recon_sh48-to-m2-rbm.pkl",
+    //         "calibrations/sh48/e_1_48.pkl",
+    //         "calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl",
+    //         None,
+    //     )?;
+    // // sh48_m2_rbm_recon.truncated_pseudoinverse(vec![1   // sh48_m2_r
+    // // bm_rrecon.truncated_p
+    // // seudoinverse(vec![1, 1, 1, 1, 1, 1, 0]);
+    // println!("CLOSED LOOP SH48 M2 RBM & M1 BM {sh48_m2_rbm_m1_bm_recon}");
+    // let m2_rbm_adder = Operator::<f64>::new("+");
 
     let lpf = LowPassFilter::new(42, 2e-3);
+
+    // let m1_bm_recon: Reconstructor<_, ClosedLoopCalib> =
+    //     Reconstructor::from_path("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?;
 
     // let print = Print::<Vec<f64>>::new(8);
     // let timer: Timer = Timer::new(6001n_sim
@@ -348,19 +359,20 @@ async fn main() -> anyhow::Result<()> {
     #[labels(on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
          mount_cmd="Mount Set-Point",
           m1_rbm="M1 RBM",
-          m2_rbm="M2 RBM",
+          // m2_rbm="M2 RBM",
          m1_bm="M1 BM",
-         sh48_m2_rbm_m1_bm_recon="SH48\nM2 RBM & M1 BM\nReconstructor",
+         // m1_bm_recon="SH48\nM1 BM\nReconstructor",
          m1_bm_2_forces="Mode to Force",
          fsm_pzt_int="FSM\nIntegrator",
          // pzt_to_rbm="FSM\nto\nPositioner",
-         pzt_to_rbm_int="Positioner\nIntegrator",
+         // pzt_to_rbm_int="Positioner\nIntegrator",
          m1_es_to_rbm_int="M1 RBM\nIntegrator",
          adder="Adder",
          m2_adder="Adder",
          // m2_rbm_adder="Substracter",
          m1_bm_adder="Adder",s2="1:1000",
-         sh48_int="M1 BM\nIntegrator"
+         sh48_int="M1 BM\nIntegrator",
+         m1_bms="M1 Figures\nto\nBending Modes"
          )]
     // 1: timer[Tick] -> {servos::GmtFem}
 
@@ -384,8 +396,8 @@ async fn main() -> anyhow::Result<()> {
     // 1: {servos::GmtFem}[M2FSMPiezoNodes]
         // -> pzt_to_rbm[Left<M2RigidBodyMotions>] //-> scope_fsm_cmd
         // 5000: m2_rbm_adder[M2RigidBodyMotions]${42}
-            5000: pzt_to_rbm_int[Right<M2RigidBodyMotions>]
-            -> m2_adder[M2RigidBodyMotions]${42}
+            // 5000: pzt_to_rbm_int[Right<M2RigidBodyMotions>]
+            // -> m2_adder[M2RigidBodyMotions]${42}
                // -> lpf
     1: m2_adder[M2RigidBodyMotions] -> {servos::GmtM2Hex}
     1: {servos::GmtFem}[M2PositionerNodes]
@@ -407,8 +419,8 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M2State] -> s2
     1000: s2[M2State] -> agws_wss[Wavefront] -> agws_wavefronts
 
-    1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
-    1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
+    1: {servos::GmtFem}[M1State] -> m1_lom
+    1: {servos::GmtFem}[M2State] -> m2_lom
     1: m1_lom[M1SegmentPiston].. -> m1_scopes
     1: m2_lom[M2SegmentPiston].. -> m2_scopes
     1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
@@ -418,10 +430,13 @@ async fn main() -> anyhow::Result<()> {
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
-    5000: {agws::AgwsSh48Kernel}[SensorData] -> sh48_m2_rbm_m1_bm_recon
-    5000: sh48_m2_rbm_m1_bm_recon[SplitEstimate<0>]${42} -> pzt_to_rbm_int
-        // -> m2_rbm_adder
-    5000: sh48_m2_rbm_m1_bm_recon[SplitEstimate<1>]${27*7}
+    // 5000: {agws::AgwsSh48Kernel}[SensorData] -> m1_bm_recon
+    // 5000: sh48_m2_rbm_m1_bm_recon[SplitEstimate<0>]${42} -> pzt_to_rbm_int
+    //     // -> m2_rbm_adder
+    // 5000: sh48_m2_rbm_m1_bm_recon[SplitEstimate<1>]${27*7}
+    //     -> sh48_int[Right<Estimate>] -> m1_bm_adder
+    // 5000: m1_bm_recon[Estimate]${27*7}
+    5000: {agws::AgwsSh48Kernel}[Estimate]
         -> sh48_int[Right<Estimate>] -> m1_bm_adder
     // 1000: {agws::AgwsSh48Kernel}[SensorData] -> mount_recon[MountEstimate] -> print
     // // 1000: {agws::AgwsSh48Kernel}[SensorData] -> pol//m1_recon//[Estimate] -> print

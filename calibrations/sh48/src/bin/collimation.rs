@@ -45,13 +45,13 @@ fn main() -> anyhow::Result<()> {
         .source(src.clone())).build()?;
     // Perturbations
     let mut m2_rbm = vec![vec![0f64; 6]; 7];
-    // m2_rbm[0][0] = 1e-6;
-    // m2_rbm[1][1] = 1e-6;
-    // m2_rbm[2][0] = 1e-6;
-    // m2_rbm[3][1] = 1e-6;
-    // m2_rbm[4][0] = 1e-6;
-    // m2_rbm[5][1] = 1e-6;
-    // m2_rbm[6][1] = 1e-6;
+    m2_rbm[0][0] = 1e-6;
+    m2_rbm[1][1] = 1e-6;
+    m2_rbm[2][0] = 1e-6;
+    m2_rbm[3][1] = 1e-6;
+    m2_rbm[4][0] = 1e-6;
+    m2_rbm[5][1] = 1e-6;
+    m2_rbm[6][3] = 1e-6;
     // open_loop(m2_rbm ,&mut om48, &mut kern48, &mut score)?;
     // closed_loop(m2_rbm ,&mut om48, &mut kern48, &mut score)?;
     merged_closed_loop(m2_rbm ,&mut om48, &mut kern48, &mut score)?;
@@ -273,7 +273,7 @@ let m1_bm_e =   <_ as Write<SplitEstimate<1>>>::write(&mut sh48_m2_rbm_recon).un
     Ok(())
 }
 
-fn merged_closed_loop(m2_rbm: Vec<Vec<f64>>,om48: &mut OpticalModel<Camera>,kern48: &mut Kernel<Sh48<1>>, score: &mut OpticalModel<WaveSensor>) -> anyhow::Result<()> {
+fn merged_closed_loop(m1_rbm: Vec<Vec<f64>>,om48: &mut OpticalModel<Camera>,kern48: &mut Kernel<Sh48<1>>, score: &mut OpticalModel<WaveSensor>) -> anyhow::Result<()> {
     let recon: Reconstructor = serde_pickle::from_reader(
         File::open("../sh24/recon_sh24-to-rbm_pth.pkl")?,
         Default::default(),
@@ -295,7 +295,7 @@ fn merged_closed_loop(m2_rbm: Vec<Vec<f64>>,om48: &mut OpticalModel<Camera>,kern
     //     File::open("closed_loop_recon_sh48-to-m2-rbm.pkl")?,
     //     Default::default(),
     // )?;
-    let mut sh48_m1_recon = MergeReconstructor::<_,M1RigidBodyMotions,_>::new("closed_loop_recon_sh48-to-m1-rbm.pkl","closed_loop_recon_sh48-to-m1-bm.pkl",None)?;
+    let mut sh48_m1_recon = MergeReconstructor::<_,M1RigidBodyMotions,_>::new("closed_loop_recon_sh48-to-m1-rbm.pkl","closed_loop_recon_sh48-to-m1-bm.pkl",None)?;//Some(vec![1, 1, 1, 1, 1, 1, 0]))?;
     // sh48_m2_rbm_recon.truncated_pseudoinverse(vec![1, 1, 1, 1, 1, 1, 0]);
     println!("CLOSED LOOP SH48 M1 RBM & BM {sh48_m1_recon}");
     let mut m1_bm = vec![vec![0f64; 27]; 7];
@@ -312,24 +312,25 @@ fn merged_closed_loop(m2_rbm: Vec<Vec<f64>>,om48: &mut OpticalModel<Camera>,kern
     <_ as Read<M1Modes>>::read(om48,m1_bm.clone().into());
     <_ as Read<M1Modes>>::read(score,m1_bm.clone().into());
     
-    let m2_rbm = m2_rbm.into_iter().flatten().collect::<Vec<_>>();
+    let m1_rbm = m1_rbm.into_iter().flatten().collect::<Vec<_>>();
     println!("{score}");
     interface::chain!(
-        M2RigidBodyMotions: m2_rbm.clone().into();
+        M1RigidBodyMotions: m1_rbm.clone().into();
         score;
         WfeRms<-9>: wfe_rms
     );
     println!("WFS RMS: {:5.0?}nm", &*wfe_rms);
 
     interface::chain!(
-        M2RigidBodyMotions: m2_rbm.clone().into();
+        M1RigidBodyMotions: m1_rbm.clone().into();
         &mut om24;
         KernelFrame<Sh24TT<1>>;
         &mut kern24;
         M2RigidBodyMotions: m2_rbm_tt);
     
+    // <_ as Read<M1RigidBodyMotions>>::read( score,m1_rbm.clone().into());
     interface::chain!(
-        M2RigidBodyMotions: m2_rbm.clone()-m2_rbm_tt.clone();
+        M2RigidBodyMotions: -m2_rbm_tt.clone();
         score;
         WfeRms<-9>: wfe_rms
     );
@@ -340,16 +341,17 @@ fn merged_closed_loop(m2_rbm: Vec<Vec<f64>>,om48: &mut OpticalModel<Camera>,kern
         Wavefront;
         &mut wavefronts 
     );
+    <_ as Read<M1RigidBodyMotions>>::read(om48,m1_rbm.clone().into());
     interface::chain!(
-        M2RigidBodyMotions: m2_rbm.clone()-m2_rbm_tt.clone();
+        M2RigidBodyMotions: -m2_rbm_tt.clone();
         om48;
         KernelFrame<Sh48<1>>;
         kern48;
         SensorData; 
         &mut sh48_m1_recon;
-        SplitEstimate<0>: m2_rbm_e);
-    println!("M2 RBM Estimates:");
-    m2_rbm_e
+        SplitEstimate<0>: m1_rbm_e);
+    println!("M1 RBM Estimates:");
+    m1_rbm_e
         .chunks(6)
         .map(|x| x.iter().map(|&x| x * 1e9).collect::<Vec<_>>())
         .for_each(|x| println!("{:6.0?}", x));
@@ -361,9 +363,10 @@ let m1_bm_e =   <_ as Write<SplitEstimate<1>>>::write(&mut sh48_m1_recon).unwrap
         .map(|x| x.iter().take(7).map(|&x| x * 1e6).collect::<Vec<_>>())
         .for_each(|x| println!("{:6.3?}", x));
 
-    <_ as Read<M1Modes>>::read(score,m1_bm.clone().into_iter().zip(m1_bm_e.iter()).map(|(x,y)|x-*y).collect::<Vec<f64>>().into());
+    <_ as Read<M1Modes>>::read(score,Data::new(m1_bm.clone()) - &*m1_bm_e);
+    <_ as Read<M1RigidBodyMotions>>::read(score,Data::new(m1_rbm.clone()) - &*m1_rbm_e);
     interface::chain!(
-        M2RigidBodyMotions: Data::new(m2_rbm.clone()) - &*m2_rbm_e ;
+        M2RigidBodyMotions: -m2_rbm_tt.clone();
         score;
         WfeRms<-9>: wfe_rms
     );

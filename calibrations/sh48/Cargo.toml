@@ -12,14 +12,14 @@ gmt_dos-clients = { workspace = true, features = ["gif"] }
 gmt_dos-clients_crseo.workspace = true
 gmt_dos-clients_io.workspace = true
 gmt_dos-systems_agws.workspace = true
-interface.workspace = true
 serde-pickle.workspace = true
 skyangle.workspace = true
+interface = {workspace = true, features = ["serde-pickle"]}
 
 [features]
 all = ["closed_loop", "open_loop"]
-open_loop = ["m1_rbm", "m2_rbm", "m1_bm"]
-closed_loop = ["m1_rbm", "m2_rbm", "m1_bm"]
+open_loop = []#"m1_rbm", "m2_rbm", "m1_bm"]
+closed_loop = []#"m1_rbm", "m2_rbm", "m1_bm"]
 m1_rbm = []
 m1_rxy = []
 m2_rbm = []
