@@ -1,4 +1,4 @@
-use std::{fs::File, path::Path, sync::Arc};
+use std::{fs::File, iter, path::Path, slice::Iter, sync::Arc};
 
 use gmt_dos_clients_io::{
     gmt_m1::{M1ModeShapes, assembly::M1ModeCoefficients},
@@ -37,7 +37,18 @@ impl From<M1BendingModes> for Vec<nalgebra::DMatrix<f64>> {
         m1_bms
             .modes
             .into_iter()
-            .map(|x| x.dmatrix().transpose())
+            .map(|sms| {
+                let (ns, na) = sms.shape();
+                nalgebra::DMatrix::from_iterator(
+                    ns,
+                    config::m1::segment::N_RAW_MODE,
+                    sms.raw_modes_iter().copied().chain(iter::repeat_n(
+                        0f64,
+                        (config::m1::segment::N_RAW_MODE - na) * ns,
+                    )),
+                )
+                .transpose()
+            })
             .collect()
     }
 }

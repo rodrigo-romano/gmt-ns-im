@@ -103,7 +103,8 @@ async fn main() -> anyhow::Result<()> {
     .edge_sensors(EdgeSensors::m1().m1_with(m1_es_2_rbm))
     // .wind_loads(WindLoads::new())
     .m1_segment_figure(
-        M1SegmentFigure::new(), // .transforms(M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?.into()),
+        M1SegmentFigure::new()
+            .transforms(M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?.into()),
     )
     .build()?;
     println!("{servos}");
@@ -266,7 +267,7 @@ async fn main() -> anyhow::Result<()> {
         // .take(1)
         .for_each(|(i, b)| b[0] = 1e-6);
     let m1_bm = Signals::from((m1_bm, n_sim));
-    let m1_bms = M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?;
+    // let m1_bms = M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?;
     let timer: Timer = Timer::new(n_bootstrapping);
     actorscript! {
         #[model(name=bootstrap)]
@@ -280,7 +281,7 @@ async fn main() -> anyhow::Result<()> {
     1: m1_rbm[M1RigidBodyMotions] -> {servos::GmtM1}
     1: m2_rbm[M2RigidBodyMotions] -> {servos::GmtM2Hex}
     1: m1_bm[M1ModeShapes] -> m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
-    1: {servos::GmtFem}[M1State] -> m1_bms[M1State] -> on_axis
+    1: {servos::GmtFem}[M1State] -> on_axis
 
     // 1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
     1: {servos::GmtFem}[M2State] -> on_axis
@@ -354,6 +355,7 @@ async fn main() -> anyhow::Result<()> {
     type AgwsSh24 = Sh24<{ config::agws::sh24::RATE }>;
     type AgwsSh24Kernel = Kernel<Sh24<{ config::agws::sh24::RATE }>>;
     type AgwsSh48Kernel = Kernel<Sh48<{ config::agws::sh48::RATE }>>;
+    let one_to_1000 = Sampler::default();
     actorscript! {
         // #[model(state=running)]
     #[labels(on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
@@ -372,7 +374,7 @@ async fn main() -> anyhow::Result<()> {
          // m2_rbm_adder="Substracter",
          m1_bm_adder="Adder",s2="1:1000",
          sh48_int="M1 BM\nIntegrator",
-         m1_bms="M1 Figures\nto\nBending Modes"
+         // m1_bms/="M1 Figures\nto\nBending Modes"
          )]
     // 1: timer[Tick] -> {servos::GmtFem}
 
@@ -384,11 +386,11 @@ async fn main() -> anyhow::Result<()> {
     5000: m2_rbm[Left<M2RigidBodyMotions>] -> m2_adder
     5000: m1_bm[Left<M1ModeShapes>] -> m1_bm_adder[M1ModeShapes]  -> m1_bm_2_forces
     1: m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
-    1: {servos::GmtFem}[M1State]
-        -> m1_bms[M1State] -> on_axis
-    1000:  m1_bms[M1State] -> agws_wss
-    1:  m1_bms[M1State] -> {agws::AgwsSh48}
-    1:  m1_bms[M1State] -> {agws::AgwsSh24}
+    1: {servos::GmtFem}[M1State] -> on_axis
+    1:  {servos::GmtFem}[M1State] -> one_to_1000
+    1000: one_to_1000[M1State] -> agws_wss
+    1:  {servos::GmtFem}[M1State] -> {agws::AgwsSh48}
+    1:  {servos::GmtFem}[M1State] -> {agws::AgwsSh24}
 
     1: {servos::GmtFem}[Mas<AverageMountEncoders>] -> mount_scopes
 
