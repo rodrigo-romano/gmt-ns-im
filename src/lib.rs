@@ -38,7 +38,7 @@ pub mod config {
         }
     }
     pub mod fsm {
-        pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 0.5;
+        pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 1e-3;
     }
 }
 // static agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> = {

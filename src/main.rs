@@ -4,12 +4,9 @@ use faer::{Mat, MatRef};
 use gmt_dos_actors::{actorscript, system::Sys};
 use gmt_dos_clients::{
     gain::Gain,
-    gif,
     integrator::Integrator,
     low_pass_filter::LowPassFilter,
     operator::{Left, Operator, Right},
-    print::Print,
-    sampler::Sampler,
     signals::Signals,
     timer::Timer,
 };
@@ -27,16 +24,13 @@ use gmt_dos_clients_io::{
         M2RigidBodyMotions,
         fsm::{M2FSMFsmCommand, M2FSMPiezoNodes},
     },
-    mount::{AverageMountEncoders, MountSetPoint},
-    optics::{
-        M1State, M2State, SegmentPiston, SegmentTipTilt, SegmentWfeRms, SensorData, TipTilt,
-        Wavefront, WfeRms,
-    },
+    mount::MountSetPoint,
+    optics::{M1State, M2State},
 };
-use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_servos::{
     EdgeSensors, GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtMount, GmtServoMechanisms, M1SegmentFigure,
 };
+use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 // use gmt_dos_clients_windloads::{
 //     CfdLoads,
 //     system::{M1, M2, Mount, SigmoidCfdLoads},
@@ -47,12 +41,9 @@ use gmt_dos_systems_agws::{
     builder::shack_hartmann::ShackHartmannBuilder,
     kernels::Kernel,
 };
-use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::{
-    MergeReconstructor, SplitEstimate, config, m1_bending_modes::M1BendingModes, scopes::*,
-};
-use interface::{Tick, filing::Filing, units::Mas};
+use gmt_ns_im::{config, m1_bending_modes::M1BendingModes};
+use interface::{Tick, doublet::Doublet};
 use matio_rs::MatFile;
 
 #[tokio::main]
@@ -157,13 +148,6 @@ async fn main() -> anyhow::Result<()> {
     println!("{agws}");
     println!("{agws_wss}");
 
-    // let sh48_frame: gif::Frame<f32> = gif::Frame::new("sh48_frame.png", 48 * 8);
-    // let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
-    // let on_axis_wavefront: gif::Frame<f64> = gif::Frame::new("on-axis_wavefront.png", 512);
-    let agws_wavefronts: gif::Frame<f64> = gif::Frame::new("agws_wavefronts.png", 512);
-    let on_axis_wavefront: gif::Gif<f64> =
-        gif::Gif::new("on-axis_wavefront.gif", 512, 512)?.delay(200);
-
     // FSM command integrator
     let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
 
@@ -178,28 +162,10 @@ async fn main() -> anyhow::Result<()> {
         .collect();
     let pzt_to_rbm = Gain::<f64>::new(pzt_to_rbm);
     // FSM off-load integrator
-    // let pzt_to_rbm_int = Integrator::new(42).gain(config::fsm::OFFLOAD_INTEGRATOR_GAIN);
+    let pzt_to_rbm_int = Integrator::new(42).gain(config::fsm::OFFLOAD_INTEGRATOR_GAIN);
 
     // M1 edge sensors to RBMs integrator
     let m1_es_to_rbm_int = Integrator::new(42).gain(config::m1::edge_sensor::RBM_INTEGRATOR_GAIN);
-
-    // On-axis scoring star
-    let atm = AtmosphereBuilder::load("atmosphere/atmosphere.toml")?;
-    let on_axis = if config::ATMOSPHERE {
-        OpticalModel::<NoSensor>::builder().atmosphere(atm)
-    } else {
-        OpticalModel::<NoSensor>::builder()
-    }
-    .gmt(Gmt::builder().m1(
-        config::m1::segment::RAW_MODES,
-        config::m1::segment::N_RAW_MODE,
-    ))
-    .sampling_frequency(sim_sampling_frequency as f64)
-    .build()?;
-
-    // Linear Optical Models
-    let m1_lom = LinearOpticalModel::new()?;
-    let m2_lom = LinearOpticalModel::new()?;
 
     /* // Mount reconstructor
     let mount_recon: Reconstructor = serde_pickle::from_reader(
@@ -216,14 +182,6 @@ async fn main() -> anyhow::Result<()> {
     println!("SH48 to Mount reconstructor:\n{m1_recon}"); */
 
     println!("Model built in {}s", now.elapsed().as_secs());
-
-    // SCOPES
-    let shub = OnAxisScopes::new()?;
-    let mount_scopes = MountScopes::new()?;
-
-    let m1_scopes = M1Scopes::new()?;
-    let m2_scopes = M2Scopes::new()?;
-    // ---
 
     // PERTURBATIONS
     // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
@@ -269,6 +227,10 @@ async fn main() -> anyhow::Result<()> {
     let m1_bm = Signals::from((m1_bm, n_sim));
     // let m1_bms = M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?;
     let timer: Timer = Timer::new(n_bootstrapping);
+    let address = "127.0.0.1";
+    let mut gmt_state_mon = Monitor::new();
+    let gmt_state_tx =
+        Transceiver::<Doublet<M1State, M2State>>::transmitter(address)?.run(&mut gmt_state_mon);
     actorscript! {
         #[model(name=bootstrap)]
     1: timer[Tick] -> {servos::GmtFem}
@@ -281,25 +243,11 @@ async fn main() -> anyhow::Result<()> {
     1: m1_rbm[M1RigidBodyMotions] -> {servos::GmtM1}
     1: m2_rbm[M2RigidBodyMotions] -> {servos::GmtM2Hex}
     1: m1_bm[M1ModeShapes] -> m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
-    1: {servos::GmtFem}[M1State] -> on_axis
-
-    // 1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
-    1: {servos::GmtFem}[M2State] -> on_axis
-    1: {servos::GmtFem}[M1RigidBodyMotions] -> m1_lom
-    1: {servos::GmtFem}[M2RigidBodyMotions] -> m2_lom
-    1: m1_lom[M1SegmentPiston].. -> m1_scopes
-    1: m2_lom[M2SegmentPiston].. -> m2_scopes
-    1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
-    1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
+    // 1: {servos::GmtFem}[M1State] -> on_axis
+    1: {servos::GmtFem}[Doublet<M1State,M2State>].. -> gmt_state_tx
 
     // 1: {servos::GmtFem}[M1EdgeSensors]
 
-    1: on_axis[WfeRms<-9>].. -> shub
-    1: on_axis[SegmentWfeRms<-9>].. -> shub
-    1: on_axis[Mas<TipTilt>].. -> shub
-    1: on_axis[Mas<SegmentTipTilt>].. -> shub
-    1: on_axis[SegmentPiston<-9>] -> shub
-    1000: on_axis[Wavefront].. -> on_axis_wavefront
     }
 
     // M2 RBM SH48 calibration
@@ -316,7 +264,7 @@ async fn main() -> anyhow::Result<()> {
     // )?;
     // println!("SH48 to M1 RBM reconstructor:\n{sh48_m1_rbm_recon}");
     // // let s1 = Sampler::default();
-    let s2 = Sampler::default();
+    // let s2 = Sampler::default();
 
     // M1 BM SH48 calibration
     // let sh48_m1_bm_recon: Reconstructor<_, ClosedLoopCalib> = serde_pickle::from_reader(
@@ -355,10 +303,10 @@ async fn main() -> anyhow::Result<()> {
     type AgwsSh24 = Sh24<{ config::agws::sh24::RATE }>;
     type AgwsSh24Kernel = Kernel<Sh24<{ config::agws::sh24::RATE }>>;
     type AgwsSh48Kernel = Kernel<Sh48<{ config::agws::sh48::RATE }>>;
-    let one_to_1000 = Sampler::default();
+    // let one_to_1000 = Sampler::default();
     actorscript! {
         // #[model(state=running)]
-    #[labels(on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
+    #[labels(//on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
          mount_cmd="Mount Set-Point",
           m1_rbm="M1 RBM",
           // m2_rbm="M2 RBM",
@@ -366,15 +314,16 @@ async fn main() -> anyhow::Result<()> {
          // m1_bm_recon="SH48\nM1 BM\nReconstructor",
          m1_bm_2_forces="Mode to Force",
          fsm_pzt_int="FSM\nIntegrator",
-         // pzt_to_rbm="FSM\nto\nPositioner",
-         // pzt_to_rbm_int="Positioner\nIntegrator",
+         pzt_to_rbm="FSM\nto\nPositioner",
+         pzt_to_rbm_int="Positioner\nIntegrator",
          m1_es_to_rbm_int="M1 RBM\nIntegrator",
          adder="Adder",
-         m2_adder="Adder",
+         // m2_adder="Adder",
          // m2_rbm_adder="Substracter",
-         m1_bm_adder="Adder",s2="1:1000",
+         m1_bm_adder="Adder",//s2="1:1000",
          sh48_int="M1 BM\nIntegrator",
-         // m1_bms/="M1 Figures\nto\nBending Modes"
+         // gmt_state_tx="Beam me up, Scotty"
+         gmt_state_tx="🕪"
          )]
     // 1: timer[Tick] -> {servos::GmtFem}
 
@@ -383,50 +332,36 @@ async fn main() -> anyhow::Result<()> {
 
     1: mount_cmd[MountSetPoint] -> {servos::GmtMount}
     1: m1_rbm[Left<M1RigidBodyMotions>] -> adder[M1RigidBodyMotions] -> {servos::GmtM1}
-    5000: m2_rbm[Left<M2RigidBodyMotions>] -> m2_adder
+    // 5000: m2_rbm[Left<M2RigidBodyMotions>] -> m2_adder
     5000: m1_bm[Left<M1ModeShapes>] -> m1_bm_adder[M1ModeShapes]  -> m1_bm_2_forces
     1: m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
-    1: {servos::GmtFem}[M1State] -> on_axis
-    1:  {servos::GmtFem}[M1State] -> one_to_1000
-    1000: one_to_1000[M1State] -> agws_wss
-    1:  {servos::GmtFem}[M1State] -> {agws::AgwsSh48}
-    1:  {servos::GmtFem}[M1State] -> {agws::AgwsSh24}
 
-    1: {servos::GmtFem}[Mas<AverageMountEncoders>] -> mount_scopes
+    1:  {servos::GmtFem}[Doublet<M1State,M2State>]! -> {agws::AgwsSh24}
+    1:  {servos::GmtFem}[Doublet<M1State,M2State>]! -> {agws::AgwsSh48}
+
+    1: {servos::GmtFem}[Doublet<M1State,M2State>]!.. -> gmt_state_tx
+
+    // 1: {servos::GmtFem}[Mas<AverageMountEncoders>] -> mount_scopes
 
     // FSM to positionner off-load
     // 1: {servos::GmtFem}[M2FSMPiezoNodes]
-        // -> pzt_to_rbm[Left<M2RigidBodyMotions>] //-> scope_fsm_cmd
-        // 5000: m2_rbm_adder[M2RigidBodyMotions]${42}
-            // 5000: pzt_to_rbm_int[Right<M2RigidBodyMotions>]
-            // -> m2_adder[M2RigidBodyMotions]${42}
-               // -> lpf
-    1: m2_adder[M2RigidBodyMotions] -> {servos::GmtM2Hex}
+    //     -> pzt_to_rbm[Left<M2RigidBodyMotions>] //-> scope_fsm_cmd
+    //     // 5000: m2_rbm_adder[M2RigidBodyMotions]${42}
+    //         5000: pzt_to_rbm_int[Right<M2RigidBodyMotions>]
+    //         -> m2_adder//[M2RigidBodyMotions]${42}
+    //            // -> lpf
+    // 1: m2_adder[M2RigidBodyMotions] -> {servos::GmtM2Hex}
     1: {servos::GmtFem}[M2PositionerNodes]
+    1: {servos::GmtFem}[M2FSMPiezoNodes]
+        -> pzt_to_rbm[M2RigidBodyMotions] //-> scope_fsm_cmd
+            -> pzt_to_rbm_int[M2RigidBodyMotions]
+                -> {servos::GmtM2Hex}
 
     // M1 edge sensor to RBMs feedback loop
     1: {servos::GmtFem}[M1EdgeSensors]!
         -> m1_es_to_rbm_int[Right<M1RigidBodyMotions>]
             -> adder
 
-    // FEM state transfer to optical model
-    // 1: {servos::GmtFem}[M1RigidBodyMotions] -> {agws::AgwsSh48}
-    1: {servos::GmtFem}[M2State] -> {agws::AgwsSh48}
-    // 1: {servos::GmtFem}[M1RigidBodyMotions] -> {agws::AgwsSh24}
-    1: {servos::GmtFem}[M2State] -> {agws::AgwsSh24}
-    // 1: {servos::GmtFem}[M1RigidBodyMotions] -> on_axis
-    1: {servos::GmtFem}[M2State] -> on_axis
-    // 1: {servos::GmtFem}[M1State] -> s1
-    // 1000: s1[M1State] -> agws_wss
-    1: {servos::GmtFem}[M2State] -> s2
-    1000: s2[M2State] -> agws_wss[Wavefront] -> agws_wavefronts
-
-    1: {servos::GmtFem}[M1State] -> m1_lom
-    1: {servos::GmtFem}[M2State] -> m2_lom
-    1: m1_lom[M1SegmentPiston].. -> m1_scopes
-    1: m2_lom[M2SegmentPiston].. -> m2_scopes
-    1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
-    1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
 
     // // AGWS SH24 to FSMS feedback loop
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
@@ -445,29 +380,7 @@ async fn main() -> anyhow::Result<()> {
     // 1000: pzt_to_rbm[M2RigidBodyMotions]
     // //          -> pol[PseudoSensorData] -> mount_recon[Estimate]->print
 
-    // 1: 2_lom[M2SegmentPiston].. -> m2_scopes
-    // 1: m1_lomM1SegmentTipTilt].. -> m1_scopes
-    // 1: m2_lom[M2Sclosed_loop_recon_sh48-to-m1-bm    // // AGWS SH24 to FSMS feedback loop
-
-    // 1000: {agws::AgwsSh48Kernel}[SensorData] -> mount_recon[MountEstimate] -> print
-    //          // -> pol[PseudoSensorData] -> sh48_m1_rbm_recon[Estimate]${42}->print
-    // 100000: {agws::AgwsSh48}[Frame<Host>]! -> sh48_frame
-    // 1000: {agws::AgwsSh24}[Frame<Host>]! -> sh24_frame
-
-    1: on_axis[WfeRms<-9>].. -> shub
-    1: on_axis[SegmentWfeRms<-9>].. -> shub
-    1: on_axis[SegmentPiston<-9>].. -> shub
-    1: on_axis[Mas<TipTilt>].. -> shub
-    1: on_axis[Mas<SegmentTipTilt>].. -> shub
-    // // 1: on_axis[SegmentPiston<-9>] -> scope_segment_piston
-    1000: on_axis[Wavefront].. -> on_axis_wavefront
     }
 
-    if env::var("FOREGO_SCOPES").is_err() {
-        shub.lock().await.close().await?;
-        (&mut *mount_scopes.lock().await).await?;
-        m1_scopes.lock().await.close().await?;
-        m2_scopes.lock().await.close().await?;
-    }
     Ok(())
 }

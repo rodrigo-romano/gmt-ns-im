@@ -1,0 +1,30 @@
+[package]
+name = "scoring"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# gmt-fem.workspace = true
+gmt_dos-actors.workspace = true
+interface.workspace = true
+gmt_dos-clients.workspace = true
+gmt_dos-clients_crseo.workspace = true
+gmt_dos-clients_io = { workspace = true, features = ["serde"] }
+gmt_dos-clients_arrow.workspace = true
+gmt_dos-clients_transceiver.workspace = true
+gmt_dos-clients_scope = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = [
+  "server",
+], optional = true }
+gmt_dos-clients_scope-client = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2", optional = true }
+gmt_dos-systems_agws.workspace = true
+tokio.workspace = true
+env_logger = "0.11.6"
+serde-pickle.workspace = true
+anyhow.workspace = true
+gmt_dos-clients_lom.workspace = true
+gmt-ns-im = { version = "0.1.0", path = ".." }
+
+
+[features]
+default = ["scope"]
+scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
