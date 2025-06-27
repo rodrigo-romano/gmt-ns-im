@@ -2,7 +2,7 @@ use std::{fs::File, iter, path::Path, slice::Iter, sync::Arc};
 
 use gmt_dos_clients_io::{
     gmt_m1::{M1ModeShapes, assembly::M1ModeCoefficients},
-    optics::{M1State, MirrorState},
+    optics::{M1State, state::MirrorState},
 };
 use gmt_dos_systems_m1::SingularModes;
 use interface::{Data, Read, Update, Write};
@@ -13,7 +13,7 @@ use crate::config;
 #[derive(Debug, Default, Clone)]
 pub struct M1BendingModes {
     // bending modes data structure
-    modes: Vec<SingularModes>,
+    modes: SingularModes,
     // segment figures
     surfaces: Arc<Vec<f64>>,
     // bending modes coefficients
@@ -24,7 +24,7 @@ pub struct M1BendingModes {
 
 impl M1BendingModes {
     pub fn new(path: impl AsRef<Path>) -> anyhow::Result<Self> {
-        let modes: Vec<SingularModes> =
+        let modes: SingularModes =
             serde_pickle::from_reader(&mut File::open(path.as_ref())?, Default::default())?;
         Ok(Self {
             modes,
@@ -87,18 +87,18 @@ impl Write<M1ModeCoefficients> for M1BendingModes {
     }
 }
 
-impl Read<M1State> for M1BendingModes {
-    fn read(&mut self, data: Data<M1State>) {
-        self.state = data.into_arc();
-        self.surfaces = self.state.modes.as_ref().unwrap().clone();
-    }
-}
-impl Write<M1State> for M1BendingModes {
-    fn write(&mut self) -> Option<Data<M1State>> {
-        let state = MirrorState {
-            rbms: self.state.rbms.clone(),
-            modes: Some(self.coefs.clone()),
-        };
-        Some(Data::new(state))
-    }
-}
+// impl Read<M1State> for M1BendingModes {
+//     fn read(&mut self, data: Data<M1State>) {
+//         self.state = data.into_arc();
+//         self.surfaces = Arc::new(self.state.into_modes().unwrap_or_default());
+//     }
+// }
+// impl Write<M1State> for M1BendingModes {
+//     fn write(&mut self) -> Option<Data<M1State>> {
+//         let state = MirrorState {
+//             rbms: Arc::new(self.state.into_rbms().unwrap_or_default()),
+//             modes: Some(self.coefs.clone()),
+//         };
+//         Some(Data::new(state))
+//     }
+// }

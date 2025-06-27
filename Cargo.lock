@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "ab_glyph"
-version = "0.2.29"
+version = "0.2.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec3672c180e71eeaaac3a541fbbc5f5ad4def8b747c595ad30d674e43049f7b0"
+checksum = "1e0f4f6fbdc5ee39f2ede9f5f3ec79477271a6d6a2baff22310d51736bda6cea"
 dependencies = [
  "ab_glyph_rasterizer",
  "owned_ttf_parser",
@@ -14,9 +14,9 @@ dependencies = [
 
 [[package]]
 name = "ab_glyph_rasterizer"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c71b1793ee61086797f5c80b6efa2b8ffa6d5dd703f118545808a7f2e27f7046"
+checksum = "b2187590a23ab1e3df8681afdf0987c48504d80291f002fcdb651f0ef5e25169"
 
 [[package]]
 name = "accesskit"
@@ -514,9 +514,9 @@ checksum = "dde20b3d026af13f561bdd0f15edf01fc734f0dafcedbaf42bba506a9517f223"
 
 [[package]]
 name = "arboard"
-version = "3.5.0"
+version = "3.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1df21f715862ede32a0c525ce2ca4d52626bb0007f8c18b87a384503ac33e70"
+checksum = "55f533f8e0af236ffe5eb979b99381df3258853f00ba2e44b6e1955292c75227"
 dependencies = [
  "clipboard-win",
  "log",
@@ -992,9 +992,9 @@ dependencies = [
 
 [[package]]
 name = "async-channel"
-version = "2.3.1"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89b47800b0be77592da0afd425cc03468052844aff33b84e33cc696f64e77b6a"
+checksum = "924ed96dd52d1b75e9c1a3e6275715fd320f5f9439fb5a4a11fa51f4221158d2"
 dependencies = [
  "concurrent-queue",
  "event-listener-strategy",
@@ -1230,9 +1230,9 @@ dependencies = [
 
 [[package]]
 name = "avif-serialize"
-version = "0.8.4"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19135c0c7a60bfee564dbe44ab5ce0557c6bf3884e5291a50be76a15640c4fbd"
+checksum = "2ea8ef51aced2b9191c08197f55450d830876d9933f8f48a429b354f1d496b42"
 dependencies = [
  "arrayvec",
 ]
@@ -1433,9 +1433,9 @@ dependencies = [
 
 [[package]]
 name = "blocking"
-version = "1.6.1"
+version = "1.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "703f41c54fc768e63e091340b424302bb1c29ef4aa0c7f10fe849dfb114d29ea"
+checksum = "e83f8d02be6967315521be875afa792a316e28d57b5a2d401897e2a7921b7f21"
 dependencies = [
  "async-channel",
  "async-task",
@@ -1628,9 +1628,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.27"
+version = "1.2.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d487aa071b5f64da6f19a3e848e3578944b726ee5a4854b82172f02aa876bfdc"
+checksum = "5c1599538de2394445747c8cf7935946e3cc27e9625f889d979bfb2aaf569362"
 dependencies = [
  "jobserver",
  "libc",
@@ -1803,6 +1803,10 @@ checksum = "4ca0197aee26d1ae37445ee532fefce43251d24cc7c166799f4d46817f1d3973"
 dependencies = [
  "crossbeam-utils",
 ]
+
+[[package]]
+name = "config"
+version = "0.1.0"
 
 [[package]]
 name = "console"
@@ -3187,7 +3191,7 @@ dependencies = [
 [[package]]
 name = "gmt-fem-code-builder"
 version = "2.3.5"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "anyhow",
  "arrow 55.2.0",
@@ -3222,13 +3226,14 @@ name = "gmt-ns-im"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "config",
  "env_logger",
  "faer",
  "gmt-fem 5.1.1",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
- "gmt_dos-clients_arrow 2.1.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow 2.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
@@ -3258,34 +3263,11 @@ dependencies = [
  "flume",
  "futures",
  "gmt_dos-actors-clients_interface 1.4.0",
- "gmt_dos-actors_dsl 2.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-actors_dsl 2.1.3",
  "html-escape",
  "humantime",
  "log",
  "open",
- "svg",
- "thiserror 1.0.69",
- "tokio",
- "vec_box",
-]
-
-[[package]]
-name = "gmt_dos-actors"
-version = "11.2.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "flume",
- "futures",
- "gmt_dos-actors-clients_interface 1.5.0",
- "gmt_dos-actors_dsl 2.1.3 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "html-escape",
- "humantime",
- "log",
- "open",
- "serde",
  "svg",
  "thiserror 1.0.69",
  "tokio",
@@ -3356,18 +3338,6 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-actors_dsl"
-version = "2.1.3"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
-dependencies = [
- "prettyplease",
- "proc-macro2",
- "quote",
- "syn 2.0.104",
- "tracing",
-]
-
-[[package]]
-name = "gmt_dos-actors_dsl"
 version = "2.2.0"
 dependencies = [
  "prettyplease",
@@ -3416,7 +3386,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cc33235b0a566a6fe60f7da90e31e8451a3fd0c6be62fd9eb42a13d08aab9638"
 dependencies = [
  "arrow 30.0.1",
- "gmt_dos-actors 11.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-actors 11.2.0",
  "gmt_dos-actors-clients_interface 1.4.0",
  "log",
  "parquet 30.0.1",
@@ -3427,11 +3397,10 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_arrow"
-version = "2.1.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+version = "2.2.0"
 dependencies = [
  "arrow 55.2.0",
- "gmt_dos-actors 11.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "log",
  "parquet 55.2.0",
@@ -3443,6 +3412,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_arrow"
 version = "2.2.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "arrow 55.2.0",
  "gmt_dos-actors 12.0.0",
@@ -3553,7 +3523,7 @@ checksum = "c00b046bced935341332dcc6223651c7470e55308c921ea3b083de8370c348f8"
 dependencies = [
  "anyhow",
  "gmt-fem-code-builder 2.3.3",
- "gmt_dos-actors 11.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-actors 11.2.0",
  "gmt_dos-actors-clients_interface 1.4.0",
 ]
 
@@ -3571,7 +3541,7 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_lom"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "flate2",
  "gmt-lom",
@@ -3645,9 +3615,9 @@ checksum = "5e5b1f61756bd2f558bae60618298c8d795d08b28db6a21c3dcd85bf3cad171a"
 dependencies = [
  "anyhow",
  "gmt-fem-code-builder 2.3.3",
- "gmt_dos-actors 11.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-actors 11.2.0",
  "gmt_dos-actors-clients_interface 1.4.0",
- "gmt_dos-clients_arrow 2.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_arrow 2.1.1",
  "gmt_dos-clients_fem 5.1.1",
  "gmt_dos-clients_io 4.2.2",
  "gmt_mount-ctrl_controller",
@@ -3660,13 +3630,13 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_mount"
 version = "4.1.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "anyhow",
  "gmt-fem-code-builder 2.3.5 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-actors 11.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
- "gmt_dos-clients_arrow 2.1.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow 2.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
  "gmt_mount-ctrl_controller",
@@ -3679,14 +3649,14 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_scope"
 version = "3.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "colorous",
  "eframe",
  "egui_plot",
  "epaint",
  "flume",
- "gmt_dos-actors 11.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients_scopehub",
  "gmt_dos-clients_transceiver",
@@ -3700,7 +3670,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_scope-client"
 version = "0.2.2"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "gmt_dos-clients_scope",
 ]
@@ -3708,7 +3678,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_scopehub"
 version = "0.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "quote",
  "syn 2.0.104",
@@ -3743,7 +3713,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_transceiver"
 version = "2.0.3"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -3765,12 +3735,12 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_windloads"
 version = "3.0.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1368ce971f728314e47e63deb0c1e33b5ce973a6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
 dependencies = [
  "geotrans 0.2.2",
  "gmt-fem 5.1.1",
  "gmt-fem-code-builder 2.3.5 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-actors 11.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
  "gmt_dos-clients_fem 5.1.2",
@@ -4005,9 +3975,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.3.26"
+version = "0.3.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81fe527a889e1532da5c525686d96d4c2e74cdd345badf8dfef9f6b39dd5f5e8"
+checksum = "0beca50380b1fc32983fc1cb4587bfa4bb9e78fc259aad4a0032d2080309222d"
 dependencies = [
  "bytes",
  "fnv",
@@ -4423,6 +4393,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "io-uring"
+version = "0.7.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b86e202f00093dcba4275d4636b93ef9dd75d025ae560d2521b45ea28ab49013"
+dependencies = [
+ "bitflags 2.9.1",
+ "cfg-if",
+ "libc",
+]
+
+[[package]]
 name = "is-docker"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4741,9 +4722,9 @@ checksum = "1171693293099992e19cddea4e8b849964e9846f4acee11b3948bcc337be8776"
 
 [[package]]
 name = "libfuzzer-sys"
-version = "0.4.9"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf78f52d400cf2d84a3a973a78a592b4adc535739e0a5597a0da6f0c357adc75"
+checksum = "5037190e1f70cbeef565bd267599242926f724d3b8a9f510fd7e0b540cfa4404"
 dependencies = [
  "arbitrary",
  "cc",
@@ -4897,7 +4878,7 @@ dependencies = [
  "gmt-ns-im",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-clients 5.0.0",
- "gmt_dos-clients_arrow 2.1.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow 2.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
@@ -4920,7 +4901,12 @@ dependencies = [
  "gmt_dos-actors 12.0.0",
  "gmt_dos-clients 5.0.0",
  "gmt_dos-clients_crseo",
+ "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-systems_m1",
+ "matio-rs",
+ "nalgebra 0.33.2",
+ "serde-pickle 1.2.0",
  "tokio",
 ]
 
@@ -5079,7 +5065,7 @@ dependencies = [
  "gmt-ns-im",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-clients 5.0.0",
- "gmt_dos-clients_arrow 2.1.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow 2.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
@@ -6609,9 +6595,9 @@ checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 
 [[package]]
 name = "rgb"
-version = "0.8.50"
+version = "0.8.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57397d16646700483b67d2dd6511d79318f9d057fdbd21a4066aeac8b41d310a"
+checksum = "a457e416a0f90d246a4c3288bd7a25b2304ca727f253f95be383dd17af56be8f"
 
 [[package]]
 name = "ring"
@@ -6827,11 +6813,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "env_logger",
- "gmt-ns-im",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
- "gmt_dos-clients_arrow 2.1.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow 2.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
@@ -7554,17 +7539,19 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.45.1"
+version = "1.46.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75ef51a33ef1da925cea3e4eb122833cb377c61439ca401b770f54902b806779"
+checksum = "0cc3a2344dafbe23a245241fe8b09735b521110d30fcefbbd5feb1797ca35d17"
 dependencies = [
  "backtrace",
  "bytes",
+ "io-uring",
  "libc",
  "mio",
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
+ "slab",
  "socket2",
  "tokio-macros",
  "windows-sys 0.52.0",
@@ -8756,9 +8743,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.11"
+version = "0.7.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74c7b26e3480b707944fc872477815d29a8e429d2f93a1ce000f5fa84a15cbcd"
+checksum = "f3edebf492c8125044983378ecb5766203ad3b4c2f7a922bd7dd207f6d443e95"
 dependencies = [
  "memchr",
 ]
@@ -8847,9 +8834,9 @@ checksum = "b9cc00251562a284751c9973bace760d86c0276c471b4be569fe6b068ee97a56"
 
 [[package]]
 name = "xml-rs"
-version = "0.8.26"
+version = "0.8.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a62ce76d9b56901b19a74f19431b0d8b3bc7ca4ad685a746dfd78ca8f4fc6bda"
+checksum = "6fd8403733700263c6eb89f192880191f1b83e332f7a20371ddcf421c4a337c7"
 
 [[package]]
 name = "yasna"
@@ -9166,9 +9153,9 @@ dependencies = [
 
 [[package]]
 name = "zune-jpeg"
-version = "0.4.18"
+version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7384255a918371b5af158218d131530f694de9ad3815ebdd0453a940485cb0fa"
+checksum = "2c9e525af0a6a658e031e95f14b7f889976b74a11ba0eca5a5fc9ac8a1c43a6a"
 dependencies = [
  "zune-core",
 ]

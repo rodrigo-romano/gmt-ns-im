@@ -11,3 +11,10 @@ gmt_dos-clients.workspace = true
 gmt_dos-clients_crseo.workspace = true
 gmt_dos-clients_io = { workspace = true, features = ["crseo"] }
 tokio.workspace = true
+
+[dev-dependencies]
+gmt_dos-clients_fem.workspace = true
+gmt_dos-systems_m1.workspace = true
+matio-rs = { workspace = true, features = ["nalgebra"] }
+nalgebra = "0.33.2"
+serde-pickle.workspace = true
