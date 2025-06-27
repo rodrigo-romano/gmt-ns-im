@@ -2,10 +2,7 @@ use std::{env, fs::File, time::Instant};
 
 use faer::{Mat, MatRef};
 use gmt_dos_actors::{actorscript, system::Sys};
-use gmt_dos_clients::{
-    gain::Gain, integrator::Integrator, low_pass_filter::LowPassFilter, operator::Operator,
-    timer::Timer,
-};
+use gmt_dos_clients::{gain::Gain, integrator::Integrator, timer::Timer};
 use gmt_dos_clients_crseo::{
     calibration::{ClosedLoopCalib, Reconstructor},
     crseo::{FromBuilder, Gmt},
@@ -33,7 +30,6 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::config;
 use interface::{Tick, optics::OpticsState};
 use matio_rs::MatFile;
 
@@ -143,8 +139,8 @@ async fn main() -> anyhow::Result<()> {
                 .sh48(ShackHartmannBuilder::sh48().use_calibration_src())
         }
         .gmt(Gmt::builder().m1(
-            gmt_ns_im::config::m1::segment::RAW_MODES,
-            gmt_ns_im::config::m1::segment::N_RAW_MODE,
+            config::m1::segment::RAW_MODES,
+            config::m1::segment::N_RAW_MODE,
         ))
         .sh24_calibration(recon)
         .sh48_calibration(m1_bm_recon);
@@ -278,7 +274,7 @@ async fn main() -> anyhow::Result<()> {
     //     File::open("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?,
     //     Default::default(),
     // )?;
-    let m1_bm_adder = Operator::<Vec<f64>>::plus();
+    // let m1_bm_adder = Operator::<Vec<f64>>::plus();
     let sh48_int = Integrator::new(27 * 7).gain(0.5);
 
     // let sh48_m2_rbm_recon: Reconstructor<_, ClosedLoopCalib> = serde_pickle::from_reader(
@@ -299,7 +295,7 @@ async fn main() -> anyhow::Result<()> {
     // println!("CLOSED LOOP SH48 M2 RBM & M1 BM {sh48_m2_rbm_m1_bm_recon}");
     // let m2_rbm_adder = Operator::<Vec<f64>>::plus();
 
-    let lpf = LowPassFilter::new(42, 2e-3);
+    // let lpf = LowPassFilter::new(42, 2e-3);
 
     // let m1_bm_recon: Reconstructor<_, ClosedLoopCalib> =
     //     Reconstructor::from_path("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?;

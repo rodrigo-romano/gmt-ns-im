@@ -1,13 +1,11 @@
-use std::{fs::File, iter, path::Path, slice::Iter, sync::Arc};
+use std::{fs::File, iter, path::Path, sync::Arc};
 
 use gmt_dos_clients_io::{
     gmt_m1::{M1ModeShapes, assembly::M1ModeCoefficients},
-    optics::{M1State, state::MirrorState},
+    optics::state::MirrorState,
 };
 use gmt_dos_systems_m1::SingularModes;
 use interface::{Data, Read, Update, Write};
-
-use crate::config;
 
 /// Projection of M1 segment figures onto M1 segment bending modes
 #[derive(Debug, Default, Clone)]

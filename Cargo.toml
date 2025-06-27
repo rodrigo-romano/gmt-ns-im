@@ -39,8 +39,6 @@ gmt_dos-clients_io.workspace = true
 gmt_dos-clients_arrow.workspace = true 
 gmt_dos-clients_transceiver.workspace = true
 gmt_dos-clients_servos = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.0.0", features = ["cuda"] }
-gmt_dos-clients_scope= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = ["server"], optional = true}
-gmt_dos-clients_scope-client= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2", optional = true}
 gmt_dos-systems_agws.workspace = true
 gmt_dos-systems_m1 = {workspace = true, features=["faer"]}
 tokio.workspace = true
@@ -54,10 +52,6 @@ nalgebra = "0.33"
 gmt_dos-clients_lom.workspace = true
 skyangle.workspace = true
 config = { version = "0.1.0", path = "config" }
-
-[features]
-default = ["scope"]
-scope = ["gmt_dos-clients_scope", "gmt_dos-clients_scope-client"]
 
 [patch."https://github.com/rconan/dos-actors.git"]
 gmt_dos-actors = {path = "/home/ubuntu/projects/dos-actors/actors"}

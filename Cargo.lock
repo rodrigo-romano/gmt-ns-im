@@ -3237,8 +3237,6 @@ dependencies = [
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
- "gmt_dos-clients_scope",
- "gmt_dos-clients_scope-client",
  "gmt_dos-clients_servos",
  "gmt_dos-clients_transceiver",
  "gmt_dos-clients_windloads",
@@ -6803,6 +6801,7 @@ dependencies = [
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
+ "gmt_dos-clients_scope",
  "gmt_dos-clients_scope-client",
  "tokio",
 ]
@@ -6812,6 +6811,7 @@ name = "scoring"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "config",
  "env_logger",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
@@ -6824,6 +6824,7 @@ dependencies = [
  "gmt_dos-clients_scope-client",
  "gmt_dos-clients_transceiver",
  "gmt_dos-systems_agws",
+ "scopes",
  "serde-pickle 1.2.0",
  "tokio",
 ]

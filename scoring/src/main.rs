@@ -1,4 +1,4 @@
-use std::{env, time::Instant};
+use std::env;
 
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{gif, print::Print};
@@ -13,11 +13,11 @@ use gmt_dos_clients_io::optics::{
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_systems_agws::Agws;
-use gmt_ns_im::{config, scopes::*};
 use interface::{
-    doublet::{Doublet, Get},
+    optics::{OpticsState, state::OpticalState},
     units::Mas,
 };
+use scopes::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -34,8 +34,8 @@ async fn main() -> anyhow::Result<()> {
             Agws::<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>::builder()
         }
         .gmt(Gmt::builder().m1(
-            gmt_ns_im::config::m1::segment::RAW_MODES,
-            gmt_ns_im::config::m1::segment::N_RAW_MODE,
+            config::m1::segment::RAW_MODES,
+            config::m1::segment::N_RAW_MODE,
         ));
         agws.wave_sensor().build()?
     };
@@ -86,14 +86,14 @@ async fn main() -> anyhow::Result<()> {
     //     Transceiver::<M1State>::receiver(tx_address, rx_address)?.run(&mut gmt_state_mon);
     // let m2_state_rx =
     //     Transceiver::<M2State>::receiver(tx_address, rx_address)?.run(&mut gmt_state_mon);
-    let gmt_state_rx = Transceiver::<Doublet<M1State, M2State>>::receiver(tx_address, rx_address)?
-        .run(&mut gmt_state_mon);
-    let m1_state = Get::<M1State, M2State, 0>::default();
-    let m2_state = Get::<M1State, M2State, 1>::default();
-    let aprint = Print::new(4);
+    let gmt_state_rx =
+        Transceiver::<OpticsState>::receiver(tx_address, rx_address)?.run(&mut gmt_state_mon);
+    let aprint = Print::new(6);
+    let optical_state = OpticalState::default();
+
     actorscript! {
         #[model(name=scoring)]
-    1: gmt_state_rx[Doublet<M1State, M2State>] -> on_axis
+    1: gmt_state_rx[OpticsState] -> on_axis
     1: on_axis[WfeRms<-9>].. -> shub
     1: on_axis[SegmentWfeRms<-9>].. -> shub
     1: on_axis[SegmentPiston<-9>].. -> shub
@@ -102,8 +102,8 @@ async fn main() -> anyhow::Result<()> {
     1000: on_axis[PSSn] -> aprint
     // 1000: on_axis[Wavefront].. -> on_axis_wavefront
 
-    1: gmt_state_rx[Doublet<M1State,M2State>] -> m1_state[M1State] -> m1_lom
-    1: gmt_state_rx[Doublet<M1State,M2State>] -> m2_state[M2State] -> m2_lom
+    1: gmt_state_rx[OpticsState] -> optical_state [M1State] -> m1_lom
+    1: optical_state [M2State] -> m2_lom
     1: m1_lom[M1SegmentPiston].. -> m1_scopes
     1: m2_lom[M2SegmentPiston].. -> m2_scopes
     1: m1_lom[M1SegmentTipTilt].. -> m1_scopes

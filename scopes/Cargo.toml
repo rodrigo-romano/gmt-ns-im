@@ -7,6 +7,9 @@ edition = "2024"
 anyhow.workspace = true
 gmt_dos-clients_io.workspace = true
 gmt_dos-clients_lom.workspace = true
-gmt_dos-clients_scope-client.workspace = true
+gmt_dos-clients_scope = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = [
+  "server",
+] }
+gmt_dos-clients_scope-client = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2" }
 interface.workspace = true
 tokio.workspace = true
