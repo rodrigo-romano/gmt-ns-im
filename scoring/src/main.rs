@@ -5,10 +5,11 @@ use gmt_dos_clients::{gif, print::Print};
 use gmt_dos_clients_crseo::{
     OpticalModel,
     crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder},
-    sensors::NoSensor,
+    sensors::{Camera, NoSensor},
 };
 use gmt_dos_clients_io::optics::{
-    M1State, M2State, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms,
+    Frame, Host, M1State, M2State, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt,
+    WfeRms,
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
@@ -55,9 +56,9 @@ async fn main() -> anyhow::Result<()> {
     // On-axis scoring star
     let atm = AtmosphereBuilder::load("../atmosphere/atmosphere.toml")?;
     let on_axis = if config::ATMOSPHERE {
-        OpticalModel::<NoSensor>::builder().atmosphere(atm)
+        OpticalModel::<Camera>::builder().atmosphere(atm)
     } else {
-        OpticalModel::<NoSensor>::builder()
+        OpticalModel::<Camera>::builder()
     }
     .gmt(Gmt::builder().m1(
         config::m1::segment::RAW_MODES,
@@ -99,6 +100,7 @@ async fn main() -> anyhow::Result<()> {
     1: on_axis[SegmentPiston<-9>].. -> shub
     1: on_axis[Mas<TipTilt>].. -> shub
     1: on_axis[Mas<SegmentTipTilt>].. -> shub
+    1000: on_axis[Frame<Host>]${512*512}..
     1000: on_axis[PSSn] -> aprint
     // 1000: on_axis[Wavefront].. -> on_axis_wavefront
 

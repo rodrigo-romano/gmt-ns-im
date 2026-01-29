@@ -43,10 +43,10 @@ async fn main() -> anyhow::Result<()> {
     let now = Instant::now();
 
     let sim_sampling_frequency = 1000;
-    let sim_duration = 40_usize; // second
+    let sim_duration = 10_usize; // second
     let bootstrapping_duration = 4_usize; // second
     let n_bootstrapping = sim_sampling_frequency * bootstrapping_duration;
-    let n_sim = n_bootstrapping + sim_sampling_frequency * sim_duration + 1;
+    let n_sim = sim_sampling_frequency * sim_duration + 1;
 
     let fem = FEM::from_env()?;
     // println!("{fem}");
@@ -230,7 +230,7 @@ async fn main() -> anyhow::Result<()> {
     //     .for_each(|(i, b)| b[0] = 1e-6);
     // let m1_bm = Signals::from((m1_bm, n_sim));
     // let m1_bms = M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?;
-    let timer: Timer = Timer::new(n_sim);
+    let timer: Timer = Timer::new(n_bootstrapping);
     let address = "127.0.0.1";
     let mut gmt_state_mon = Monitor::new();
     let gmt_state_tx = Transceiver::<OpticsState>::transmitter(address)?.run(&mut gmt_state_mon);
@@ -300,8 +300,10 @@ async fn main() -> anyhow::Result<()> {
     // let m1_bm_recon: Reconstructor<_, ClosedLoopCalib> =
     //     Reconstructor::from_path("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?;
 
+    dbg!(&timer.lock().await);
+
     // let print = Print::<Vec<f64>>::new(8);
-    // let timer: Timer = Timer::new(6001n_sim
+    let timer: Timer = Timer::new(n_sim);
     type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
     type AgwsSh24 = Sh24<{ config::agws::sh24::RATE }>;
     type AgwsSh24Kernel = Kernel<Sh24<{ config::agws::sh24::RATE }>>;
