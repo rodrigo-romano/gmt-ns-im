@@ -1,0 +1,17 @@
+[package]
+name = "qp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aco_loop_example = { version = "0.1.0", path = "../../../../../../projects/im-sim-scripts/aco_loop_example" }
+anyhow.workspace = true
+config = { version = "0.1.0", path = "../config" }
+gmt_dos-actors.workspace = true
+gmt_dos-clients.workspace = true
+gmt_dos-clients_arrow.workspace = true
+gmt_dos-clients_crseo.workspace = true
+gmt_dos-clients_io.workspace = true
+gmt_dos-systems_agws.workspace = true
+interface.workspace = true
+tokio = { workspace = true, features = ["full"] }

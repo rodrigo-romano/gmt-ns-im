@@ -5,7 +5,7 @@ edition = "2024"
 
 [workspace]
 resolver = "3"
-members = [ "atmosphere","calibrations/sh24", "scopes", "web_server", "calibrations/sh48", "calibrations/mount","calibrations/m1/assembly","calibrations/m1/modes", "scoring", "config"]
+members = [ "atmosphere","calibrations/sh24", "scopes", "web_server", "calibrations/sh48", "calibrations/mount","calibrations/m1/assembly","calibrations/m1/modes", "scoring", "config", "qp"]
 
 [workspace.dependencies]
 anyhow = "1.0.96"
@@ -44,7 +44,7 @@ gmt_dos-systems_m1 = {workspace = true, features=["faer"]}
 tokio.workspace = true
 env_logger = "0.11.6"
 serde-pickle.workspace = true
-gmt_dos-clients_windloads= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.0.1" }
+gmt_dos-clients_windloads= { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.0.3" }
 anyhow.workspace = true
 matio-rs = {workspace = true, features = ["faer"]}
 faer = "0.21.9"

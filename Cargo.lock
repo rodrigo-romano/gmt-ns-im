@@ -511,6 +511,9 @@ name = "arbitrary"
 version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dde20b3d026af13f561bdd0f15edf01fc734f0dafcedbaf42bba506a9517f223"
+dependencies = [
+ "derive_arbitrary",
+]
 
 [[package]]
 name = "arboard"
@@ -1562,6 +1565,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bzip2"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3a53fac24f34a81bc9954b5d6cfce0c21e18ec6959f44f56e8e90e4bb7c346c"
+dependencies = [
+ "libbz2-rs-sys",
+]
+
+[[package]]
 name = "bzip2-sys"
 version = "0.1.13+1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1733,11 +1745,51 @@ dependencies = [
  "ansi_term",
  "atty",
  "bitflags 1.3.2",
- "strsim",
+ "strsim 0.8.0",
  "textwrap",
  "unicode-width 0.1.14",
  "vec_map",
 ]
+
+[[package]]
+name = "clap"
+version = "4.5.56"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a75ca66430e33a14957acc24c5077b503e7d374151b2b4b3a10c83b4ceb4be0e"
+dependencies = [
+ "clap_builder",
+ "clap_derive",
+]
+
+[[package]]
+name = "clap_builder"
+version = "4.5.56"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "793207c7fa6300a0608d1080b858e5fdbe713cdc1c8db9fb17777d8a13e63df0"
+dependencies = [
+ "anstream",
+ "anstyle",
+ "clap_lex",
+ "strsim 0.11.1",
+]
+
+[[package]]
+name = "clap_derive"
+version = "4.5.55"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a92793da1a46a5f2a02a6f4c46c6496b28c43638adea8306fcb0caa1634f24e5"
+dependencies = [
+ "heck 0.5.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.104",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.7.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3e64b0cc0439b12df2fa678eae89a1c56a529fd067a9115f7827f1fffd22b32"
 
 [[package]]
 name = "clipboard-win"
@@ -1846,6 +1898,12 @@ name = "constant_time_eq"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
+
+[[package]]
+name = "constant_time_eq"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 
 [[package]]
 name = "convert_case"
@@ -2032,12 +2090,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
 
 [[package]]
+name = "deflate64"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26bf8fc351c5ed29b5c2f0cbbac1b209b74f60ecd62e675a998df72c49af5204"
+
+[[package]]
 name = "deranged"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c9e6a11ca8224451684bc0d7d5a7adbf8f2fd6887261a1cfc3c0432f9d4068e"
 dependencies = [
  "powerfmt",
+]
+
+[[package]]
+name = "derive_arbitrary"
+version = "1.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e567bd82dcff979e4b03460c307b3cdc9e96fde3d73bed1496d2bc75d9dd62a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.104",
 ]
 
 [[package]]
@@ -3117,29 +3192,6 @@ dependencies = [
 
 [[package]]
 name = "gmt-fem"
-version = "5.1.1"
-dependencies = [
- "anyhow",
- "arrow 55.2.0",
- "bincode 2.0.1",
- "bytes",
- "geotrans 0.1.1",
- "gmt-fem-code-builder 2.3.5",
- "log",
- "matio-rs",
- "nalgebra 0.33.2",
- "num-complex",
- "parquet 55.2.0",
- "rayon",
- "serde",
- "serde-pickle 0.6.3",
- "tempfile",
- "thiserror 1.0.69",
- "zip",
-]
-
-[[package]]
-name = "gmt-fem"
 version = "5.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3a69fb5128763928f3e391dc0a740971a241280093043ab5676dfa9f8ff97340"
@@ -3159,7 +3211,30 @@ dependencies = [
  "serde-pickle 0.6.3",
  "tempfile",
  "thiserror 1.0.69",
- "zip",
+ "zip 0.6.6",
+]
+
+[[package]]
+name = "gmt-fem"
+version = "5.2.1"
+dependencies = [
+ "anyhow",
+ "arrow 55.2.0",
+ "bincode 2.0.1",
+ "bytes",
+ "geotrans 0.1.1",
+ "gmt-fem-code-builder 2.3.6",
+ "log",
+ "matio-rs",
+ "nalgebra 0.33.2",
+ "num-complex",
+ "parquet 55.2.0",
+ "rayon",
+ "serde",
+ "serde-pickle 0.6.3",
+ "tempfile",
+ "thiserror 2.0.12",
+ "zip 4.6.1",
 ]
 
 [[package]]
@@ -3173,32 +3248,32 @@ dependencies = [
  "bytes",
  "parquet 30.0.1",
  "thiserror 1.0.69",
- "zip",
+ "zip 0.6.6",
 ]
 
 [[package]]
 name = "gmt-fem-code-builder"
-version = "2.3.5"
+version = "2.3.6"
 dependencies = [
  "anyhow",
  "arrow 55.2.0",
  "bytes",
  "parquet 55.2.0",
- "thiserror 1.0.69",
- "zip",
+ "thiserror 2.0.12",
+ "zip 4.6.1",
 ]
 
 [[package]]
 name = "gmt-fem-code-builder"
-version = "2.3.5"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+version = "2.3.6"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
 dependencies = [
  "anyhow",
  "arrow 55.2.0",
  "bytes",
  "parquet 55.2.0",
- "thiserror 1.0.69",
- "zip",
+ "thiserror 2.0.12",
+ "zip 4.6.1",
 ]
 
 [[package]]
@@ -3229,7 +3304,7 @@ dependencies = [
  "config",
  "env_logger",
  "faer",
- "gmt-fem 5.1.1",
+ "gmt-fem 5.2.1",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
@@ -3289,7 +3364,7 @@ dependencies = [
  "open",
  "serde",
  "svg",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "vec_box",
 ]
@@ -3318,7 +3393,7 @@ dependencies = [
  "paris",
  "serde",
  "serde-pickle 1.2.0",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -3362,7 +3437,7 @@ dependencies = [
  "matio-rs",
  "num-traits",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -3404,13 +3479,13 @@ dependencies = [
  "parquet 55.2.0",
  "paste",
  "regex",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "gmt_dos-clients_arrow"
 version = "2.2.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
 dependencies = [
  "arrow 55.2.0",
  "gmt_dos-actors 12.0.0",
@@ -3419,7 +3494,7 @@ dependencies = [
  "parquet 55.2.0",
  "paste",
  "regex",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -3441,13 +3516,13 @@ dependencies = [
  "rayon",
  "serde",
  "skyangle 0.2.2",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "toml",
 ]
 
 [[package]]
 name = "gmt_dos-clients_domeseeing"
-version = "2.1.2"
+version = "3.0.2"
 dependencies = [
  "bincode 1.3.3",
  "glob",
@@ -3455,7 +3530,7 @@ dependencies = [
  "gmt_dos-clients_io 4.3.0",
  "log",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -3482,7 +3557,7 @@ dependencies = [
  "rayon",
  "serde-pickle 1.2.0",
  "thiserror 1.0.69",
- "zip",
+ "zip 0.6.6",
 ]
 
 [[package]]
@@ -3497,8 +3572,8 @@ dependencies = [
  "faer-ext",
  "fem-cuda-solver",
  "geotrans 0.2.2",
- "gmt-fem 5.1.1",
- "gmt-fem-code-builder 2.3.5",
+ "gmt-fem 5.2.1",
+ "gmt-fem-code-builder 2.3.6",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
  "gmt_dos-clients_io 4.3.0",
@@ -3509,8 +3584,8 @@ dependencies = [
  "rayon",
  "serde",
  "serde-pickle 1.2.0",
- "thiserror 1.0.69",
- "zip",
+ "thiserror 2.0.12",
+ "zip 4.6.1",
 ]
 
 [[package]]
@@ -3531,7 +3606,7 @@ version = "4.3.0"
 dependencies = [
  "anyhow",
  "crseo",
- "gmt-fem-code-builder 2.3.5",
+ "gmt-fem-code-builder 2.3.6",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "serde",
@@ -3552,7 +3627,7 @@ dependencies = [
 name = "gmt_dos-clients_m1-ctrl"
 version = "5.0.0"
 dependencies = [
- "gmt-fem 5.1.1",
+ "gmt-fem 5.2.1",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
@@ -3569,8 +3644,8 @@ name = "gmt_dos-clients_m2-ctrl"
 version = "4.0.0"
 dependencies = [
  "bincode 2.0.1",
- "gmt-fem 5.1.1",
- "gmt-fem-code-builder 2.3.5",
+ "gmt-fem 5.2.1",
+ "gmt-fem-code-builder 2.3.6",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
@@ -3584,25 +3659,7 @@ dependencies = [
  "nalgebra 0.33.2",
  "rayon",
  "serde",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "gmt_dos-clients_mount"
-version = "4.1.1"
-dependencies = [
- "anyhow",
- "gmt-fem-code-builder 2.3.5",
- "gmt_dos-actors 12.0.0",
- "gmt_dos-actors-clients_interface 1.5.0",
- "gmt_dos-clients_arrow 2.2.0",
- "gmt_dos-clients_fem 5.1.2",
- "gmt_dos-clients_io 4.3.0",
- "gmt_mount-ctrl_controller",
- "gmt_mount-ctrl_driver",
- "log",
- "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -3627,11 +3684,29 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_mount"
-version = "4.1.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+version = "4.1.2"
 dependencies = [
  "anyhow",
- "gmt-fem-code-builder 2.3.5 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.6",
+ "gmt_dos-actors 12.0.0",
+ "gmt_dos-actors-clients_interface 1.5.0",
+ "gmt_dos-clients_arrow 2.2.0",
+ "gmt_dos-clients_fem 5.1.2",
+ "gmt_dos-clients_io 4.3.0",
+ "gmt_mount-ctrl_controller",
+ "gmt_mount-ctrl_driver",
+ "log",
+ "serde",
+ "thiserror 2.0.12",
+]
+
+[[package]]
+name = "gmt_dos-clients_mount"
+version = "4.1.2"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
+dependencies = [
+ "anyhow",
+ "gmt-fem-code-builder 2.3.6 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients_arrow 2.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
@@ -3641,13 +3716,13 @@ dependencies = [
  "gmt_mount-ctrl_driver",
  "log",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "gmt_dos-clients_scope"
 version = "3.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
 dependencies = [
  "colorous",
  "eframe",
@@ -3660,7 +3735,7 @@ dependencies = [
  "gmt_dos-clients_transceiver",
  "log",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "tracing",
 ]
@@ -3668,7 +3743,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_scope-client"
 version = "0.2.2"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
 dependencies = [
  "gmt_dos-clients_scope",
 ]
@@ -3676,7 +3751,7 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_scopehub"
 version = "0.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
 dependencies = [
  "quote",
  "syn 2.0.104",
@@ -3684,10 +3759,10 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_servos"
-version = "3.0.0"
+version = "3.0.2"
 dependencies = [
- "gmt-fem 5.1.1",
- "gmt-fem-code-builder 2.3.5",
+ "gmt-fem 5.2.1",
+ "gmt-fem-code-builder 2.3.6",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
@@ -3695,7 +3770,7 @@ dependencies = [
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_m2-ctrl",
- "gmt_dos-clients_mount 4.1.1",
+ "gmt_dos-clients_mount 4.1.2",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
  "log",
@@ -3704,14 +3779,14 @@ dependencies = [
  "rayon",
  "serde",
  "serde-pickle 1.2.0",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
 ]
 
 [[package]]
 name = "gmt_dos-clients_transceiver"
 version = "2.0.3"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -3725,19 +3800,19 @@ dependencies = [
  "rcgen",
  "rustls",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tokio",
  "tracing",
 ]
 
 [[package]]
 name = "gmt_dos-clients_windloads"
-version = "3.0.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#b8a30a8f0543af73ba6a131af42929c1c78f2c98"
+version = "3.0.3"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#f777a3f02da4222a262210902fc02412025ce0d2"
 dependencies = [
  "geotrans 0.2.2",
- "gmt-fem 5.1.1",
- "gmt-fem-code-builder 2.3.5 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem 5.2.1",
+ "gmt-fem-code-builder 2.3.6 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
@@ -3747,7 +3822,7 @@ dependencies = [
  "nalgebra 0.33.2",
  "parse-monitors",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -3761,17 +3836,17 @@ dependencies = [
  "gmt_dos-clients_io 4.3.0",
  "log",
  "serde-pickle 1.2.0",
- "skyangle 0.2.2",
- "thiserror 1.0.69",
+ "skyangle 0.3.1",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "gmt_dos-systems_m1"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bincode 2.0.1",
  "faer",
- "gmt-fem 5.1.1",
+ "gmt-fem 5.2.1",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
@@ -3781,16 +3856,16 @@ dependencies = [
  "log",
  "nalgebra 0.33.2",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "gmt_dos-systems_m2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bincode 2.0.1",
- "gmt-fem 5.1.1",
- "gmt-fem-code-builder 2.3.5",
+ "gmt-fem 5.2.1",
+ "gmt-fem-code-builder 2.3.6",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-actors-clients_interface 1.5.0",
  "gmt_dos-clients 5.0.0",
@@ -3806,7 +3881,7 @@ dependencies = [
  "paste",
  "rayon",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -4713,6 +4788,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "libbz2-rs-sys"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c4a545a15244c7d945065b5d392b2d2d7f21526fba56ce51467b06ed445e8f7"
+
+[[package]]
 name = "libc"
 version = "0.2.174"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4736,6 +4817,26 @@ checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
  "windows-targets 0.53.2",
+]
+
+[[package]]
+name = "liblzma"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73c36d08cad03a3fbe2c4e7bb3a9e84c57e4ee4135ed0b065cade3d98480c648"
+dependencies = [
+ "liblzma-sys",
+]
+
+[[package]]
+name = "liblzma-sys"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f2db66f3268487b5033077f266da6777d057949b8f93c8ad82e441df25e6186"
+dependencies = [
+ "cc",
+ "libc",
+ "pkg-config",
 ]
 
 [[package]]
@@ -4872,7 +4973,7 @@ name = "m1-assembly"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "gmt-fem 5.1.1",
+ "gmt-fem 5.2.1",
  "gmt-ns-im",
  "gmt_dos-actors 12.0.0",
  "gmt_dos-clients 5.0.0",
@@ -4880,7 +4981,7 @@ dependencies = [
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
- "gmt_dos-clients_mount 4.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_mount 4.1.1",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
@@ -5067,7 +5168,7 @@ dependencies = [
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem 5.1.2",
  "gmt_dos-clients_io 4.3.0",
- "gmt_dos-clients_mount 4.1.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_mount 4.1.2 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m2",
  "serde-pickle 1.2.0",
@@ -5311,7 +5412,7 @@ dependencies = [
  "byteorder",
  "num-bigint 0.4.6",
  "py_literal",
- "zip",
+ "zip 0.6.6",
 ]
 
 [[package]]
@@ -5903,11 +6004,12 @@ dependencies = [
 
 [[package]]
 name = "parse-monitors"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97d28de4accaf130d7a112c410b36d9d05264d85a2b575f9379daf18d7b9b7bd"
+checksum = "d263152dead2b0df91bde3e2e66e0c7f02be705d84398c5809be2cae22ac3189"
 dependencies = [
  "anyhow",
+ "clap 4.5.56",
  "colorous",
  "csv",
  "env_logger",
@@ -5966,6 +6068,16 @@ dependencies = [
  "hmac",
  "password-hash",
  "sha2",
+]
+
+[[package]]
+name = "pbkdf2"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8ed6a7761f76e3b9f92dfb0a60a6a6477c61024b775147ff0973a02653abaf2"
+dependencies = [
+ "digest",
+ "hmac",
 ]
 
 [[package]]
@@ -6136,6 +6248,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391"
 
 [[package]]
+name = "ppmd-rust"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "efca4c95a19a79d1c98f791f10aebd5c1363b473244630bb7dbde1dc98455a24"
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6258,6 +6376,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f6d64c71eb498fe9eae14ce4ec935c555749aef511cca85b5568910d6e48001"
 dependencies = [
  "bytemuck",
+]
+
+[[package]]
+name = "qp"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "config",
+ "gmt_dos-actors 12.0.0",
+ "gmt_dos-actors-clients_interface 1.5.0",
+ "gmt_dos-clients 5.0.0",
+ "gmt_dos-clients_arrow 2.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_crseo",
+ "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-systems_agws",
+ "tokio",
 ]
 
 [[package]]
@@ -7225,12 +7359,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 
 [[package]]
+name = "strsim"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
+
+[[package]]
 name = "structopt"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c6b5c64445ba8094a6ab0c3cd2ad323e07171012d9c98b0b15651daf1787a10"
 dependencies = [
- "clap",
+ "clap 2.34.0",
  "lazy_static",
  "structopt-derive",
 ]
@@ -9013,6 +9153,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "zeroize"
+version = "1.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b97154e67e32c85465826e8bcc1c59429aaaf107c1e4a9e53c8d8ccd5eff88d0"
+dependencies = [
+ "zeroize_derive",
+]
+
+[[package]]
+name = "zeroize_derive"
+version = "1.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85a5b4158499876c763cb03bc4e49185d3cccbabb15b33c627f7884f43db852e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.104",
+]
+
+[[package]]
 name = "zerotrie"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9053,16 +9213,43 @@ checksum = "760394e246e4c28189f19d488c058bf16f564016aefac5d32bb1f3b51d5e9261"
 dependencies = [
  "aes",
  "byteorder",
- "bzip2",
- "constant_time_eq",
+ "bzip2 0.4.4",
+ "constant_time_eq 0.1.5",
  "crc32fast",
  "crossbeam-utils",
  "flate2",
  "hmac",
- "pbkdf2",
+ "pbkdf2 0.11.0",
  "sha1",
  "time",
  "zstd 0.11.2+zstd.1.5.2",
+]
+
+[[package]]
+name = "zip"
+version = "4.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "caa8cd6af31c3b31c6631b8f483848b91589021b28fffe50adada48d4f4d2ed1"
+dependencies = [
+ "aes",
+ "arbitrary",
+ "bzip2 0.6.1",
+ "constant_time_eq 0.3.1",
+ "crc32fast",
+ "deflate64",
+ "flate2",
+ "getrandom 0.3.3",
+ "hmac",
+ "indexmap 2.10.0",
+ "liblzma",
+ "memchr",
+ "pbkdf2 0.12.2",
+ "ppmd-rust",
+ "sha1",
+ "time",
+ "zeroize",
+ "zopfli",
+ "zstd 0.13.3",
 ]
 
 [[package]]
@@ -9070,6 +9257,18 @@ name = "zlib-rs"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "626bd9fa9734751fc50d6060752170984d7053f5a39061f524cda68023d4db8a"
+
+[[package]]
+name = "zopfli"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edfc5ee405f504cd4984ecc6f14d02d55cfda60fa4b689434ef4102aae150cd7"
+dependencies = [
+ "bumpalo",
+ "crc32fast",
+ "log",
+ "simd-adler32",
+]
 
 [[package]]
 name = "zstd"
