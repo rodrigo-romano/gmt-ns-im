@@ -2,6 +2,7 @@
 name = "qp"
 version = "0.1.0"
 edition = "2024"
+default-run = "main"
 
 [dependencies]
 anyhow.workspace = true
@@ -14,4 +15,5 @@ gmt_dos-clients_crseo.workspace = true
 gmt_dos-clients_io.workspace = true
 gmt_dos-systems_agws.workspace = true
 interface.workspace = true
+serde-pickle.workspace = true
 tokio = { workspace = true, features = ["full"] }

@@ -6467,6 +6467,7 @@ dependencies = [
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-systems_agws",
+ "serde-pickle 1.2.0",
  "tokio",
 ]
 
