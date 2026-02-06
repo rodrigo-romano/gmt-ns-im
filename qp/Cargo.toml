@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-aco_loop_example = { version = "0.1.0", path = "../../../../../../projects/im-sim-scripts/aco_loop_example" }
 anyhow.workspace = true
 config = { version = "0.1.0", path = "../config" }
+env_logger = "0.11.8"
 gmt_dos-actors.workspace = true
 gmt_dos-clients.workspace = true
 gmt_dos-clients_arrow.workspace = true
