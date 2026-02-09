@@ -13,7 +13,7 @@ use gmt_dos_clients_io::{
 use gmt_dos_systems_agws::{
     builder::shack_hartmann::ShackHartmannBuilder,
     kernels::{Kernel, KernelFrame},
-    qp::{AcO, Estimate2OpticsState, QP},
+    qp::{ActiveOptics, Estimate2OpticsState, QP},
 };
 use interface::{
     Left, Right, Tick,
@@ -45,13 +45,12 @@ async fn main() -> anyhow::Result<()> {
         //"../aco_impl_stdalone/SHAcO_qp_rhoP1e-3_kIp5.rs.pkl")
         //"rustCalib_AcO_rhoP1e-12_kIp5.rs.pkl")
         data_path.join("rustCalib_AcO_rhoP1e-12_kIp5.agws.pickle"),
-    )
-    .unwrap()
-    .update_calib("sh48_calibration.pkl")
-    .unwrap()
-    .build();
+    )?
+    .update_calib("sh48_calibration.pkl")?
+    .build()?;
 
-    let sh48_kern = Kernel::<AcO<1, M1_RBM, M2_RBM, M1_BM, N_MODE>>::new(&omb)?.estimator(aco);
+    let sh48_kern =
+        Kernel::<ActiveOptics<1, M1_RBM, M2_RBM, M1_BM, N_MODE>>::new(&omb)?.estimator(aco);
     let sh48: OpticalModel<Camera> = omb.build()?;
     println!("{sh48}");
     // println!("{sh48_kern}");
@@ -85,7 +84,7 @@ async fn main() -> anyhow::Result<()> {
     let n_sample = 50;
     let timer: Timer = Timer::new(n_sample);
 
-    type Sh48Frame = KernelFrame<AcO<1, M1_RBM, M2_RBM, M1_BM, N_MODE>>;
+    type Sh48Frame = KernelFrame<ActiveOptics<1, M1_RBM, M2_RBM, M1_BM, N_MODE>>;
     actorscript!(
       #[labels(sh48="GMT\nSH48x3",add="Add",e2o="=> Optical State",sh48_kern="QP AcO")]
       1: timer[Tick] -> on_axis[WfeRms<-9>] -> print
