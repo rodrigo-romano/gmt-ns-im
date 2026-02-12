@@ -23,6 +23,8 @@ anyhow.workspace = true
 gmt_dos-clients_lom.workspace = true
 scopes = { version = "0.1.0", path = "../scopes" }
 config = { version = "0.1.0", path = "../config" }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 
 
 [features]

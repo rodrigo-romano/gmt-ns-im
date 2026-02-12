@@ -14,7 +14,7 @@ pub mod m1 {
 pub mod agws {
     pub mod sh24 {
         pub const RATE: usize = 5;
-        pub const INTEGRATOR_GAIN: f64 = 0.2;
+        pub const INTEGRATOR_GAIN: f64 = 0.5;
         pub const POINTING_ERROR: Option<(f64, f64)> = None;
         // Some((150f64.from_mas(), -100f64.from_mas()));
     }

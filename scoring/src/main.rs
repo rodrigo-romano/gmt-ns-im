@@ -5,7 +5,7 @@ use gmt_dos_clients::{gif, print::Print};
 use gmt_dos_clients_crseo::{
     OpticalModel,
     crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder},
-    sensors::{Camera, NoSensor},
+    sensors::Camera,
 };
 use gmt_dos_clients_io::optics::{
     Frame, Host, M1State, M2State, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt,
@@ -22,7 +22,12 @@ use scopes::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    env_logger::init();
+        tracing::subscriber::set_global_default(
+        tracing_subscriber::FmtSubscriber::builder()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .finish(),
+    )?;
+
 
     let sim_sampling_frequency = 1000;
 
@@ -89,8 +94,11 @@ async fn main() -> anyhow::Result<()> {
     //     Transceiver::<M2State>::receiver(tx_address, rx_address)?.run(&mut gmt_state_mon);
     let gmt_state_rx =
         Transceiver::<OpticsState>::receiver(tx_address, rx_address)?.run(&mut gmt_state_mon);
-    let aprint = Print::new(6);
+    let aprint = Print::<Vec<f64>>::new(6);
     let optical_state = OpticalState::default();
+
+    // let state_print = Print::default().scale(1e9_f64);
+
 
     actorscript! {
         #[model(name=scoring)]

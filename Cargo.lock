@@ -3835,7 +3835,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_transceiver"
 version = "2.0.3"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#1ccc004d34dcf1d5bb39f32d9ba37c2022977f20"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -7055,6 +7054,8 @@ dependencies = [
  "scopes",
  "serde-pickle 1.2.0",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
