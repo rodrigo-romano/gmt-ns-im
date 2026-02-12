@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
 
     let gmtb = Gmt::builder().m1(config::m1::segment::MODES, config::m1::segment::N_MODE);
     let omb = OpticalModelBuilder::from(
-        ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src(),
+        &ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src(),
     )
     .gmt(gmtb.clone());
 
