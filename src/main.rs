@@ -156,7 +156,7 @@ async fn main() -> anyhow::Result<()> {
     )?
     .build()?;
     println!("{aco}");
-    aco.set_controller_gain(0f64);
+    // aco.set_controller_gain(0f64);
 
     let (agws_wss, mut agws): (
         _,
@@ -345,8 +345,6 @@ async fn main() -> anyhow::Result<()> {
     // let m1_bm_recon: Reconstructor<_, ClosedLoopCalib> =
     //     Reconstructor::from_path("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?;
 
-    dbg!(&timer.lock().await);
-
     // FSM OFF-LOAD TO POSITIONER
     let matfile = MatFile::load("calibrations/sh24/m2_pzt_r.mat")?;
     let pzt_to_rbm: Vec<Mat<f64>> = (0..7)
@@ -426,9 +424,7 @@ async fn main() -> anyhow::Result<()> {
     1:  {servos::GmtFem}[OpticsState]! -> {agws::AgwsSh48}
 
     1: {servos::GmtFem}[OpticsState]!.. -> gmt_state_tx
-    // 1: {servos::GmtFem}[M1State]!.. -> state_print
 
-    // 1: {servos::GmtFem}[Mas<AverageMountEncoders>] -> mount_scopes
 
     // FSM to positionner off-load
     // 1: {servos::GmtFem}[M2FSMPiezoNodes]
@@ -455,20 +451,8 @@ async fn main() -> anyhow::Result<()> {
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
-    // 5000: {agws::AgwsSh48Kernel}[SensorData] -> m1_bm_recon
-    // 5000: sh48_m2_rbm_m1_bm_recon[SplitEstimate<0>]${42} -> pzt_to_rbm_int
-    //     // -> m2_rbm_adder
-    // 5000: sh48_m2_rbm_m1_bm_recon[SplitEstimate<1>]${27*7}
-    //     -> sh48_int[Right<Estimate>] -> m1_bm_adder
-    // 5000: m1_bm_recon[Estimate]${27*7}
     5000: {agws::AgwsSh48Kernel}[OpticsState]-> optical_state  // -> sh48_int
-    // 1: optical_state[M1State] -> state_print
     1: optical_state[M1State] -> {servos::GmtM1}
-    // 1: sh48_int[M1ModeShapes] -> {servos::GmtM1}
-    // 1000: {agws::AgwsSh48Kernel}[SensorData] -> mount_recon[MountEstimate] -> print
-    // // 1000: {agws::AgwsSh48Kernel}[SensorData] -> pol//m1_recon//[Estimate] -> print
-    // 1000: pzt_to_rbm[M2RigidBodyMotions]
-    // //          -> pol[PseudoSensorData] -> mount_recon[Estimate]->print
 
     }
 
