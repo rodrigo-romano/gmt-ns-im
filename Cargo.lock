@@ -1556,9 +1556,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.57"
+version = "4.5.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6899ea499e3fb9305a65d5ebf6e3d2248c5fab291f300ad0a704fbe142eae31a"
+checksum = "2797f34da339ce31042b27d23607e051786132987f595b02ba4f6a6dffb7030a"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1566,9 +1566,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.57"
+version = "4.5.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b12c8b680195a62a8364d16b8447b01b6c2c8f9aaf68bee653be34d4245e238"
+checksum = "24a241312cea5059b13574bb9b3861cabf758b879c15190b37b6d6fd63ab6876"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1590,9 +1590,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.7.7"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3e64b0cc0439b12df2fa678eae89a1c56a529fd067a9115f7827f1fffd22b32"
+checksum = "3a822ea5bc7590f9d40f1ba12c0dc3c2760f3482c6984db1573ad11031420831"
 
 [[package]]
 name = "clipboard-win"
@@ -6043,7 +6043,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d263152dead2b0df91bde3e2e66e0c7f02be705d84398c5809be2cae22ac3189"
 dependencies = [
  "anyhow",
- "clap 4.5.57",
+ "clap 4.5.60",
  "colorous",
  "csv",
  "env_logger",
@@ -6458,6 +6458,7 @@ name = "qp"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "clap 4.5.60",
  "config",
  "env_logger",
  "gmt_dos-actors 12.1.0",

@@ -6,6 +6,7 @@ default-run = "main"
 
 [dependencies]
 anyhow.workspace = true
+clap = { version = "4.5.60", features = ["derive"] }
 config = { version = "0.1.0", path = "../config" }
 env_logger = "0.11.8"
 gmt_dos-actors.workspace = true
