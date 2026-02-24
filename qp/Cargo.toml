@@ -2,7 +2,7 @@
 name = "qp"
 version = "0.1.0"
 edition = "2024"
-default-run = "main"
+default-run = "acoqp"
 
 [dependencies]
 anyhow.workspace = true
@@ -18,3 +18,9 @@ gmt_dos-systems_agws.workspace = true
 interface.workspace = true
 serde-pickle.workspace = true
 tokio = { workspace = true, features = ["full"] }
+gmt_dos-clients_optics-state.workspace = true
+
+[[bin]]
+name = "acoqp"
+path = "src/bin/main.rs"
+required-features = ["gmt_dos-systems_agws/shk48"]

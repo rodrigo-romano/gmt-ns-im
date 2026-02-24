@@ -3357,6 +3357,7 @@ dependencies = [
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
+ "gmt_dos-clients_optics-state",
  "gmt_dos-clients_servos",
  "gmt_dos-clients_transceiver",
  "gmt_dos-clients_windloads",
@@ -3476,6 +3477,7 @@ dependencies = [
  "faer-traits 0.21.5",
  "gif 0.13.3",
  "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-clients_optics-state",
  "image",
  "imageproc",
  "indicatif",
@@ -3555,6 +3557,7 @@ dependencies = [
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients_domeseeing",
  "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_optics-state",
  "indicatif",
  "log",
  "nalgebra 0.33.2",
@@ -3595,6 +3598,7 @@ dependencies = [
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients 5.0.0",
  "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_optics-state",
  "log",
  "nalgebra 0.33.2",
  "num-complex",
@@ -3665,6 +3669,7 @@ dependencies = [
  "gmt-lom",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_optics-state",
  "nalgebra 0.33.2",
 ]
 
@@ -3698,6 +3703,7 @@ dependencies = [
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients_fem 5.3.0",
  "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_optics-state",
  "gmt_m2-ctrl_asm_pid-damping",
  "gmt_m2-ctrl_asm_positionner",
  "gmt_m2-ctrl_asm_preshape-filter",
@@ -3766,6 +3772,15 @@ dependencies = [
  "log",
  "serde",
  "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gmt_dos-clients_optics-state"
+version = "0.1.0"
+dependencies = [
+ "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-clients_io 4.3.0",
+ "serde",
 ]
 
 [[package]]
@@ -3882,6 +3897,7 @@ dependencies = [
  "gmt_dos-clients 5.0.0",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_optics-state",
  "log",
  "nalgebra 0.33.2",
  "osqp",
@@ -3905,6 +3921,7 @@ dependencies = [
  "gmt_dos-clients_fem 5.3.0",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_m1-ctrl",
+ "gmt_dos-clients_optics-state",
  "log",
  "nalgebra 0.33.2",
  "serde",
@@ -6466,6 +6483,7 @@ dependencies = [
  "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_optics-state",
  "gmt_dos-systems_agws",
  "serde-pickle 1.2.0",
  "tokio",

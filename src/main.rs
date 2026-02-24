@@ -23,6 +23,7 @@ use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 //     CfdLoads,
 //     system::{M1, M2, Mount, SigmoidCfdLoads},
 // };
+use gmt_dos_clients_optics_state::{M1State, MirrorState, OpticalState, OpticsState};
 use gmt_dos_systems_agws::{
     Agws,
     agws::{
@@ -34,13 +35,7 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use interface::{
-    Tick,
-    optics::{
-        M1State, OpticsState,
-        state::{MirrorState, OpticalState},
-    },
-};
+use interface::Tick;
 use matio_rs::MatFile;
 
 const N_MODE: usize = 271;

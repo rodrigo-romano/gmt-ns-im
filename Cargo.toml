@@ -42,13 +42,14 @@ gmt_dos-clients_crseo = { git = "https://github.com/rconan/dos-actors.git", bran
 gmt_dos-clients_lom = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.2.0" }
 gmt_dos-systems_m1 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.0.0" }
 gmt_dos-systems_m2 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
-gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
+gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0", default-features = false, features = ["qp"] }
 gmt_dos-clients_scope-client = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2" }
 interface = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.5.0", package = "gmt_dos-actors-clients_interface" }
 serde-pickle = "1.2.0"
 skyangle = "0.3.1"
 tokio = { version = "1.43.0", features = ["full"] }
 gmt_dos-clients_mount = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.1.1" }
+gmt_dos-clients_optics-state = { version = "0.1.0", path = "../../../../../projects/dos-actors/clients/optics-state" , features = ["serde"]}
 
 [dependencies]
 gmt-fem.workspace = true
@@ -62,7 +63,7 @@ gmt_dos-clients_transceiver.workspace = true
 gmt_dos-clients_servos = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.0.0", features = [
   "cuda",
 ] }
-gmt_dos-systems_agws.workspace = true
+gmt_dos-systems_agws = { workspace = true, features = ["shk48", "shk24"] }
 gmt_dos-systems_m1 = { workspace = true, features = ["faer"] }
 tokio.workspace = true
 env_logger = "0.11.6"
@@ -75,6 +76,7 @@ nalgebra = "0.33"
 gmt_dos-clients_lom.workspace = true
 skyangle.workspace = true
 config = { version = "0.1.0", path = "config" }
+gmt_dos-clients_optics-state.workspace = true
 
 [features]
 qp = []
