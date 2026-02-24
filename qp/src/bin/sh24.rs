@@ -56,8 +56,7 @@ async fn main() -> anyhow::Result<()> {
         1: {agws::AgwsSh24Kernel}[M2RigidBodyMotions]  
         1: {agws::AgwsSh24Kernel}[M2RigidBodyMotions]
             -> m2_state[M2State] -> optical_state
-        1: optical_state[OpticsState] -> on_axis
-        1: on_axis[WfeRms<-9>] -> print
+        1: optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
     );
 
     Ok(())
