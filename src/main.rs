@@ -151,7 +151,7 @@ async fn main() -> anyhow::Result<()> {
     )?
     .build()?;
     println!("{aco}");
-    // aco.set_controller_gain(0f64);
+    aco.set_controller_gain(0.5f64);
 
     let (agws_wss, mut agws): (
         _,
@@ -367,12 +367,12 @@ async fn main() -> anyhow::Result<()> {
 
     let mut m1_rbm = vec![vec![0f64; 6]; 7];
     m1_rbm[0][0] = 1. * 1.1e-6; // M1S1-Tx:
-    // m1_rbm[1][1] = 1. * 1.2e-6; // M1S2-Ty:
-    // m1_rbm[2][3] = 1. * 1.4e-6; // M1S3-Rx:
-    // m1_rbm[3][4] = 1. * 1.5e-6; // M1S4-Ry:
-    // m1_rbm[4][2] = 1. * 1.6e-6; // M1S5-Tz:
-    // m1_rbm[5][5] = 1. * 1.3e-6; // M1S5-Rz:
-    // m1_rbm[6][5] = 1. * 2e-6; // M1S7-Rz:
+    m1_rbm[1][1] = 1. * 1.2e-6; // M1S2-Ty:
+    m1_rbm[2][3] = 1. * 1.4e-6; // M1S3-Rx:
+    m1_rbm[3][4] = 1. * 1.5e-6; // M1S4-Ry:
+    m1_rbm[4][2] = 1. * 1.6e-6; // M1S5-Tz:
+    m1_rbm[5][5] = 1. * 1.3e-6; // M1S5-Rz:
+    m1_rbm[6][5] = 1. * 2e-6; // M1S7-Rz:
     let mut m2_rbm = vec![0f64; 42];
     // m2_rbm[M2_RBM] = 1. * 3e-4; // M2S7-Rz
     let mut m1_modes = vec![vec![0f64; M1_BM]; 7];
