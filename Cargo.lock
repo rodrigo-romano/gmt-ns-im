@@ -7065,6 +7065,7 @@ dependencies = [
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
+ "gmt_dos-clients_optics-state",
  "gmt_dos-clients_scope",
  "gmt_dos-clients_scope-client",
  "gmt_dos-clients_transceiver",

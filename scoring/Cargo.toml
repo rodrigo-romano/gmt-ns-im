@@ -15,7 +15,7 @@ gmt_dos-clients_scope = { git = "https://github.com/rconan/dos-actors.git", bran
   "server",
 ], optional = true }
 gmt_dos-clients_scope-client = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2", optional = true }
-gmt_dos-systems_agws.workspace = true
+gmt_dos-systems_agws = { workspace = true, features = ["shk48", "shk24"] }
 tokio.workspace = true
 env_logger = "0.11.6"
 serde-pickle.workspace = true
@@ -25,6 +25,7 @@ scopes = { version = "0.1.0", path = "../scopes" }
 config = { version = "0.1.0", path = "../config" }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+gmt_dos-clients_optics-state.workspace = true
 
 
 [features]

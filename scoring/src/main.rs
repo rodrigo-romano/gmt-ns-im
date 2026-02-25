@@ -8,26 +8,22 @@ use gmt_dos_clients_crseo::{
     sensors::Camera,
 };
 use gmt_dos_clients_io::optics::{
-    Frame, Host, M1State, M2State, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt,
-    WfeRms,
+    Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms,
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
+use gmt_dos_clients_optics_state::{M1State, M2State, OpticalState, OpticsState};
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_systems_agws::Agws;
-use interface::{
-    optics::{OpticsState, state::OpticalState},
-    units::Mas,
-};
+use interface::units::Mas;
 use scopes::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-        tracing::subscriber::set_global_default(
+    tracing::subscriber::set_global_default(
         tracing_subscriber::FmtSubscriber::builder()
             .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
             .finish(),
     )?;
-
 
     let sim_sampling_frequency = 1000;
 
@@ -98,7 +94,6 @@ async fn main() -> anyhow::Result<()> {
     let optical_state = OpticalState::default();
 
     // let state_print = Print::default().scale(1e9_f64);
-
 
     actorscript! {
         #[model(name=scoring)]
