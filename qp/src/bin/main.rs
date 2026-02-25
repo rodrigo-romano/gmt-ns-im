@@ -1,6 +1,11 @@
 use clap::{Args, Parser};
 use gmt_dos_actors::actorscript;
-use gmt_dos_clients::{gif::Gif, print::Print, timer::Timer};
+use gmt_dos_clients::{
+    gif::{Frame, Gif},
+    print::Print,
+    sampler::Sampler,
+    timer::Timer,
+};
 use gmt_dos_clients_crseo::{
     OpticalModel,
     crseo::{FromBuilder, Gmt},
@@ -12,6 +17,7 @@ use gmt_dos_systems_agws::{
     Agws,
     agws::sh48::{Sh48, kernel::Sh48Kern},
     builder::shack_hartmann::ShackHartmannBuilder,
+    kernels::KernelFrame,
     qp::{ActiveOptics, QP},
 };
 use interface::Tick;
@@ -120,19 +126,26 @@ async fn main() -> anyhow::Result<()> {
     ));
 
     let on_axis = OpticalModel::<NoSensor>::builder().gmt(gmtb).build()?;
-    let print = Print::default();
+    let print = Print::default().tag("WFE RMS [nm]");
     let gif = Gif::new("qp-wavefront.gif", 512, 512)?;
+
+    let frame = Frame::<f32>::new("sh48-frame.png", 48 * 8);
+    let sampler = Sampler::default();
 
     let timer: Timer = Timer::new(n_sample);
 
     type AgwsSh48 = Sh48<1>;
     type AgwsSh48Kernel = Sh48Kern<K48>;
+    type Sh48Frame = KernelFrame<K48>;
+
     actorscript!(
       #[model(name=acoqp)]
       1: timer[Tick] -> optical_state[OpticsState] -> {agws::AgwsSh48}
       1: {agws::AgwsSh48Kernel}[OpticsState] -> optical_state
       1: optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
       1: on_axis[Wavefront] -> gif
+      1: {agws::AgwsSh48}[Sh48Frame] -> sampler
+      10: sampler[Sh48Frame] -> frame
     );
 
     // let mut log = model_logging_1.lock().await;

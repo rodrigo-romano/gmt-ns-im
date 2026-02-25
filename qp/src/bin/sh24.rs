@@ -1,7 +1,9 @@
 use std::fs::File;
 
 use gmt_dos_actors::actorscript;
-use gmt_dos_clients::{integrator::Integrator, print::Print, timer::Timer};
+use gmt_dos_clients::{
+    gif::Frame, integrator::Integrator, print::Print, sampler::Sampler, timer::Timer,
+};
 use gmt_dos_clients_crseo::{
     OpticalModel,
     calibration::Reconstructor,
@@ -17,6 +19,7 @@ use gmt_dos_systems_agws::{
         sh48::Sh48,
     },
     builder::shack_hartmann::ShackHartmannBuilder,
+    kernels::KernelFrame,
 };
 use interface::Tick;
 
@@ -41,22 +44,27 @@ async fn main() -> anyhow::Result<()> {
     let optical_state = OpticalState::default().zero_point(OpticalState::m2(m2));
     let m2_state = MirrorState::default();
 
-    type AgwsSh24 = Sh24<1>;
-    type AgwsSh24Kernel = Sh24Kern<Sh24TT<1>>;
 
-    let print = Print::new(8);
+    let print = Print::default().tag("WFE RMS [nm]");
 
     let timer: Timer = Timer::new(20);
 
     let on_axis = OpticalModel::<NoSensor>::builder().build()?;
 
+    let frame = Frame::<f32>::new("sh24-frame.png", 24 * 12);
+    let sampler = Sampler::default();
+
+    type Sh24Frame = KernelFrame<Sh24TT<1>>;
+    type AgwsSh24 = Sh24<1>;
+    type AgwsSh24Kernel = Sh24Kern<Sh24TT<1>>;
+
     actorscript!(
         #[model(name=sh24)]
         1: timer[Tick] -> optical_state[OpticsState] -> {agws::AgwsSh24}
-        1: {agws::AgwsSh24Kernel}[M2RigidBodyMotions]  
-        1: {agws::AgwsSh24Kernel}[M2RigidBodyMotions]
-            -> m2_state[M2State] -> optical_state
-        1: optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
+        1: {agws::AgwsSh24Kernel}[M2RigidBodyMotions] -> m2_state[M2State] 
+            -> optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
+        1: {agws::AgwsSh24}[Sh24Frame] -> sampler
+        10: sampler[Sh24Frame] -> frame
     );
 
     Ok(())
