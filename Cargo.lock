@@ -2639,7 +2639,7 @@ checksum = "da0e4dd2a88388a1f4ccc7c9ce104604dab68d9f408dc34cd45823d5a9069095"
 dependencies = [
  "futures-core",
  "futures-sink",
- "nanorand",
+ "nanorand 0.7.0",
  "spin 0.9.8",
 ]
 
@@ -5365,6 +5365,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "nanorand"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e3d189da485332e96ba8a5ef646a311871abd7915bf06ac848a9117f19cf6e4"
+
+[[package]]
 name = "ndk"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6485,6 +6491,7 @@ dependencies = [
  "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_optics-state",
  "gmt_dos-systems_agws",
+ "nanorand 0.8.0",
  "serde-pickle 1.2.0",
  "tokio",
 ]
