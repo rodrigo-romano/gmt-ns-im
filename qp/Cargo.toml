@@ -18,13 +18,20 @@ gmt_dos-systems_agws.workspace = true
 interface.workspace = true
 serde-pickle.workspace = true
 tokio = { workspace = true, features = ["full"] }
-gmt_dos-clients_optics-state.workspace = true
+gmt_dos-clients_optics-state = { workspace = true, features = [
+  "gmt_dos-clients_arrow",
+] }
 nanorand = { version = "0.8.0", optional = true }
 
 [[bin]]
 name = "acoqp"
 path = "src/bin/main.rs"
 required-features = ["acoqp"]
+
+[[bin]]
+name = "sh24"
+path = "src/bin/sh24.rs"
+required-features = ["gmt_dos-systems_agws/shk24"]
 
 [features]
 acoqp = ["gmt_dos-systems_agws/shk48", "nanorand"]
