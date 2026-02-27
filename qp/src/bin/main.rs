@@ -1,7 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{
-    gif::{Frame, Gif},
+    gif::{Frame, FrameBuilder, Gif},
     print::Print,
     sampler::Sampler,
     timer::Timer,
@@ -11,8 +11,13 @@ use gmt_dos_clients_crseo::{
     crseo::{FromBuilder, Gmt},
     sensors::NoSensor,
 };
-use gmt_dos_clients_io::optics::{Wavefront, WfeRms};
-use gmt_dos_clients_optics_state::{MirrorState, OpticalState, OpticsState};
+use gmt_dos_clients_io::{
+    gmt_m2::M2RigidBodyMotions,
+    optics::{SensorData, Wavefront, WfeRms},
+};
+use gmt_dos_clients_optics_state::{
+    M1State, MirrorState, OpticalState, OpticsState, arrow::OpticalStateArrow,
+};
 use gmt_dos_systems_agws::{
     Agws,
     agws::sh48::{Sh48, kernel::Sh48Kern},
@@ -186,12 +191,15 @@ async fn main() -> anyhow::Result<()> {
 
     let on_axis = OpticalModel::<NoSensor>::builder().gmt(gmtb).build()?;
     let print = Print::default().tag("WFE RMS [nm]");
-    let gif = Gif::new("qp-wavefront.gif", 512, 512)?;
+    let wavefront_gif = Gif::new("qp-wavefront.gif", 512, 512)?;
+    let sensor_data_gif = Gif::new("qp-sensor-data.gif", 48 * 6, 48)?.image_size(250)?;
 
     let frame = Frame::<f32>::new("sh48-frame.png", 48 * 8);
     let sampler = Sampler::default();
 
     let timer: Timer = Timer::new(cli.n_sample);
+    let optical_state_log =
+        OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder().build(M1_BM);
 
     type AgwsSh48 = Sh48<1>;
     type AgwsSh48Kernel = Sh48Kern<K48>;
@@ -202,9 +210,11 @@ async fn main() -> anyhow::Result<()> {
       #[labels(sampler="1:10", on_axis="On-axis GMT",
       frame="SH48 frame")]
       1: timer[Tick] -> optical_state[OpticsState] -> {agws::AgwsSh48}
+      1: optical_state[OpticsState] -> optical_state_log
       1: {agws::AgwsSh48Kernel}[OpticsState] -> optical_state
+      1: {agws::AgwsSh48Kernel}[SensorData]!.. -> sensor_data_gif
       1: optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
-      1: on_axis[Wavefront].. -> gif
+      1: on_axis[Wavefront].. -> wavefront_gif
       1: {agws::AgwsSh48}[Sh48Frame] -> sampler
       10: sampler[Sh48Frame].. -> frame
     );

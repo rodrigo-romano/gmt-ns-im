@@ -3779,6 +3779,7 @@ name = "gmt_dos-clients_optics-state"
 version = "0.1.0"
 dependencies = [
  "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-clients_arrow 2.3.0",
  "gmt_dos-clients_io 4.3.0",
  "serde",
 ]
