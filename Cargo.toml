@@ -45,7 +45,6 @@ gmt_dos-systems_m2 = { git = "https://github.com/rconan/dos-actors.git", branch 
 gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0", default-features = false, features = [
   "qp",
 ] }
-gmt_dos-clients_scope-client = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2" }
 interface = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.5.0", package = "gmt_dos-actors-clients_interface" }
 serde-pickle = "1.2.0"
 skyangle = "0.3.1"
