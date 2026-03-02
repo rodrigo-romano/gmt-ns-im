@@ -33,6 +33,8 @@ use gmt_dos_systems_agws::{
 };
 use interface::{Data, Read, Tick, UniqueIdentifier, Update, Write, filing::Filing};
 
+const M1_N_MODE: usize = 9;
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let data_repo = Path::new(&env::var("DATA_REPO")?).join("qp").join("sh24");
@@ -46,10 +48,7 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )?;
     println!("{recon}");
-    let gmtb = Gmt::builder().m1(
-        config::m1::segment::RAW_MODES,
-        config::m1::segment::N_RAW_MODE,
-    );
+    let gmtb = Gmt::builder().m1(config::m1::segment::MODES, M1_N_MODE);
     let sh24 = OpticalModelBuilder::from(
         &ShackHartmannBuilder::<Reconstructor>::sh24().use_calibration_src(),
     )
@@ -60,6 +59,7 @@ async fn main() -> anyhow::Result<()> {
     )?
     .controller(Integrator::<M2RigidBodyMotions>::new(42).gain(0.5));
     let sh48_wave = OpticalModel::<WaveSensor>::builder()
+        .gmt(gmtb.clone())
         .source(AgwsGuideStar::sh48())
         .sensor(
             OpticalModel::<NoSensor>::builder()
@@ -69,17 +69,32 @@ async fn main() -> anyhow::Result<()> {
         .build()?;
 
     let mirror = MirrorState::default()
-        .set_segment_state(1, SegmentState::rbms(&[0., 0., 0., 0., 1e-6, 0.]));
+        .set_segment_state(1, SegmentState::rbms(&[1e-6, 0., 0., 0., 0., 0.]));
     // .set_segment_state(2, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]))
     // .set_segment_state(7, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]));
-    let optical_state = OpticalState::default().zero_point(OpticalState::m1(mirror));
+    // let optical_state = OpticalState::default().zero_point(OpticalState::m2(mirror));
+    let optical_state = OpticalState::default().zero_point(OpticalState::m1(
+        MirrorState::default().set_segment_state(
+            1,
+            SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(0, 1e-6),
+        ),
+    ));
+    // let optical_state = OpticalState::default().zero_point(OpticalState::new(
+    //     MirrorState::default().set_segment_state(
+    //         2,
+    //         SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(8, 1e-6),
+    //     ),
+    //     mirror,
+    // ));
     let m2_state = MirrorState::default();
 
     let print = Print::default().tag("WFE RMS [nm]");
 
     let timer: Timer = Timer::new(20);
 
-    let on_axis = OpticalModel::<NoSensor>::builder().build()?;
+    let on_axis = OpticalModel::<NoSensor>::builder()
+        .gmt(gmtb.clone())
+        .build()?;
 
     let sh24_frame = Frame::<f32>::new("sh24-frame.gif", 24 * 12);
     let sampler = Sampler::default();
@@ -100,7 +115,7 @@ async fn main() -> anyhow::Result<()> {
     actorscript!(
         #[model(name=agws_sh24)]
         #[labels(
-            timer="💓",
+            timer="⏲",
             sh24="GMT\nAGWS SH24",
             sh24_kern="AGWS SH24\nKernel",
             on_axis="On-axis\nGMT",
@@ -114,7 +129,7 @@ async fn main() -> anyhow::Result<()> {
         10: sampler[Sh24Frame] -> sh24_frame
         1: on_axis[Wavefront] -> onaxis_wavefront_gif
         1: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
-        1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
+        // 1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
         1: optical_state[M2State] -> m2[M2RBM<1>].. -> m2_scopes
     );
 
@@ -135,23 +150,22 @@ async fn main() -> anyhow::Result<()> {
             (&ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src()).into();
         let sh24_omb: OpticalModelBuilder<CameraBuilder<1>> =
             (&ShackHartmannBuilder::<Reconstructor>::sh24().use_calibration_src()).into();
-        let recon: ClosedLoopReconstructor = if let Ok(recon) =
-            ClosedLoopReconstructor::from_data_repo("sh48_closed-loop_Txy_calib.bin")
-        {
-            recon
-        } else {
-            let mut recon =
-                <CentroidsProcessing as ClosedLoopCalibration<GmtM2, Imaging>>::calibrate(
-                    &(&sh48_omb).into(),
-                    CalibrationMode::t_xy(1e-6),
-                    &(&sh24_omb).into(),
-                    CalibrationMode::r_xy(1e-6),
-                )?;
-            recon
-                .pseudoinverse()
-                .to_data_repo("sh48_closed-loop_Txy_calib.bin")?;
-            recon
-        };
+        let file_name = "sh48_closed-loop_Txy_calib.bin";
+        let recon: ClosedLoopReconstructor =
+            if let Ok(recon) = ClosedLoopReconstructor::from_data_repo(file_name) {
+                recon
+            } else {
+                let mut recon =
+                    <CentroidsProcessing as ClosedLoopCalibration<GmtM2, Imaging>>::calibrate(
+                        &(&sh48_omb).into(),
+                        CalibrationMode::t_xy(1e-6),
+                        // CalibrationMode::RBM([Some(1e-6), Some(1e-6), Some(1e-6), None, None, None]),
+                        &(&sh24_omb).into(),
+                        CalibrationMode::r_xy(1e-6),
+                    )?;
+                recon.pseudoinverse().to_data_repo(file_name)?;
+                recon
+            };
         println!("{recon}");
         let sh48 = OpticalModelBuilder::from(
             &ShackHartmannBuilder::<ClosedLoopReconstructor, R>::sh48().use_calibration_src(),
@@ -165,14 +179,14 @@ async fn main() -> anyhow::Result<()> {
 
         let merge_agws = MergeAgws::new();
 
-        let timer: Timer = Timer::new(200);
+        let timer: Timer = Timer::new(100);
 
         type Sh48Frame = KernelFrame<Sh48<R>>;
 
         actorscript!(
             #[model(name=agws)]
             #[labels(
-                timer="💓",
+                timer="⏲",
                 sh24="GMT\nAGWS SH24",
                 sh24_kern="AGWS SH24\nKernel",
                 sh48="GMT\nAGWS SH48",
@@ -191,18 +205,18 @@ async fn main() -> anyhow::Result<()> {
             10: sampler[Sh24Frame] -> sh24_frame
             1: on_axis[Wavefront] -> onaxis_wavefront_gif
             1: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
-            1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
+            // 1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
             1: optical_state[M2State] -> m2[M2RBM<1>].. -> m2_scopes
         );
 
-        let mut m1_scopes_lock = m1_scopes.lock().await;
+        // let mut m1_scopes_lock = m1_scopes.lock().await;
         let mut m2_scopes_lock = m2_scopes.lock().await;
         println!("Running... press Ctrl-C to stop");
         tokio::select! {
             _ = tokio::signal::ctrl_c() => {
                 println!("Caught Ctrl-C, shutting down.");
             }
-            _ = m1_scopes_lock.close() => {}
+            // _ = m1_scopes_lock.close() => {}
             _ = m2_scopes_lock.close() => {}
         }
     }
@@ -242,6 +256,7 @@ impl Read<Estimate> for MergeAgws {
             .for_each(|(rbms, data)| {
                 rbms[0] = data[0];
                 rbms[1] = data[1];
+                rbms[2] = data[2];
             });
     }
 }
