@@ -32,6 +32,11 @@ path = "src/bin/main.rs"
 required-features = ["acoqp"]
 
 [[bin]]
+name = "calibration"
+path = "src/bin/calibration.rs"
+required-features = ["gmt_dos-systems_agws/shk48"]
+
+[[bin]]
 name = "sh24"
 path = "src/bin/sh24.rs"
 required-features = ["gmt_dos-systems_agws/shk24"]

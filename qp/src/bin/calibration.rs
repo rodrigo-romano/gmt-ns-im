@@ -11,6 +11,7 @@ use gmt_dos_clients_crseo::{
         FromBuilder, Gmt,
         gmt::{GmtM1, GmtM2},
     },
+    sensors::builders::CameraBuilder,
 };
 use gmt_dos_systems_agws::builder::shack_hartmann::ShackHartmannBuilder;
 
@@ -19,7 +20,7 @@ const M1_N_MODE: usize = 27;
 fn main() -> Result<(), Box<dyn Error>> {
     let sh48 = ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src();
     let gmtb = Gmt::builder().m1(config::m1::segment::MODES, config::m1::segment::N_MODE);
-    let omb = OpticalModelBuilder::from(sh48).gmt(gmtb);
+    let omb = OpticalModelBuilder::<CameraBuilder>::from(&sh48).gmt(gmtb);
     println!("{}", omb.clone().build()?);
 
     // M1 & M2 RBMs without S7 Rz
