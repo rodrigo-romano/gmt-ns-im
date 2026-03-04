@@ -6499,6 +6499,7 @@ dependencies = [
  "clap 4.5.60",
  "config",
  "env_logger",
+ "faer 0.21.9",
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients 5.0.0",

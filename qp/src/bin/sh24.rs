@@ -14,26 +14,26 @@ use gmt_dos_clients::{
 };
 use gmt_dos_clients_crseo::{
     OpticalModel, OpticalModelBuilder,
-    calibration::Reconstructor,
-    crseo::{FromBuilder, Gmt},
+    calibration::{Calib, Calibration, MixedMirrorMode, Reconstructor, algebra::CalibProps},
+    crseo::{FromBuilder, Gmt, gmt::GmtM1},
     sensors::{NoSensor, WaveSensor},
 };
 use gmt_dos_clients_io::{
-    Estimate, gmt_m1,
     gmt_m2::M2RigidBodyMotions,
     optics::{Wavefront, WfeRms},
 };
 use gmt_dos_clients_optics_state::{
     M1State, M2State, MirrorState, OpticalState, OpticsState, SegmentState,
+    arrow::OpticalStateArrow,
 };
 use gmt_dos_systems_agws::{
     agws::sh24::Sh24TT,
     builder::shack_hartmann::{AgwsGuideStar, ShackHartmannBuilder},
     kernels::{Kernel, KernelFrame},
 };
-use interface::{Data, Read, Tick, UniqueIdentifier, Update, Write, filing::Filing};
+use interface::{Tick, filing::Filing};
 
-const M1_N_MODE: usize = 9;
+use qp::sh24::*;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -72,20 +72,22 @@ async fn main() -> anyhow::Result<()> {
         .set_segment_state(1, SegmentState::rbms(&[1e-6, 0., 0., 0., 0., 0.]));
     // .set_segment_state(2, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]))
     // .set_segment_state(7, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]));
-    // let optical_state = OpticalState::default().zero_point(OpticalState::m2(mirror));
-    let optical_state = OpticalState::default().zero_point(OpticalState::m1(
-        MirrorState::default().set_segment_state(
-            1,
-            SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(0, 1e-6),
-        ),
-    ));
+    let optical_state = OpticalState::default().zero_point(OpticalState::m2(mirror));
+    // let optical_state = OpticalState::default().zero_point(OpticalState::m1(
+    //     MirrorState::default().set_segment_state(
+    //         1,
+    //         SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(0, 1e-6),
+    //     ),
+    // ));
     // let optical_state = OpticalState::default().zero_point(OpticalState::new(
     //     MirrorState::default().set_segment_state(
-    //         2,
-    //         SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(8, 1e-6),
+    //         1,
+    //         SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(1, 1e-6),
     //     ),
     //     mirror,
     // ));
+    let optical_state_arrow =
+        OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder().build(M1_N_MODE);
     let m2_state = MirrorState::default();
 
     let print = Print::default().tag("WFE RMS [nm]");
@@ -146,15 +148,16 @@ async fn main() -> anyhow::Result<()> {
 
         const R: usize = 10;
 
-        let sh48_omb: OpticalModelBuilder<CameraBuilder<1>> =
-            (&ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src()).into();
-        let sh24_omb: OpticalModelBuilder<CameraBuilder<1>> =
-            (&ShackHartmannBuilder::<Reconstructor>::sh24().use_calibration_src()).into();
-        let file_name = "sh48_closed-loop_Txy_calib.bin";
+        // closed-loop calibration of M2 Sx Txy with SH48
+        let file_name = "sh48_closed-loop_Txy_calib.pkl";
         let recon: ClosedLoopReconstructor =
             if let Ok(recon) = ClosedLoopReconstructor::from_data_repo(file_name) {
                 recon
             } else {
+                let sh48_omb: OpticalModelBuilder<CameraBuilder<1>> =
+                    (&ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src()).into();
+                let sh24_omb: OpticalModelBuilder<CameraBuilder<1>> =
+                    (&ShackHartmannBuilder::<Reconstructor>::sh24().use_calibration_src()).into();
                 let mut recon =
                     <CentroidsProcessing as ClosedLoopCalibration<GmtM2, Imaging>>::calibrate(
                         &(&sh48_omb).into(),
@@ -167,21 +170,90 @@ async fn main() -> anyhow::Result<()> {
                 recon
             };
         println!("{recon}");
+
+        // calibration of M1 Sx bending modes with SH48
+        let file_name = "sh48_bending-modes_calib.pkl";
+        let m1_bm_recon: Reconstructor = if let Ok(recon) = Reconstructor::from_data_repo(file_name)
+        {
+            recon
+        } else {
+            let sh48_omb: OpticalModelBuilder<CameraBuilder<1>> =
+                (&ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src()).into();
+            let mut recon = <CentroidsProcessing as Calibration<GmtM1>>::calibrate(
+                &(&sh48_omb.gmt(gmtb.clone())).into(),
+                CalibrationMode::modes(M1_N_MODE, 1e-6),
+            )?;
+            recon.pseudoinverse().to_data_repo(file_name)?;
+            recon
+        };
+        println!("{m1_bm_recon}");
+
+        // recon.merge(m1_bm_recon).pseudoinverse();
+        // println!("{recon}");
+        // let mut c_txy: Vec<_> = recon
+        //     .calib()
+        //     .map(|c| c.m1_closed_loop_to_sensor().clone())
+        //     .collect();
+        // let c_bms = m1_bm_recon.calib_slice().to_vec();
+        let mmode = MixedMirrorMode::from(vec![
+            CalibrationMode::t_xy(1e-6),
+            CalibrationMode::modes(M1_N_MODE, 1e-6),
+        ]);
+        let d: Vec<_> = recon
+            .calib()
+            .map(|c| c.mat_ref())
+            .zip(
+                m1_bm_recon
+                    .calib()
+                    .map(|c| (c.mat_ref(), c.mask_as_slice().to_vec())),
+            )
+            .map(|(c_txy, (c_bms, mask))| {
+                let mut d = faer::Mat::<f64>::zeros(c_txy.nrows(), c_txy.ncols() + c_bms.ncols());
+                d.as_mut()
+                    .subcols_mut(0, c_txy.ncols())
+                    .copy_from(c_txy * TXY_RESIDUAL_SCALING);
+                d.as_mut()
+                    .subcols_mut(c_txy.ncols(), c_bms.ncols())
+                    .copy_from(c_bms);
+                (d, mask)
+            })
+            .enumerate()
+            .map(|(i, (d, mask))| {
+                Calib::<MixedMirrorMode>::builder()
+                    .c(d.col_iter()
+                        .flat_map(|c| c.iter().copied())
+                        .collect::<Vec<_>>())
+                    .sid(i as u8 + 1)
+                    .mask(mask)
+                    .mode(mmode.clone())
+                    .n_mode(M1_N_MODE + 2)
+                    .build()
+            })
+            .collect();
+        let mut recon = Reconstructor::<MixedMirrorMode>::new(d);
+        recon
+            .truncated_pseudoinverse(vec![2; 7])
+            // .pseudoinverse()
+            .to_data_repo("sh48_merged_recon.pkl")?;
+        println!("{recon}");
+
         let sh48 = OpticalModelBuilder::from(
-            &ShackHartmannBuilder::<ClosedLoopReconstructor, R>::sh48().use_calibration_src(),
+            &ShackHartmannBuilder::<Reconstructor<MixedMirrorMode>, R>::sh48()
+                .use_calibration_src(),
         )
         .gmt(gmtb.clone())
         .build()?;
-        let sh48_kern = Kernel::<Sh48<R>>::try_from(
-            ShackHartmannBuilder::<ClosedLoopReconstructor, R>::sh48().reconstructor(recon),
+
+        let sh48_kern = Kernel::<Sh48MergerReconstructor<R>>::try_from(
+            ShackHartmannBuilder::<Reconstructor<MixedMirrorMode>, R>::sh48().reconstructor(recon),
         )?
-        .controller(Integrator::<Estimate>::new(42).gain(0.5));
+        .controller(Integrator::<Estimate>::new(105).gain(0.5));
 
         let merge_agws = MergeAgws::new();
 
-        let timer: Timer = Timer::new(100);
+        let timer: Timer = Timer::new(200);
 
-        type Sh48Frame = KernelFrame<Sh48<R>>;
+        type Sh48Frame = KernelFrame<Sh48MergerReconstructor<R>>;
 
         actorscript!(
             #[model(name=agws)]
@@ -194,13 +266,16 @@ async fn main() -> anyhow::Result<()> {
                 on_axis="On-axis\nGMT",
                 sh48_wave="SH48 GMT\nWave-Sensor",
                 sampler = "1:10",
-                sh24_frame = "SH24\nframe")]
+                sh24_frame = "SH24\nframe",
+                optical_state_arrow = "Optics State\nLog")]
             1: timer[Tick] -> optical_state[OpticsState]
                 -> sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> merge_agws[M2State]
                     -> optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
+            1: merge_agws[M1State] -> optical_state[OpticsState] -> optical_state_arrow
             1: optical_state[OpticsState] -> sh48
             10: sh48[Sh48Frame]! -> sh48_kern[Estimate]
                     -> merge_agws
+            // 10: sh48_kern[SensorData]${48*48*6}
             1: sh24[Sh24Frame] -> sampler
             10: sampler[Sh24Frame] -> sh24_frame
             1: on_axis[Wavefront] -> onaxis_wavefront_gif
@@ -222,90 +297,4 @@ async fn main() -> anyhow::Result<()> {
     }
 
     Ok(())
-}
-
-pub struct MergeAgws {
-    m2_rbms: Vec<f64>,
-}
-impl MergeAgws {
-    pub fn new() -> Self {
-        Self {
-            m2_rbms: vec![0f64; 42],
-        }
-    }
-}
-impl Update for MergeAgws {}
-impl Read<M2RigidBodyMotions> for MergeAgws {
-    fn read(&mut self, data: Data<M2RigidBodyMotions>) {
-        // dbg!(&data);
-        self.m2_rbms
-            .chunks_mut(6)
-            .zip(data.chunks(6))
-            .for_each(|(rbms, data)| {
-                rbms[3] = data[3];
-                rbms[4] = data[4];
-            });
-    }
-}
-impl Read<Estimate> for MergeAgws {
-    fn read(&mut self, data: Data<Estimate>) {
-        // dbg!(&data);
-        self.m2_rbms
-            .chunks_mut(6)
-            .zip(data.chunks(6))
-            .for_each(|(rbms, data)| {
-                rbms[0] = data[0];
-                rbms[1] = data[1];
-                rbms[2] = data[2];
-            });
-    }
-}
-impl Write<M2State> for MergeAgws {
-    fn write(&mut self) -> Option<Data<M2State>> {
-        Some(Data::new(MirrorState::from_rbms(&self.m2_rbms).into()))
-    }
-}
-
-pub enum M1RBM<const ID: u8> {}
-impl<const ID: u8> UniqueIdentifier for M1RBM<ID> {
-    type DataType = <gmt_m1::segment::RBM<ID> as UniqueIdentifier>::DataType;
-    const PORT: u16 = 51_110 + ID as u16;
-}
-impl<const ID: u8> Write<M1RBM<ID>> for MirrorState {
-    fn write(&mut self) -> Option<Data<M1RBM<ID>>> {
-        <_ as Write<gmt_m1::segment::RBM<ID>>>::write(self).map(|data| data.transmute())
-    }
-}
-
-#[gmt_dos_clients_scope::scopehub]
-pub enum M1RBMScope {
-    Scope(M1RBM<1>),
-    Scope(M1RBM<2>),
-    Scope(M1RBM<3>),
-    Scope(M1RBM<4>),
-    Scope(M1RBM<5>),
-    Scope(M1RBM<6>),
-    Scope(M1RBM<7>),
-}
-
-pub enum M2RBM<const ID: u8> {}
-impl<const ID: u8> UniqueIdentifier for M2RBM<ID> {
-    type DataType = <gmt_m1::segment::RBM<ID> as UniqueIdentifier>::DataType;
-    const PORT: u16 = 52_220 + ID as u16;
-}
-impl<const ID: u8> Write<M2RBM<ID>> for MirrorState {
-    fn write(&mut self) -> Option<Data<M2RBM<ID>>> {
-        <_ as Write<gmt_m1::segment::RBM<ID>>>::write(self).map(|data| data.transmute())
-    }
-}
-
-#[gmt_dos_clients_scope::scopehub]
-pub enum M2RBMScope {
-    Scope(M2RBM<1>),
-    Scope(M2RBM<2>),
-    Scope(M2RBM<3>),
-    Scope(M2RBM<4>),
-    Scope(M2RBM<5>),
-    Scope(M2RBM<6>),
-    Scope(M2RBM<7>),
 }
