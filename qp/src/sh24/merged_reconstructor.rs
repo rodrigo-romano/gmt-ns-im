@@ -18,7 +18,7 @@ impl<const I: usize> KernelSpecs for Sh48MergerReconstructor<I> {
     type Estimator = Reconstructor<MixedMirrorMode, Calib<MixedMirrorMode>>;
     // type Estimator = Reconstructor<CalibrationMode, ClosedLoopCalib>;
 
-    type Integrator = Integrator<Estimate>;
+    type Controller = Integrator<Estimate>;
 
     type Input = Frame<Dev>;
 

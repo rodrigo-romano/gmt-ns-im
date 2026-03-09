@@ -19,8 +19,9 @@ use gmt_dos_clients_crseo::{
     sensors::{NoSensor, WaveSensor},
 };
 use gmt_dos_clients_io::{
+    gmt_m1::segment::ModeShapes,
     gmt_m2::M2RigidBodyMotions,
-    optics::{Wavefront, WfeRms},
+    optics::{SensorData, Wavefront, WfeRms},
 };
 use gmt_dos_clients_optics_state::{
     M1State, M2State, MirrorState, OpticalState, OpticsState, SegmentState,
@@ -68,11 +69,13 @@ async fn main() -> anyhow::Result<()> {
         )
         .build()?;
 
+    const SID: u8 = 1;
     let mirror = MirrorState::default()
-        .set_segment_state(1, SegmentState::rbms(&[1e-6, 0., 0., 0., 0., 0.]));
+        .set_segment_state(SID, SegmentState::rbms(&[0., 0., 0., 1e-6, 0., 0.]));
     // .set_segment_state(2, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]))
     // .set_segment_state(7, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]));
-    let optical_state = OpticalState::default().zero_point(OpticalState::m2(mirror));
+    let optical_state = OpticalState::m1(MirrorState::default().zeros_modes(M1_N_MODE))
+        .zero_point(OpticalState::m1(mirror));
     // let optical_state = OpticalState::default().zero_point(OpticalState::m1(
     //     MirrorState::default().set_segment_state(
     //         1,
@@ -98,7 +101,8 @@ async fn main() -> anyhow::Result<()> {
         .gmt(gmtb.clone())
         .build()?;
 
-    let sh24_frame = Frame::<f32>::new("sh24-frame.gif", 24 * 12);
+    let sh24_frame = Frame::<f32>::new("sh24-frame.png", 24 * 12);
+    let sh48_frame = Frame::<f32>::new("sh48-frame.png", 48 * 8);
     let sampler = Sampler::default();
 
     let onaxis_wavefront_gif = Gif::new("on-axis_wavefront.gif", 512, 512)?;
@@ -127,12 +131,14 @@ async fn main() -> anyhow::Result<()> {
         1: timer[Tick] -> optical_state[OpticsState]
             -> sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> m2_state[M2State]
                 -> optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
+        1: sh24_kern[SensorData]${24*24*2}
         1: sh24[Sh24Frame] -> sampler
         10: sampler[Sh24Frame] -> sh24_frame
         1: on_axis[Wavefront] -> onaxis_wavefront_gif
         1: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
-        // 1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
-        1: optical_state[M2State] -> m2[M2RBM<1>].. -> m2_scopes
+        1: optical_state[M1State] -> m1[M1RBM<SID>].. -> m1_scopes
+        1: m1[ModeShapes<SID>].. -> m1_scopes
+        1: optical_state[M2State] -> m2[M2RBM<SID>].. -> m2_scopes
     );
 
     {
@@ -247,7 +253,7 @@ async fn main() -> anyhow::Result<()> {
         let sh48_kern = Kernel::<Sh48MergerReconstructor<R>>::try_from(
             ShackHartmannBuilder::<Reconstructor<MixedMirrorMode>, R>::sh48().reconstructor(recon),
         )?
-        .controller(Integrator::<Estimate>::new(105).gain(0.5));
+        .controller(Integrator::<Estimate>::new(M1_N_MODE * 7 + 42).gain(0.1));
 
         let merge_agws = MergeAgws::new();
 
@@ -267,31 +273,34 @@ async fn main() -> anyhow::Result<()> {
                 sh48_wave="SH48 GMT\nWave-Sensor",
                 sampler = "1:10",
                 sh24_frame = "SH24\nframe",
+                sh48_frame = "SH48\nframe",
                 optical_state_arrow = "Optics State\nLog")]
             1: timer[Tick] -> optical_state[OpticsState]
-                -> sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> merge_agws[M2State]
-                    -> optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
-            1: merge_agws[M1State] -> optical_state[OpticsState] -> optical_state_arrow
+                -> sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions]
+                    -> merge_agws[OpticsState] -> optical_state[OpticsState]..
+                        -> on_axis[WfeRms<-9>] -> print
+            1: optical_state[OpticsState].. -> optical_state_arrow
             1: optical_state[OpticsState] -> sh48
-            10: sh48[Sh48Frame]! -> sh48_kern[Estimate]
-                    -> merge_agws
+            10: sh48[Sh48Frame]! -> sh48_kern[Estimate] -> merge_agws
+            10: sh48[Sh48Frame]!.. -> sh48_frame
             // 10: sh48_kern[SensorData]${48*48*6}
-            1: sh24[Sh24Frame] -> sampler
+            1: sh24[Sh24Frame].. -> sampler
             10: sampler[Sh24Frame] -> sh24_frame
             1: on_axis[Wavefront] -> onaxis_wavefront_gif
-            1: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
-            // 1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
-            1: optical_state[M2State] -> m2[M2RBM<1>].. -> m2_scopes
+            1: optical_state[OpticsState].. -> sh48_wave[Wavefront] -> sh48_wavefront_gif
+            1: optical_state[M1State] -> m1[M1RBM<SID>].. -> m1_scopes
+            1: m1[ModeShapes<SID>].. -> m1_scopes
+            1: optical_state[M2State] -> m2[M2RBM<SID>].. -> m2_scopes
         );
 
-        // let mut m1_scopes_lock = m1_scopes.lock().await;
+        let mut m1_scopes_lock = m1_scopes.lock().await;
         let mut m2_scopes_lock = m2_scopes.lock().await;
         println!("Running... press Ctrl-C to stop");
         tokio::select! {
             _ = tokio::signal::ctrl_c() => {
                 println!("Caught Ctrl-C, shutting down.");
             }
-            // _ = m1_scopes_lock.close() => {}
+            _ = m1_scopes_lock.close() => {}
             _ = m2_scopes_lock.close() => {}
         }
     }
