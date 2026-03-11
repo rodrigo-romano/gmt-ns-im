@@ -42,7 +42,7 @@ gmt_dos-clients_crseo = { git = "https://github.com/rconan/dos-actors.git", bran
 gmt_dos-clients_lom = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.2.0" }
 gmt_dos-systems_m1 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.0.0" }
 gmt_dos-systems_m2 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
-gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0", default-features = false, features = [
+gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.0", default-features = false, features = [
   "qp",
 ] }
 interface = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.5.0", package = "gmt_dos-actors-clients_interface" }
@@ -80,6 +80,7 @@ gmt_dos-clients_lom.workspace = true
 skyangle.workspace = true
 config = { version = "0.1.0", path = "config" }
 gmt_dos-clients_optics-state.workspace = true
+qp = { version = "0.1.0", path = "qp" }
 
 [features]
 qp = []

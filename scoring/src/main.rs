@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, fs, path::Path};
 
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{gif, print::Print};
@@ -24,6 +24,14 @@ async fn main() -> anyhow::Result<()> {
             .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
             .finish(),
     )?;
+
+    let data_repo = Path::new(&env::var("DATA_REPO")?)
+        .join("main")
+        .join("scoring");
+    fs::create_dir_all(&data_repo)?;
+    unsafe {
+        env::set_var("DATA_REPO", data_repo);
+    }
 
     let sim_sampling_frequency = 1000;
 
@@ -97,6 +105,7 @@ async fn main() -> anyhow::Result<()> {
 
     actorscript! {
         #[model(name=scoring)]
+        #[labels(gmt_state_rx="🎧")]
     1: gmt_state_rx[OpticsState] -> on_axis
     1: on_axis[WfeRms<-9>].. -> shub
     1: on_axis[SegmentWfeRms<-9>].. -> shub
