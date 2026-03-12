@@ -11,7 +11,7 @@ use gmt_dos_clients::{
     gain::Gain, integrator::Integrator, leftright, operator::Operator, timer::Timer,
 };
 use gmt_dos_clients_crseo::{
-    calibration::{ClosedLoopCalib, Reconstructor},
+    calibration::Reconstructor,
     crseo::{FromBuilder, Gmt},
 };
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
@@ -49,11 +49,12 @@ use interface::{Left, Right, Tick};
 use matio_rs::MatFile;
 #[cfg(not(feature = "qp"))]
 use qp::sh24::Sh48MergerReconstructor;
+use qp::sh24::TXY_RESIDUAL_SCALING;
 
-const N_MODE: usize = 271;
-const M1_BM: usize = 27;
-const M1_RBM: usize = 41;
-const M2_RBM: usize = 41;
+// const N_MODE: usize = 271;
+// const M1_BM: usize = 27;
+// const M1_RBM: usize = 41;
+// const M2_RBM: usize = 41;
 
 #[cfg(not(feature = "qp"))]
 type K48 = Sh48MergerReconstructor<{ config::agws::sh48::RATE }>;
@@ -219,7 +220,11 @@ async fn main() -> anyhow::Result<()> {
             use qp::sh24::calibration::Sh48Calibration;
 
             // agws.sh48_calibration(sh48_calibration(gmtb.clone(), config::m1::segment::N_MODE)?)
-            agws.sh48_calibration(Sh48Calibration::new()?.recon()?)
+            agws.sh48_calibration(
+                Sh48Calibration::new()?
+                    .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
+                    .recon()?,
+            )
         };
         #[cfg(feature = "qp")]
         let agws = agws.sh48_calibration(aco);
@@ -385,7 +390,8 @@ async fn main() -> anyhow::Result<()> {
     // FSM command integrator
     let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
 
-    let sh48_m2_rbm_int = Integrator::new(42).gain(0.1);
+    let sh48_m2_rbm_int = Integrator::new(42).gain(0.4);
+    let sh48_m1_bm_int = Integrator::new(7 * config::m1::segment::N_MODE).gain(0.4);
 
     // let print = Print::<Vec<f64>>::new(8);
     let timer: Timer = Timer::new(n_sim);
@@ -406,19 +412,23 @@ async fn main() -> anyhow::Result<()> {
     // m1_rbm[6][5] = 1. * 2e-6; // M1S7-Rz:
     let mut m2_rbm = vec![0f64; 42];
     m2_rbm[0] = 1e-6; // M2S7-Rz
-    let mut m1_modes = vec![vec![0f64; M1_BM]; 7];
+    let mut m1_modes = vec![vec![0f64; config::m1::segment::N_RAW_MODE]; 7];
     // m1_modes[0][0] = 4e-6;
     // m1_modes[0][2] = 5e-6;
     let m1 = MirrorState::new(m1_rbm, m1_modes);
     let zero_point = OpticalState::new(m1, MirrorState::from_rbms(&m2_rbm));
     let optical_state = OpticalState::default().zero_point(zero_point);
     let mut split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
-        6, // + config::m1::segment::N_MODE,
+        6 + config::m1::segment::N_MODE,
         6,
     );
     let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
         .build(config::m1::segment::N_MODE);
     let add_m2_rbms = Operator::plus();
+
+    let m2_txy_scaling = Gain::new(vec![TXY_RESIDUAL_SCALING as f64; 42]);
+
+    let m1_state = MirrorState::default();
 
     // dbg!(&optical_state);
     // let state_print = gmt_dos_clients::print::Print::default().scale(1e9_f64);
@@ -491,13 +501,16 @@ async fn main() -> anyhow::Result<()> {
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
-    5000: {agws::AgwsSh48Kernel}[Estimate]
+    1000: {agws::AgwsSh48Kernel}[Estimate]${42+7*config::m1::segment::N_MODE}
         -> split[Left<Estimate>]
-            -> sh48_m2_rbm_int // -> sh48_int
+            -> m2_txy_scaling[Left<Estimate>]
+                -> sh48_m2_rbm_int
+    1000: split[Right<Estimate>]
+        -> sh48_m1_bm_int[M1ModeShapes] -> m1_state
     1:  sh48_m2_rbm_int[Left<Estimate>] // -> sh48_int
                 -> add_m2_rbms
 
-    // 1: optical_state[M1State] -> {servos::GmtM1}
+    1: m1_state[M1State] -> {servos::GmtM1}
 
     }
 
