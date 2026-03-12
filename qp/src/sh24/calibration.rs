@@ -6,7 +6,7 @@ use gmt_dos_clients_crseo::{
     },
     centroiding::CentroidsProcessing,
     crseo::{
-        Imaging,
+        FromBuilder, Gmt, Imaging,
         builders::GmtBuilder,
         gmt::{GmtM1, GmtM2},
     },
@@ -61,15 +61,16 @@ impl Sh48Calibration {
             m1_n_mode: 0,
         })
     }
-    pub fn m1_modes(mut self, m1_n_mode: usize, gmtb: GmtBuilder) -> Result<Self> {
+    pub fn m1_modes(self, m1_modes: &str, m1_n_mode: usize) -> Result<Self> {
         // calibration of M1 Sx bending modes with SH48
-        let file_name = format!("sh48_{}_bending-modes_calib.pkl", m1_n_mode);
+        let file_name = format!("sh48_{}-{}_calib.pkl", m1_n_mode, m1_modes);
         let m1_bm_recon: Reconstructor =
             if let Ok(recon) = Reconstructor::from_data_repo(&file_name) {
                 recon
             } else {
                 let sh48_omb: OpticalModelBuilder<CameraBuilder<1>> =
                     (&ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src()).into();
+                let gmtb = Gmt::builder().m1(m1_modes, m1_n_mode);
                 let recon = <CentroidsProcessing as Calibration<GmtM1>>::calibrate(
                     &(&sh48_omb.gmt(gmtb.clone())).into(),
                     CalibrationMode::modes(m1_n_mode, 1e-6),

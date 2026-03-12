@@ -106,7 +106,7 @@ async fn main() -> anyhow::Result<()> {
     actorscript! {
         #[model(name=scoring)]
         #[labels(gmt_state_rx="🎧")]
-    1: gmt_state_rx[OpticsState] -> on_axis
+    1: gmt_state_rx[OpticsState].. -> on_axis
     1: on_axis[WfeRms<-9>].. -> shub
     1: on_axis[SegmentWfeRms<-9>].. -> shub
     1: on_axis[SegmentPiston<-9>].. -> shub
@@ -116,7 +116,7 @@ async fn main() -> anyhow::Result<()> {
     1000: on_axis[PSSn] -> aprint
     // 1000: on_axis[Wavefront].. -> on_axis_wavefront
 
-    1: gmt_state_rx[OpticsState] -> optical_state [M1State] -> m1_lom
+    1: gmt_state_rx[OpticsState].. -> optical_state [M1State] -> m1_lom
     1: optical_state [M2State] -> m2_lom
     1: m1_lom[M1SegmentPiston].. -> m1_scopes
     1: m2_lom[M2SegmentPiston].. -> m2_scopes

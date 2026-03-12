@@ -8,7 +8,7 @@ use gmt_dos_clients_crseo::calibration::{
     Calib, CalibrationMode, ClosedLoopCalib, Modality, Reconstructor, SegmentMode,
     algebra::CalibProps,
 };
-use gmt_dos_clients_io::{gmt_m2::M2RigidBodyMotions, optics::M1Modes};
+use gmt_dos_clients_io::optics::M1Modes;
 use interface::{Data, OperatorLeftRight, Read, UID, UniqueIdentifier, Update, Write};
 
 #[derive(Debug)]
