@@ -158,13 +158,12 @@ async fn main() -> anyhow::Result<()> {
     // )?;
     // println!("closed-loop SH48 to M1 BM reconstructor:\n{m1_bm_recon}");
 
-    let data_path = Path::new("/home/ubuntu/projects/im-sim-scripts/aco_loop_example/data");
     #[cfg(feature = "qp")]
     let mut aco = {
         QP::<M1_RBM, M2_RBM, 27, N_MODE>::new(
             //"../aco_impl_stdalone/SHAcO_qp_rhoP1e-3_kIp5.rs.pkl")
             //"rustCalib_AcO_rhoP1e-12_kIp5.rs.pkl")
-            data_path.join("rustCalib_AcO_rhoP1e-12_kIp5.agws.pickle"),
+            Path::new("/home/ubuntu/projects/im-sim-scripts/aco_loop_example/data").join("rustCalib_AcO_rhoP1e-12_kIp5.agws.pickle"),
         )?
         .update_calib(
             Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -402,6 +401,7 @@ async fn main() -> anyhow::Result<()> {
     // let one_to_1000 = Sampler::default();
     // let e2o = Estimate2OpticsState::new();
 
+    #[allow(unused_mut)]
     let mut m1_rbm = vec![vec![0f64; 6]; 7];
     // m1_rbm[0][0] = 1. * 1.1e-6; // M1S1-Tx:
     // m1_rbm[1][1] = 1. * 1.2e-6; // M1S2-Ty:
@@ -412,13 +412,14 @@ async fn main() -> anyhow::Result<()> {
     // m1_rbm[6][5] = 1. * 2e-6; // M1S7-Rz:
     let mut m2_rbm = vec![0f64; 42];
     m2_rbm[0] = 1e-6; // M2S7-Rz
+    #[allow(unused_mut)]
     let mut m1_modes = vec![vec![0f64; config::m1::segment::N_RAW_MODE]; 7];
     // m1_modes[0][0] = 4e-6;
     // m1_modes[0][2] = 5e-6;
     let m1 = MirrorState::new(m1_rbm, m1_modes);
     let zero_point = OpticalState::new(m1, MirrorState::from_rbms(&m2_rbm));
     let optical_state = OpticalState::default().zero_point(zero_point);
-    let mut split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
+    let split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
         6 + config::m1::segment::N_MODE,
         6,
     );

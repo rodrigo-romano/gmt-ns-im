@@ -43,7 +43,7 @@ impl Sh48Calibration {
                     (&ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src()).into();
                 let sh24_omb: OpticalModelBuilder<CameraBuilder<1>> =
                     (&ShackHartmannBuilder::<Reconstructor>::sh24().use_calibration_src()).into();
-                let mut recon =
+                let recon =
                     <CentroidsProcessing as ClosedLoopCalibration<GmtM2, Imaging>>::calibrate(
                         &(&sh48_omb).into(),
                         CalibrationMode::t_xy(1e-6),
