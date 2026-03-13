@@ -1,7 +1,7 @@
 use std::{fs::File, iter, path::Path, sync::Arc};
 
 use gmt_dos_clients_io::gmt_m1::{M1ModeShapes, assembly::M1ModeCoefficients};
-use gmt_dos_clients_optics_state::MirrorState;
+// use gmt_dos_clients_optics_state::MirrorState;
 use gmt_dos_systems_m1::SingularModes;
 use interface::{Data, Read, Update, Write};
 
@@ -15,7 +15,7 @@ pub struct M1BendingModes {
     // bending modes coefficients
     coefs: Arc<Vec<f64>>,
     // M1 optical state
-    state: Arc<MirrorState>,
+    // state: Arc<MirrorState>,
 }
 
 impl M1BendingModes {

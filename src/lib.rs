@@ -3,8 +3,8 @@ pub enum M2RBMasSH48 {}
 #[derive(interface::UID)]
 pub enum MountEstimate {}
 
-#[cfg(feature = "scope")]
-pub mod scopes;
+// #[cfg(feature = "scope")]
+// pub mod scopes;
 
 pub mod m1_bending_modes;
 mod merge;
