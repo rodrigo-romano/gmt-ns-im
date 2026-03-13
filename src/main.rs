@@ -137,14 +137,6 @@ async fn main() -> anyhow::Result<()> {
         .build()?
     };
     println!("{servos}");
-    // serde_pickle::to_writer(
-    //     &mut File::create("servos.bin")?,
-    //     &servos,
-    //     Default::default(),
-    // )?;
-    // let rdr = BufReader::new(File::open("servos.bin")?);
-    // let servos :Sys< GmtServoMechanisms<{ config::m1::ACTUATOR_RATE }, 1>>=
-    // serde_pickle::from_reader(rdr, Default::default())?;
 
     // AGWS
     let recon: Reconstructor = serde_pickle::from_reader(
@@ -152,18 +144,14 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )?;
     println!("SH24 to FSM reconstructor:\n{recon}");
-    // let m1_bm_recon: Reconstructor<_, ClosedLoopCalib> = serde_pickle::from_reader(
-    //     File::open("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?,
-    //     Default::default(),
-    // )?;
-    // println!("closed-loop SH48 to M1 BM reconstructor:\n{m1_bm_recon}");
 
     #[cfg(feature = "qp")]
     let mut aco = {
         QP::<M1_RBM, M2_RBM, 27, N_MODE>::new(
             //"../aco_impl_stdalone/SHAcO_qp_rhoP1e-3_kIp5.rs.pkl")
             //"rustCalib_AcO_rhoP1e-12_kIp5.rs.pkl")
-            Path::new("/home/ubuntu/projects/im-sim-scripts/aco_loop_example/data").join("rustCalib_AcO_rhoP1e-12_kIp5.agws.pickle"),
+            Path::new("/home/ubuntu/projects/im-sim-scripts/aco_loop_example/data")
+                .join("rustCalib_AcO_rhoP1e-12_kIp5.agws.pickle"),
         )?
         .update_calib(
             Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -238,65 +226,8 @@ async fn main() -> anyhow::Result<()> {
     // M1 edge sensors to RBMs integrator
     // let m1_es_to_rbm_int = Integrator::new(42).gain(config::m1::edge_sensor::RBM_INTEGRATOR_GAIN);
 
-    /* // Mount reconstructor
-    let mount_recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/mount/recon_sh48-to-mount.pkl")?,
-        Default::default(),
-    )?;
-    println!("SH48 to Mount reconstructor:\n{mount_recon}");
-
-    // M1 assembly tip-tilt reconstructor
-    let m1_recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/m1/assembly/recon_sh48-to-m1-assembly.pkl")?,
-        Default::default(),
-    )?;
-    println!("SH48 to Mount reconstructor:\n{m1_recon}"); */
-
     println!("Model built in {}s", now.elapsed().as_secs());
 
-    // PERTURBATIONS
-    // let m2_rbm = Signals::new(42, 3000 + n_bootstrapping).channel(3, 1e-6);
-    // let mount_cmd = Signals::new(3, n_sim); //.channel(0, -1e-5).channel(1, 1e-5);
-    // let mut m1_rbm = vec![vec![0f64; 6]; 7];
-    // m1_rbm[0][0] = 1e-6;
-    // m1_rbm[6][4] = 1e-6;
-    // let m1_rbm = Signals::from((m1_rbm, n_sim));
-    // let mut m2_rbm = vec![vec![0f64; 6]; 7];
-    // m2_rbm[0][0] = 1e-6;
-    // m2_rbm[0][3] = 1e-6;
-    // m2_rbm[1][2] = 1e-6;
-    // m2_rbm[1][2] = 1e-6;
-    // m2_rbm[4][1] = 1e-6;
-    // m2_rbm[6][1] = 1e-6;
-    // let m2_rbm = Signals::from((m2_rbm, n_sim));
-    // // let adder = Operator::new("+");
-    // let m2_adder = Operator::<Vec<f64>>::plus();
-    // Bootstrapping the FEM and associated controls
-    // let fem = state_space;
-
-    // let matfile = MatFile::load("calibrations/m1/modes/20230530_1756_m1_mode_to_force.mat")?;
-    // let b2f: Vec<Mat<f64>> = (1..=7)
-    //     .map(|i| matfile.var(format!("B2F_{i}")).unwrap())
-    //     .collect();
-    // println!(
-    //     "B2F: {:?}",
-    //     b2f.iter().map(|x| x.shape()).collect::<Vec<_>>()
-    // );
-    // let m1_bm_2_forces = Gain::<f64>::new(
-    //     b2f.iter()
-    //         .map(|x| x.subcols(0, config::m1::segment::N_MODE).to_owned())
-    //         .collect::<Vec<_>>(),
-    // );
-    // let mut m1_bm = vec![vec![0f64; config::m1::segment::N_MODE]; 7];
-    // // m1_bm[0][0] = 1e-6;
-    // m1_bm
-    //     .iter_mut()
-    //     .enumerate()
-    //     // .skip(2)
-    //     // .take(1)
-    //     .for_each(|(i, b)| b[0] = 1e-6);
-    // let m1_bm = Signals::from((m1_bm, n_sim));
-    // let m1_bms = M1BendingModes::new("calibrations/m1/modes/m1_singular_modes.pkl")?;
     let mut timer: Timer = Timer::new(n_bootstrapping);
     timer.progress();
 
@@ -314,15 +245,7 @@ async fn main() -> anyhow::Result<()> {
     // 1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
     // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
-    // 1: mount_cmd[MountSetPoint] -> {servos::GmtMount}
-    // 1: m1_rbm[M1RigidBodyMotions] -> {servos::GmtM1}
-    // 1: m2_rbm[M2RigidBodyMotions] -> {servos::GmtM2Hex}
-    // 1: m1_bm[M1ModeShapes] -> m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
-    // 1: {servos::GmtFem}[M1State] -> on_axis
     1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
-    // 1: {servos::GmtFem}[OpticsState] -> state_print
-
-    // 1: {servos::GmtFem}[M1EdgeSensors]
 
     }
 
@@ -332,47 +255,6 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )?;
     println!("SH48 to M2 RBM reconstructor:\n{sh48_m2_rbm_recon}");
-    // let pol = PseudoOpenLoop::new(sh48_m2_rbm_recon);
-    // M1 RBM SH48 calibration
-    // let sh48_m1_rbm_recon: Reconstructor = serde_pickle::from_reader(
-    //     File::open("calibrations/sh48/open_loop_recon_sh48-to-m1-rxy.pkl")?,
-    //     Default::default(),
-    // )?;
-    // println!("SH48 to M1 RBM reconstructor:\n{sh48_m1_rbm_recon}");
-    // // let s1 = Sampler::default();
-    // let s2 = Sampler::default();
-
-    // M1 BM SH48 calibration
-    // let sh48_m1_bm_recon: Reconstructor<_, ClosedLoopCalib> = serde_pickle::from_reader(
-    //     File::open("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?,
-    //     Default::default(),
-    // )?;
-    // let m1_bm_adder = Operator::<Vec<f64>>::plus();
-    // let sh48_int = Integrator::new(27 * 7).gain(0.5);
-
-    // let sh48_m2_rbm_recon: Reconstructor<_, ClosedLoopCalib> = serde_pickle::from_reader(
-    //     File::open("calibrations/sh48/closed_loop_recon_sh48-to-m2-rbm.pkl")?,
-    //     Default::default(),
-    // )?;
-    // println!("SH48 M2 RBM\n{sh48_m1_rbm_recon}");
-    // let mut sh48_m2_rbm_m1_bm_recon: MergeReconstructor<_, M1RigidBodyMotions, _> =
-    //     MergeReconstructor::new(
-    //         // "calibrations/sh48/closed_loop_recon_sh48-to-m2-rbm.pkl",
-    //         "calibrations/sh48/e_1_48.pkl",
-    //         "calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl",
-    //         None,
-    //     )?;
-    // // sh48_m2_rbm_recon.truncated_pseudoinverse(vec![1   // sh48_m2_r
-    // // bm_rrecon.truncated_p
-    // // seudoinverse(vec![1, 1, 1, 1, 1, 1, 0]);
-    // println!("CLOSED LOOP SH48 M2 RBM & M1 BM {sh48_m2_rbm_m1_bm_recon}");
-    // let m2_rbm_adder = Operator::<Vec<f64>>::plus();
-
-    // let lpf = LowPassFilter::new(42, 2e-3);
-
-    // let m1_bm_recon: Reconstructor<_, ClosedLoopCalib> =
-    //     Reconstructor::from_path("calibrations/sh48/closed_loop_recon_sh48-to-m1-bm.pkl")?;
-
     // FSM OFF-LOAD TO POSITIONER
     let matfile = MatFile::load("calibrations/sh24/m2_pzt_r.mat")?;
     let pzt_to_rbm: Vec<Mat<f64>> = (0..7)
@@ -437,24 +319,11 @@ async fn main() -> anyhow::Result<()> {
         // #[model(state=running)]
     #[labels(//on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
         timer="⏲",
-         // mount_cmd="Mount Set-Point",
-          // m1_rbm="M1 RBM",
-          // m2_rbm="M2 RBM",
-         // m1_bm="M1 BM",
-         // m1_bm_recon="SH48\nM1 BM\nReconstructor",
-         // m1_bm_2_forces="Mode to Force",
          fsm_pzt_int="FSM\nIntegrator",
          pzt_to_rbm="FSM\nto\nPositioner",
          pzt_to_rbm_int="Positioner\nIntegrator",
          split="Split Estimate into\nM2RigidBodyMotions(Left)\n& M1ModeShapes(Right)",
          add_m2_rbms="+",
-         // m1_es_to_rbm_int="M1 RBM\nIntegrator",
-         // adder="Adder",
-         // m2_adder="Adder",
-         // m2_rbm_adder="Substracter",
-         // m1_bm_adder="Adder",//s2="1:1000",
-         // sh48_int="M1 BM\nIntegrator",
-         // gmt_state_tx="Beam me up, Scotty"
          optical_state_arrow="Optics State\nLog",
          gmt_state_tx="🔊"
          )]
@@ -462,12 +331,6 @@ async fn main() -> anyhow::Result<()> {
 
     // 1: {cfd_loads::M1}[C10_DM1WindLoads] -AgwsSh48Kernel> SensorDa${cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
     // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
-
-    // 1: mount_cmd[MountSetPoint] -> {servos::GmtMount}
-    // 1: m1_rbm[Left<M1RigidBodyMotions>] -> adder[M1RigidBodyMotions] -> {servos::GmtM1}
-    // 5000: m2_rbm[Left<M2RigidBodyMotions>] -> m2_adder
-    // 5000: m1_bm[Left<M1ModeShapes>] -> m1_bm_adder[M1ModeShapes]  -> m1_bm_2_forces
-    // 1: m1_bm_2_forces[M1ActuatorCommandForces] -> {servos::GmtM1}
 
     1:  {servos::GmtFem}[OpticsState]! -> optical_state[OpticsState] -> {agws::AgwsSh24}
     1:   optical_state[OpticsState] -> {agws::AgwsSh48}
@@ -477,13 +340,6 @@ async fn main() -> anyhow::Result<()> {
 
 
     // FSM to positionner off-load
-    // 1: {servos::GmtFem}[M2FSMPiezoNodes]
-    //     -> pzt_to_rbm[Left<M2RigidBodyMotions>] //-> scope_fsm_cmd
-    //     // 5000: m2_rbm_adder[M2RigidBodyMotions]${42}
-    //         5000: pzt_to_rbm_int[Right<M2RigidBodyMotions>]
-    //         -> m2_adder//[M2RigidBodyMotions]${42}
-    //            // -> lpf
-    // 1: m2_adder[M2RigidBodyMotions] -> {servos::GmtM2Hex}
     1: {servos::GmtFem}[M2PositionerNodes]
     1: {servos::GmtFem}[M2FSMPiezoNodes]
         -> pzt_to_rbm[M2RigidBodyMotions] //-> scope_fsm_cmd
@@ -498,17 +354,18 @@ async fn main() -> anyhow::Result<()> {
             // -> adder
 
 
-    // // AGWS SH24 to FSMS feedback loop
+    // AGWS SH24 to FSMS feedback loop
     5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
+    // AGWS SH48 to M2 Txy and M1 bending modes loop
     1000: {agws::AgwsSh48Kernel}[Estimate]${42+7*config::m1::segment::N_MODE}
         -> split[Left<Estimate>]
             -> m2_txy_scaling[Left<Estimate>]
                 -> sh48_m2_rbm_int
     1000: split[Right<Estimate>]
         -> sh48_m1_bm_int[M1ModeShapes] -> m1_state
-    1:  sh48_m2_rbm_int[Left<Estimate>] // -> sh48_int
+    1:  sh48_m2_rbm_int[Left<Estimate>]
                 -> add_m2_rbms
 
     1: m1_state[M1State] -> {servos::GmtM1}
