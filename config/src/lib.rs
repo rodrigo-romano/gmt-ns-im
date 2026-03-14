@@ -20,6 +20,7 @@ pub mod agws {
     }
     pub mod sh48 {
         pub const RATE: usize = 1000;
+        pub const INTEGRATOR_GAIN: f64 = 0.4;
     }
 }
 pub mod fsm {

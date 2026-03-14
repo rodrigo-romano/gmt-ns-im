@@ -31,7 +31,7 @@ use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 //     system::{M1, M2, Mount, SigmoidCfdLoads},
 // };
 use gmt_dos_clients_optics_state::{
-    M1State, MirrorState, OpticalState, OpticsState, arrow::OpticalStateArrow,
+    M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
 };
 #[cfg(feature = "qp")]
 use gmt_dos_systems_agws::qp::{ActiveOptics, Estimate2OpticsState, QP};
@@ -77,7 +77,7 @@ async fn main() -> anyhow::Result<()> {
     let now = Instant::now();
 
     let sim_sampling_frequency = 1000;
-    let sim_duration = 10_usize; // second
+    let sim_duration = 3_usize; // second
     let bootstrapping_duration = 4_usize; // second
     let n_bootstrapping = sim_sampling_frequency * bootstrapping_duration;
     let n_sim = sim_sampling_frequency * sim_duration + 1;
@@ -117,15 +117,27 @@ async fn main() -> anyhow::Result<()> {
             Default::default(),
         )?;
 
+        println!("Modes to forces matrices:");
         let b2f: Vec<_> = m1_sms
             .mode2force()
             .into_iter()
             .map(|mat| mat.columns(0, config::m1::segment::N_MODE).clone_owned())
+            .inspect(|x| println!("{:?}", x.shape()))
             .collect();
+        println!("Surfaces to raw modes matrices:");
         let s2b: Vec<_> = m1_sms
             .raw_modes_into_mat()
             .into_iter()
+            .map(|x| {
+                let ncols = x.ncols();
+                if ncols < config::m1::segment::N_RAW_MODE {
+                    x.insert_columns(ncols, config::m1::segment::N_RAW_MODE - ncols, 0f64)
+                } else {
+                    x
+                }
+            })
             .map(|x| x.transpose())
+            .inspect(|x| println!("{:?}", x.shape()))
             .collect();
 
         GmtServoMechanisms::<{ config::m1::segment::ACTUATOR_RATE }, 1>::new(
@@ -238,7 +250,8 @@ async fn main() -> anyhow::Result<()> {
     let gmt_state_tx = Transceiver::<OpticsState>::transmitter(address)?.run(&mut gmt_state_mon);
     actorscript! {
         #[model(name=bootstrap)]
-        #[labels(timer="⏲")]
+        #[labels(timer="⏲",
+                 gmt_state_tx="🔊")]
     1: timer[Tick] -> {servos::GmtFem}
 
     // 1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
@@ -271,8 +284,9 @@ async fn main() -> anyhow::Result<()> {
     // FSM command integrator
     let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
 
-    let sh48_m2_rbm_int = Integrator::new(42).gain(0.4);
-    let sh48_m1_bm_int = Integrator::new(7 * config::m1::segment::N_MODE).gain(0.4);
+    let sh48_m2_rbm_int = Integrator::new(42).gain(config::agws::sh48::INTEGRATOR_GAIN);
+    let sh48_m1_bm_int =
+        Integrator::new(7 * config::m1::segment::N_MODE).gain(config::agws::sh48::INTEGRATOR_GAIN);
 
     // let print = Print::<Vec<f64>>::new(8);
     let timer: Timer = Timer::new(n_sim);
@@ -283,35 +297,53 @@ async fn main() -> anyhow::Result<()> {
     // let one_to_1000 = Sampler::default();
     // let e2o = Estimate2OpticsState::new();
 
-    #[allow(unused_mut)]
-    let mut m1_rbm = vec![vec![0f64; 6]; 7];
-    // m1_rbm[0][0] = 1. * 1.1e-6; // M1S1-Tx:
-    // m1_rbm[1][1] = 1. * 1.2e-6; // M1S2-Ty:
-    // m1_rbm[2][3] = 1. * 1.4e-6; // M1S3-Rx:
-    // m1_rbm[3][4] = 1. * 1.5e-6; // M1S4-Ry:
-    // m1_rbm[4][2] = 1. * 1.6e-6; // M1S5-Tz:
-    // m1_rbm[5][5] = 1. * 1.3e-6; // M1S5-Rz:
-    // m1_rbm[6][5] = 1. * 2e-6; // M1S7-Rz:
-    let mut m2_rbm = vec![0f64; 42];
-    m2_rbm[0] = 1e-6; // M2S7-Rz
-    #[allow(unused_mut)]
-    let mut m1_modes = vec![vec![0f64; config::m1::segment::N_RAW_MODE]; 7];
-    // m1_modes[0][0] = 4e-6;
-    // m1_modes[0][2] = 5e-6;
-    let m1 = MirrorState::new(m1_rbm, m1_modes);
-    let zero_point = OpticalState::new(m1, MirrorState::from_rbms(&m2_rbm));
-    let optical_state = OpticalState::default().zero_point(zero_point);
+    // #[allow(unused_mut)]
+    // let mut m1_rbm = vec![vec![0f64; 6]; 7];
+    // // m1_rbm[0][0] = 1. * 1.1e-6; // M1S1-Tx:
+    // // m1_rbm[1][1] = 1. * 1.2e-6; // M1S2-Ty:
+    // // m1_rbm[2][3] = 1. * 1.4e-6; // M1S3-Rx:
+    // // m1_rbm[3][4] = 1. * 1.5e-6; // M1S4-Ry:
+    // // m1_rbm[4][2] = 1. * 1.6e-6; // M1S5-Tz:
+    // // m1_rbm[5][5] = 1. * 1.3e-6; // M1S5-Rz:
+    // // m1_rbm[6][5] = 1. * 2e-6; // M1S7-Rz:
+    // let mut m2_rbm = vec![0f64; 42];
+    // m2_rbm[0] = 1e-6; // M2S7-Rz
+    // #[allow(unused_mut)]
+    // let mut m1_modes = vec![vec![0f64; config::m1::segment::N_RAW_MODE]; 7];
+    // // m1_modes[0][0] = 4e-6;
+    // // m1_modes[0][2] = 5e-6;
+    // let m1 = MirrorState::new(m1_rbm, m1_modes);
+    // let zero_point = OpticalState::new(m1, MirrorState::from_rbms(&m2_rbm));
+    // let optical_state = OpticalState::default().zero_point(zero_point);
+    let mirror = MirrorState::default();
+    // .set_segment_state(1, SegmentState::modes(vec![0f64;]);
+    // .set_segment_state(1, SegmentState::rbms(&[0., 0., 0., 1e-6, 0., 0.]));
+    // .set_segment_state(2, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]))
+    // .set_segment_state(7, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]));
+    let optical_state =
+        OpticalState::m1(MirrorState::default().zeros_modes(config::m1::segment::N_RAW_MODE))
+            .set_zero_point(OpticalState::m1(mirror));
+    let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
+        .build(config::m1::segment::N_RAW_MODE);
+
     let split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
         6 + config::m1::segment::N_MODE,
         6,
     );
-    let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
-        .build(config::m1::segment::N_MODE);
+
     let add_m2_rbms = Operator::plus();
 
     let m2_txy_scaling = Gain::new(vec![TXY_RESIDUAL_SCALING as f64; 42]);
 
-    let m1_state = MirrorState::default();
+    let m1_state = MirrorState::default().zeros_modes(config::m1::segment::N_MODE);
+    // .set_zero_point(
+    //     MirrorState::default()
+    //         .zeros_modes(config::m1::segment::N_MODE)
+    //         .set_segment_state(
+    //             1,
+    //             SegmentState::modes(vec![0.; config::m1::segment::N_MODE]).set_mode(0, 1e-6),
+    //         ),
+    // );
 
     // dbg!(&optical_state);
     // let state_print = gmt_dos_clients::print::Print::default().scale(1e9_f64);
@@ -363,8 +395,8 @@ async fn main() -> anyhow::Result<()> {
         -> split[Left<Estimate>]
             -> m2_txy_scaling[Left<Estimate>]
                 -> sh48_m2_rbm_int
-    1000: split[Right<Estimate>]
-        -> sh48_m1_bm_int[M1ModeShapes] -> m1_state
+    1000: split[Right<Estimate>]${config::m1::segment::N_MODE*7}
+        -> sh48_m1_bm_int[M1ModeShapes]${config::m1::segment::N_MODE*7} -> m1_state
     1:  sh48_m2_rbm_int[Left<Estimate>]
                 -> add_m2_rbms
 
