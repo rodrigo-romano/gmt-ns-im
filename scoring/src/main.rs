@@ -8,7 +8,7 @@ use gmt_dos_clients_crseo::{
     sensors::Camera,
 };
 use gmt_dos_clients_io::optics::{
-    Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms,
+    Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront, WfeRms
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_optics_state::{M1State, M2State, OpticalState, OpticsState};
@@ -114,7 +114,7 @@ async fn main() -> anyhow::Result<()> {
     1: on_axis[Mas<SegmentTipTilt>].. -> shub
     1000: on_axis[Frame<Host>]${512*512}..
     1000: on_axis[PSSn] -> aprint
-    // 1000: on_axis[Wavefront].. -> on_axis_wavefront
+    1000: on_axis[Wavefront].. -> on_axis_wavefront
 
     1: gmt_state_rx[OpticsState].. -> optical_state [M1State] -> m1_lom
     1: optical_state [M2State] -> m2_lom
