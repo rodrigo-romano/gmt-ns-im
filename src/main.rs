@@ -17,21 +17,24 @@ use gmt_dos_clients_crseo::{
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     Estimate,
+    cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
     gmt_m1::M1ModeShapes,
     gmt_m2::{
         M2RigidBodyMotions,
         fsm::{M2FSMFsmCommand, M2FSMPiezoNodes},
     },
 };
-use gmt_dos_clients_servos::{GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtServoMechanisms, M1SegmentFigure};
+use gmt_dos_clients_servos::{
+    GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtServoMechanisms, M1SegmentFigure, WindLoads,
+};
 
-use gmt_dos_clients_transceiver::{Monitor, Transceiver};
-// use gmt_dos_clients_windloads::{
-//     CfdLoads,
-//     system::{M1, M2, Mount, SigmoidCfdLoads},
-// };
 use gmt_dos_clients_optics_state::{
-    M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
+    M1State, MirrorState, OpticalState, OpticsState, arrow::OpticalStateArrow,
+};
+use gmt_dos_clients_transceiver::{Monitor, Transceiver};
+use gmt_dos_clients_windloads::{
+    CfdLoads,
+    system::{M1, M2, Mount, SigmoidCfdLoads},
 };
 #[cfg(feature = "qp")]
 use gmt_dos_systems_agws::qp::{ActiveOptics, Estimate2OpticsState, QP};
@@ -77,21 +80,19 @@ async fn main() -> anyhow::Result<()> {
     let now = Instant::now();
 
     let sim_sampling_frequency = 1000;
-    let sim_duration = 3_usize; // second
+    let sim_duration = 60_usize; // second
     let bootstrapping_duration = 4_usize; // second
     let n_bootstrapping = sim_sampling_frequency * bootstrapping_duration;
     let n_sim = sim_sampling_frequency * sim_duration + 1;
 
-    let fem = FEM::from_env()?;
+    let mut fem = FEM::from_env()?;
     // println!("{fem}");
 
-    // let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
-    //     CfdLoads::foh(".", sim_sampling_frequency)
-    //         .duration((sim_duration + bootstrapping_duration) as f64)
-    //         .mount(&mut fem, 0, None)
-    //         .m1_segments()
-    //         .m2_segments(),
-    // )?;
+    let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
+        CfdLoads::foh(".", sim_sampling_frequency)
+            .duration((sim_duration + bootstrapping_duration) as f64)
+            .windloads(&mut fem, Default::default()),
+    )?;
 
     // M1 EDGE SENSORS TO RIGID-BODY MOTIONS TRANSFORM
     // let m1_es_2_rbm: nalgebra::DMatrix<f64> =
@@ -144,7 +145,7 @@ async fn main() -> anyhow::Result<()> {
             sim_sampling_frequency as f64,
             fem,
         )
-        // .wind_loads(WindLoads::new())
+        .wind_loads(WindLoads::new())
         .m1_segment_figure(M1SegmentFigure::new().transforms(s2b).modes_to_forces(b2f))
         .build()?
     };
@@ -254,9 +255,9 @@ async fn main() -> anyhow::Result<()> {
                  gmt_state_tx="🔊")]
     1: timer[Tick] -> {servos::GmtFem}
 
-    // 1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
-    // 1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
-    // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
     1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
 
@@ -361,8 +362,9 @@ async fn main() -> anyhow::Result<()> {
          )]
     1: timer[Tick] -> {servos::GmtFem}
 
-    // 1: {cfd_loads::M1}[C10_DM1WindLoads] -AgwsSh48Kernel> SensorDa${cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
-    // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
     1:  {servos::GmtFem}[OpticsState]! -> optical_state[OpticsState] -> {agws::AgwsSh24}
     1:   optical_state[OpticsState] -> {agws::AgwsSh48}
@@ -391,12 +393,12 @@ async fn main() -> anyhow::Result<()> {
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
     // AGWS SH48 to M2 Txy and M1 bending modes loop
-    1000: {agws::AgwsSh48Kernel}[Estimate]${42+7*config::m1::segment::N_MODE}
+    5000: {agws::AgwsSh48Kernel}[Estimate]
         -> split[Left<Estimate>]
             -> m2_txy_scaling[Left<Estimate>]
                 -> sh48_m2_rbm_int
-    1000: split[Right<Estimate>]${config::m1::segment::N_MODE*7}
-        -> sh48_m1_bm_int[M1ModeShapes]${config::m1::segment::N_MODE*7} -> m1_state
+    5000: split[Right<Estimate>]
+        -> sh48_m1_bm_int[M1ModeShapes] -> m1_state
     1:  sh48_m2_rbm_int[Left<Estimate>]
                 -> add_m2_rbms
 
@@ -404,6 +406,6 @@ async fn main() -> anyhow::Result<()> {
 
     }
 
-    // gmt_state_mon.await?;
+    gmt_state_mon.await?;
     Ok(())
 }

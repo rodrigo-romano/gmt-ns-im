@@ -19,7 +19,7 @@ pub mod agws {
         // Some((150f64.from_mas(), -100f64.from_mas()));
     }
     pub mod sh48 {
-        pub const RATE: usize = 1000;
+        pub const RATE: usize = 5000;
         pub const INTEGRATOR_GAIN: f64 = 0.4;
     }
 }

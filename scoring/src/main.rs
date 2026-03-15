@@ -4,11 +4,12 @@ use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{gif, print::Print};
 use gmt_dos_clients_crseo::{
     OpticalModel,
-    crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder},
+    crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder, imaging::Detector},
     sensors::Camera,
 };
 use gmt_dos_clients_io::optics::{
-    Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront, WfeRms
+    Dev, Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront,
+    WfeRms,
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_optics_state::{M1State, M2State, OpticalState, OpticsState};
@@ -59,8 +60,8 @@ async fn main() -> anyhow::Result<()> {
     // let sh24_frame: gif::Frame<f32> = gif::Frame::new("sh24_frame.png", 24 * 12);
     // let on_axis_wavefront: gif::Frame<f64> = gif::Frame::new("on-axis_wavefront.png", 512);
     let agws_wavefronts: gif::Frame<f64> = gif::Frame::new("agws_wavefronts.png", 512);
-    let on_axis_wavefront: gif::Gif<f64> =
-        gif::Gif::new("on-axis_wavefront.gif", 512, 512)?.delay(200);
+    let on_axis_wavefront: gif::Gif<f64> = gif::Gif::new("on-axis_wavefront.gif", 512, 512)?;
+    let on_axis_frame: gif::Gif<f32> = gif::Gif::new("on-axis_frame.gif", 512, 512)?;
 
     // On-axis scoring star
     let atm = AtmosphereBuilder::load("../atmosphere/atmosphere.toml")?;
@@ -73,9 +74,11 @@ async fn main() -> anyhow::Result<()> {
         config::m1::segment::RAW_MODES,
         config::m1::segment::N_RAW_MODE,
     ))
+    .sensor(Camera::builder().detector(Detector::default().n_px_imagelet(512)))
     .sampling_frequency(sim_sampling_frequency as f64)
     .with_pssn()
     .build()?;
+    println!("{on_axis}");
 
     // Linear Optical Models
     let m1_lom = LinearOpticalModel::new()?;
@@ -112,7 +115,7 @@ async fn main() -> anyhow::Result<()> {
     1: on_axis[SegmentPiston<-9>].. -> shub
     1: on_axis[Mas<TipTilt>].. -> shub
     1: on_axis[Mas<SegmentTipTilt>].. -> shub
-    1000: on_axis[Frame<Host>]${512*512}..
+    1000: on_axis[Frame<Host>].. -> on_axis_frame
     1000: on_axis[PSSn] -> aprint
     1000: on_axis[Wavefront].. -> on_axis_wavefront
 
