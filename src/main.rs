@@ -12,7 +12,7 @@ use gmt_dos_clients::{
 };
 use gmt_dos_clients_crseo::{
     calibration::Reconstructor,
-    crseo::{FromBuilder, Gmt},
+    crseo::{Atmosphere, FromBuilder, Gmt, RayTracing},
 };
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
@@ -53,6 +53,7 @@ use matio_rs::MatFile;
 #[cfg(not(feature = "qp"))]
 use qp::sh24::Sh48MergerReconstructor;
 use qp::sh24::TXY_RESIDUAL_SCALING;
+use skyangle::Conversion;
 
 // const N_MODE: usize = 271;
 // const M1_BM: usize = 27;
@@ -180,6 +181,16 @@ async fn main() -> anyhow::Result<()> {
         config::m1::segment::RAW_MODES,
         config::m1::segment::N_RAW_MODE,
     );
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("atmosphere.bin");
+    let atm = Atmosphere::builder()
+        .ray_tracing(
+            RayTracing::default()
+                .n_width_px(865)
+                .field_size(10f64.from_arcmin())
+                .duration(30f64)
+                .filepath(path.as_os_str())
+                .n_duration(5),
+        );
     let (agws_wss, mut agws): (
         _,
         Sys<
@@ -198,7 +209,8 @@ async fn main() -> anyhow::Result<()> {
                 K48,
                 Sh24<{ config::agws::sh24::RATE }>,
             >::builder()
-            .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+            // .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+            .atmosphere(atm, sim_sampling_frequency as f64)
         } else {
             Agws::<
                 { config::agws::sh48::RATE },
