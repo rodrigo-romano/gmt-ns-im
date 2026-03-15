@@ -4,7 +4,9 @@ use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{gif, print::Print};
 use gmt_dos_clients_crseo::{
     OpticalModel,
-    crseo::{FromBuilder, Gmt, builders::AtmosphereBuilder, imaging::Detector},
+    crseo::{
+        Atmosphere, FromBuilder, Gmt, RayTracing, builders::AtmosphereBuilder, imaging::Detector,
+    },
     sensors::Camera,
 };
 use gmt_dos_clients_io::optics::{
@@ -17,6 +19,7 @@ use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_systems_agws::Agws;
 use interface::units::Mas;
 use scopes::*;
+use skyangle::Conversion;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -37,10 +40,20 @@ async fn main() -> anyhow::Result<()> {
     let sim_sampling_frequency = 1000;
 
     // AGWS
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("atmosphere.bin");
+    let atm = Atmosphere::builder().ray_tracing(
+        RayTracing::default()
+            .n_width_px(865)
+            .field_size(10f64.from_arcmin())
+            .duration(30f64)
+            .filepath(path.as_os_str())
+            .n_duration(5),
+    );
     let agws_wss = {
         let agws = if config::ATMOSPHERE {
             Agws::<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>::builder()
-                .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+                // .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+                .atmosphere(atm, sim_sampling_frequency as f64)
         } else {
             Agws::<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>::builder()
         }

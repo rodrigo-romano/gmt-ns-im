@@ -26,6 +26,7 @@ config = { version = "0.1.0", path = "../config" }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 gmt_dos-clients_optics-state.workspace = true
+skyangle.workspace = true
 
 
 [features]

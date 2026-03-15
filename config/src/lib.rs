@@ -1,4 +1,4 @@
-pub const ATMOSPHERE: bool = false;
+pub const ATMOSPHERE: bool = true;
 pub mod m1 {
     pub mod segment {
         pub const N_MODE: usize = 27;
