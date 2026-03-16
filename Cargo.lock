@@ -3494,6 +3494,7 @@ dependencies = [
  "qp",
  "serde-pickle 1.2.0",
  "skyangle 0.3.1",
+ "thiserror 2.0.18",
  "tokio",
 ]
 
