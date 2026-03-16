@@ -12,7 +12,7 @@ fn main() -> anyhow::Result<()> {
                 .field_size(10f64.from_arcmin())
                 .duration(30f64)
                 .filepath(path.as_os_str())
-                .n_duration(1),
+                .n_duration(5),
         )
         .build()?;
     Ok(())
