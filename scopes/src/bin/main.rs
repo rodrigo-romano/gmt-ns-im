@@ -53,14 +53,20 @@ async fn main() -> anyhow::Result<()> {
                     .name("Mount Encoders")
                     .signal::<Mas<AverageMountEncoders>>()?
                     .show(),
-                "M1 M2 SegmentPiston" => Scope::new()
-                    .name("M1 & M2 Segment Piston")
+                "M1 SegmentPiston" => Scope::new()
+                    .name("M1 Segment Piston")
                     .signal::<M1SegmentPiston>()?
+                    .show(),
+                "M2 SegmentPiston" => Scope::new()
+                    .name("M2 Segment Piston")
                     .signal::<M2SegmentPiston>()?
                     .show(),
-                "M1 M2 SegmentTipTilt" => Scope::new()
-                    .name("M1 & M2 Segment TipTilt")
+                "M1 SegmentTipTilt" => Scope::new()
+                    .name("M1 Segment TipTilt")
                     .signal::<M1SegmentTipTilt>()?
+                    .show(),
+                "M2 SegmentTipTilt" => Scope::new()
+                    .name("M2 Segment TipTilt")
                     .signal::<M2SegmentTipTilt>()?
                     .show(),
                 // "M2" => Scope::new()
