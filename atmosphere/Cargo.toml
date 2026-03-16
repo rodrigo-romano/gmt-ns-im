@@ -2,8 +2,40 @@
 name = "atmosphere"
 version = "0.1.0"
 edition = "2024"
+default-run = "main"
 
 [dependencies]
-anyhow.workspace = true
+anyhow = { workspace = true, optional = true }
 crseo = "2.3.0"
+gmt_dos-actors = { workspace = true, optional = true }
+gmt_dos-clients = { workspace = true, optional = true }
+gmt_dos-clients_crseo = { workspace = true, optional = true }
+gmt_dos-clients_io = { workspace = true, optional = true }
 skyangle.workspace = true
+tokio = { workspace = true, optional = true }
+
+[features]
+default = ["frame"]
+frame = [
+  "tokio",
+  "anyhow",
+  "gmt_dos-clients_crseo",
+  "gmt_dos-clients",
+  "gmt_dos-actors",
+  "gmt_dos-clients_io",
+]
+tokio = ["dep:tokio"]
+anyhow = ["dep:anyhow"]
+gmt_dos-clients_crseo = ["dep:gmt_dos-clients_crseo"]
+gmt_dos-clients = ["dep:gmt_dos-clients"]
+gmt_dos-actors = ["dep:gmt_dos-actors"]
+gmt_dos-clients_io = ["dep:gmt_dos-clients_io"]
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bin]]
+name = "atm-frame"
+path = "src/bin/atm-frame.rs"
+required-features = ["frame"]

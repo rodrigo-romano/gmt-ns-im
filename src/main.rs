@@ -12,7 +12,7 @@ use gmt_dos_clients::{
 };
 use gmt_dos_clients_crseo::{
     calibration::Reconstructor,
-    crseo::{Atmosphere, FromBuilder, Gmt, RayTracing},
+    crseo::{FromBuilder, Gmt},
 };
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
@@ -181,16 +181,6 @@ async fn main() -> anyhow::Result<()> {
         config::m1::segment::RAW_MODES,
         config::m1::segment::N_RAW_MODE,
     );
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("atmosphere.bin");
-    let atm = Atmosphere::builder()
-        .ray_tracing(
-            RayTracing::default()
-                .n_width_px(865)
-                .field_size(10f64.from_arcmin())
-                .duration(30f64)
-                .filepath(path.as_os_str())
-                .n_duration(5),
-        );
     let (agws_wss, mut agws): (
         _,
         Sys<
@@ -209,8 +199,8 @@ async fn main() -> anyhow::Result<()> {
                 K48,
                 Sh24<{ config::agws::sh24::RATE }>,
             >::builder()
-            // .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
-            .atmosphere(atm, sim_sampling_frequency as f64)
+            .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
+            // .atmosphere(atm, sim_sampling_frequency as f64)
         } else {
             Agws::<
                 { config::agws::sh48::RATE },
@@ -367,9 +357,11 @@ async fn main() -> anyhow::Result<()> {
          fsm_pzt_int="FSM\nIntegrator",
          pzt_to_rbm="FSM\nto\nPositioner",
          pzt_to_rbm_int="Positioner\nIntegrator",
-         split="Split Estimate into\nM2RigidBodyMotions(Left)\n& M1ModeShapes(Right)",
+         split="Split SH48 Estimate into\nM2RigidBodyMotions(Left)\n& M1ModeShapes(Right)",
          add_m2_rbms="+",
          optical_state_arrow="Optics State\nLog",
+         sh48_m2_rbm_int = "∫ M2RigidBodyMotions",
+         sh48_m1_bm_int = "∫ M1ModeShapes",
          gmt_state_tx="🔊"
          )]
     1: timer[Tick] -> {servos::GmtFem}
