@@ -8,7 +8,8 @@ use std::{
 use faer::{Mat, MatRef};
 use gmt_dos_actors::{actorscript, system::Sys};
 use gmt_dos_clients::{
-    gain::Gain, integrator::Integrator, leftright, operator::Operator, timer::Timer,
+    gain::Gain, integrator::Integrator, leftright, low_pass_filter::LowPassFilter,
+    operator::Operator, timer::Timer,
 };
 use gmt_dos_clients_crseo::{
     calibration::Reconstructor,
@@ -29,7 +30,7 @@ use gmt_dos_clients_servos::{
 };
 
 use gmt_dos_clients_optics_state::{
-    M1State, MirrorState, OpticalState, OpticsState, arrow::OpticalStateArrow,
+    M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
 };
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_clients_windloads::{
@@ -48,12 +49,11 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
+#[cfg(not(feature = "qp"))]
+use gmt_ns_im::agws::Sh48MergerReconstructor;
+use gmt_ns_im::agws::TXY_RESIDUAL_SCALING;
 use interface::{Left, Right, Tick};
 use matio_rs::MatFile;
-#[cfg(not(feature = "qp"))]
-use qp::sh24::Sh48MergerReconstructor;
-use qp::sh24::TXY_RESIDUAL_SCALING;
-use skyangle::Conversion;
 
 // const N_MODE: usize = 271;
 // const M1_BM: usize = 27;
@@ -208,20 +208,26 @@ async fn main() -> anyhow::Result<()> {
                 K48,
                 Sh24<{ config::agws::sh24::RATE }>,
             >::builder()
-            .sh24(
+            .sh24(if config::agws::sh24::CALIBRATION_SRC {
+                ShackHartmannBuilder::sh24() // .source(AgwsGuideStar::sh24().zenith_azimuth(vec![0f32], vec![0f32]))
+                    .use_calibration_src()
+            } else {
                 ShackHartmannBuilder::sh24()
-                    // .source(AgwsGuideStar::sh24().zenith_azimuth(vec![0f32], vec![0f32]))
-                    .use_calibration_src(),
-            )
-            .sh48(ShackHartmannBuilder::sh48().use_calibration_src())
+            })
+            .sh48(if config::agws::sh48::CALIBRATION_SRC {
+                ShackHartmannBuilder::sh48() // .source(AgwsGuideStar::sh48().zenith_azimuth(vec![0f32], vec![0f32]))
+                    .use_calibration_src()
+            } else {
+                ShackHartmannBuilder::sh48()
+            })
         }
         .gmt(gmtb.clone())
         .sh24_calibration(recon);
         #[cfg(not(feature = "qp"))]
         let agws = {
-            use qp::sh24::calibration::Sh48Calibration;
-
             // agws.sh48_calibration(sh48_calibration(gmtb.clone(), config::m1::segment::N_MODE)?)
+
+            use gmt_ns_im::agws::calibration::Sh48Calibration;
             agws.sh48_calibration(
                 Sh48Calibration::new()?
                     .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
@@ -252,18 +258,18 @@ async fn main() -> anyhow::Result<()> {
     let mut gmt_state_mon = Monitor::new();
     let gmt_state_tx = Transceiver::<OpticsState>::transmitter(address)?.run(&mut gmt_state_mon);
     actorscript! {
-        #[model(name=bootstrap)]
-        #[labels(timer="⏲",
-                 gmt_state_tx="🔊")]
-    1: timer[Tick] -> {servos::GmtFem}
+         #[model(name=bootstrap)]
+         #[labels(timer="⏲",
+                  gmt_state_tx="🔊")]
+     1: timer[Tick] -> {servos::GmtFem}
 
-    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+     1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+     1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+     1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
-    1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
+     1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
 
-    }
+     }
 
     // M2 RBM SH48 calibration
     let sh48_m2_rbm_recon: Reconstructor = serde_pickle::from_reader(
@@ -291,6 +297,8 @@ async fn main() -> anyhow::Result<()> {
     let sh48_m1_bm_int =
         Integrator::new(7 * config::m1::segment::N_MODE).gain(config::agws::sh48::INTEGRATOR_GAIN);
 
+    let m2_pos_lpf = LowPassFilter::new(42, 0.0063);
+
     // let print = Print::<Vec<f64>>::new(8);
     let timer: Timer = Timer::new(n_sim);
     type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
@@ -300,32 +308,18 @@ async fn main() -> anyhow::Result<()> {
     // let one_to_1000 = Sampler::default();
     // let e2o = Estimate2OpticsState::new();
 
-    // #[allow(unused_mut)]
-    // let mut m1_rbm = vec![vec![0f64; 6]; 7];
-    // // m1_rbm[0][0] = 1. * 1.1e-6; // M1S1-Tx:
-    // // m1_rbm[1][1] = 1. * 1.2e-6; // M1S2-Ty:
-    // // m1_rbm[2][3] = 1. * 1.4e-6; // M1S3-Rx:
-    // // m1_rbm[3][4] = 1. * 1.5e-6; // M1S4-Ry:
-    // // m1_rbm[4][2] = 1. * 1.6e-6; // M1S5-Tz:
-    // // m1_rbm[5][5] = 1. * 1.3e-6; // M1S5-Rz:
-    // // m1_rbm[6][5] = 1. * 2e-6; // M1S7-Rz:
-    // let mut m2_rbm = vec![0f64; 42];
-    // m2_rbm[0] = 1e-6; // M2S7-Rz
-    // #[allow(unused_mut)]
-    // let mut m1_modes = vec![vec![0f64; config::m1::segment::N_RAW_MODE]; 7];
-    // // m1_modes[0][0] = 4e-6;
-    // // m1_modes[0][2] = 5e-6;
-    // let m1 = MirrorState::new(m1_rbm, m1_modes);
-    // let zero_point = OpticalState::new(m1, MirrorState::from_rbms(&m2_rbm));
-    // let optical_state = OpticalState::default().zero_point(zero_point);
-    let mirror = MirrorState::default();
-    // .set_segment_state(1, SegmentState::modes(vec![0f64;]);
-    // .set_segment_state(1, SegmentState::rbms(&[0., 0., 0., 1e-6, 0., 0.]));
-    // .set_segment_state(2, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]))
-    // .set_segment_state(7, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]));
+    let mirror = if config::m1::POLISH_ERROR_MAPS == 0 {
+        MirrorState::default()
+    } else {
+        MirrorState::from(
+            SegmentState::modes(vec![0f64; config::m1::segment::N_RAW_MODE])
+                .set_mode(config::m1::segment::N_RAW_MODE - 1, 1f64),
+        )
+    };
     let optical_state =
         OpticalState::m1(MirrorState::default().zeros_modes(config::m1::segment::N_RAW_MODE))
             .set_zero_point(OpticalState::m1(mirror));
+
     let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
         .build(config::m1::segment::N_RAW_MODE);
 
@@ -381,9 +375,10 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M2PositionerNodes]
     1: {servos::GmtFem}[M2FSMPiezoNodes]
         -> pzt_to_rbm[M2RigidBodyMotions] //-> scope_fsm_cmd
-            -> pzt_to_rbm_int[Right<M2RigidBodyMotions>]
-                -> add_m2_rbms[M2RigidBodyMotions]
-                    -> {servos::GmtM2Hex}
+            -> m2_pos_lpf[M2RigidBodyMotions]
+                -> pzt_to_rbm_int[Right<M2RigidBodyMotions>]
+                    -> add_m2_rbms[M2RigidBodyMotions]
+                        -> {servos::GmtM2Hex}
 
     // M1 edge sensor to RBMs feedback loop
     // 1: {servos::GmtFem}[M1EdgeSensors]!
@@ -397,11 +392,11 @@ async fn main() -> anyhow::Result<()> {
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
     // AGWS SH48 to M2 Txy and M1 bending modes loop
-    5000: {agws::AgwsSh48Kernel}[Estimate]
+    1000: {agws::AgwsSh48Kernel}[Estimate]
         -> split[Left<Estimate>]
             -> m2_txy_scaling[Left<Estimate>]
                 -> sh48_m2_rbm_int
-    5000: split[Right<Estimate>]
+    1000: split[Right<Estimate>]
         -> sh48_m1_bm_int[M1ModeShapes] -> m1_state
     1:  sh48_m2_rbm_int[Left<Estimate>]
                 -> add_m2_rbms
@@ -410,6 +405,6 @@ async fn main() -> anyhow::Result<()> {
 
     }
 
-    gmt_state_mon.await?;
+    gmt_state_mon.drop(gmt_state_tx).await?;
     Ok(())
 }

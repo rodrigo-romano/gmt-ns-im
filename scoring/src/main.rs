@@ -125,11 +125,11 @@ async fn main() -> anyhow::Result<()> {
         #[model(name=scoring)]
         #[labels(gmt_state_rx="🎧")]
     1: gmt_state_rx[OpticsState].. -> on_axis
-    1000: on_axis[WfeRms<-9>].. -> shub
-    1000: on_axis[SegmentWfeRms<-9>].. -> shub
-    1000: on_axis[SegmentPiston<-9>].. -> shub
-    1000: on_axis[Mas<TipTilt>].. -> shub
-    1000: on_axis[Mas<SegmentTipTilt>].. -> shub
+    1: on_axis[WfeRms<-9>].. -> shub
+    1: on_axis[SegmentWfeRms<-9>].. -> shub
+    1: on_axis[SegmentPiston<-9>].. -> shub
+    1: on_axis[Mas<TipTilt>].. -> shub
+    1: on_axis[Mas<SegmentTipTilt>].. -> shub
     1000: on_axis[Frame<Host>]!.. -> on_axis_frame
     1000: on_axis[PSSn]! -> aprint
     1000: on_axis[Wavefront]!.. -> on_axis_wavefront
@@ -142,6 +142,8 @@ async fn main() -> anyhow::Result<()> {
     1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
 
     }
+
+    gmt_state_mon.await?;
 
     if env::var("FOREGO_SCOPES").is_err() {
         shub.lock().await.close().await?;

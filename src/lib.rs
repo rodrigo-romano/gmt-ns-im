@@ -11,6 +11,7 @@ mod merge;
 mod pseudo_open_loop;
 pub use merge::{MergeReconstructor, SplitEstimate};
 pub use pseudo_open_loop::{PseudoOpenLoop, PseudoSensorData};
+pub mod agws;
 
 // static agws: Sys<Agws<{ config::agws::sh48::RATE }, { config::agws::sh24::RATE }>> = {
 //     let recon: Reconstructor = serde_pickle::from_reader(
