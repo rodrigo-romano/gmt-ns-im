@@ -116,3 +116,4 @@ gmt_dos-systems_m1 = { path = "/home/ubuntu/projects/dos-actors/systems/m1" }
 gmt_dos-systems_m2 = { path = "/home/ubuntu/projects/dos-actors/systems/m2" }
 gmt_dos-systems_agws = { path = "/home/ubuntu/projects/dos-actors/systems/agws" }
 gmt_dos-clients_transceiver = { path = "/home/ubuntu/projects/dos-actors/clients/transceiver" }
+gmt_dos-clients_scope-client = {path="/home/rconan/projects/dos-actors/clients/scope/client"}
