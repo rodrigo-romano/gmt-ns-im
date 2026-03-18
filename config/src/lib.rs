@@ -1,5 +1,10 @@
+pub const SIM_SAMPLING_FREQUENCY: usize = 1000; // Hz
+pub const SIM_DURATION: usize = 60_usize; // seconds
+pub const BOOTSTRAPPING_DURATION: usize = 4_usize; // seconds
+
 pub const ATMOSPHERE: bool = true;
 // pub const WINDLOADS: bool = true;
+
 pub mod m1 {
     // M1 polishing residual error figures (0: without, 1: with)
     pub const POLISH_ERROR_MAPS: usize = 1;
@@ -20,6 +25,7 @@ pub mod m1 {
         pub const RBM_INTEGRATOR_GAIN: f64 = 0e-3;
     }
 }
+
 pub mod agws {
     pub mod sh24 {
         pub const RATE: usize = 5;
@@ -35,6 +41,7 @@ pub mod agws {
         pub const CALIBRATION_SRC: bool = !crate::ATMOSPHERE;
     }
 }
+
 pub mod fsm {
     pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 1e-2;
 }
