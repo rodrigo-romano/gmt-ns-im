@@ -37,8 +37,6 @@ use gmt_dos_clients_windloads::{
     CfdLoads,
     system::{M1, M2, Mount, SigmoidCfdLoads},
 };
-#[cfg(feature = "qp")]
-use gmt_dos_systems_agws::qp::{ActiveOptics, Estimate2OpticsState, QP};
 use gmt_dos_systems_agws::{
     Agws,
     agws::{
@@ -49,21 +47,11 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-#[cfg(not(feature = "qp"))]
-use gmt_ns_im::agws::Sh48MergerReconstructor;
-use gmt_ns_im::agws::TXY_RESIDUAL_SCALING;
+use gmt_ns_im::agws::{Sh48MergerReconstructor, TXY_RESIDUAL_SCALING};
 use interface::{Left, Right, Tick};
 use matio_rs::MatFile;
 
-// const N_MODE: usize = 271;
-// const M1_BM: usize = 27;
-// const M1_RBM: usize = 41;
-// const M2_RBM: usize = 41;
-
-#[cfg(not(feature = "qp"))]
 type K48 = Sh48MergerReconstructor<{ config::agws::sh48::RATE }>;
-#[cfg(feature = "qp")]
-type K48 = ActiveOptics<{ config::agws::sh48::RATE }, 41, 41, 27, 271>;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -80,18 +68,15 @@ async fn main() -> anyhow::Result<()> {
 
     let now = Instant::now();
 
-    let sim_sampling_frequency = 1000;
-    let sim_duration = 60_usize; // second
-    let bootstrapping_duration = 4_usize; // second
-    let n_bootstrapping = sim_sampling_frequency * bootstrapping_duration;
-    let n_sim = sim_sampling_frequency * sim_duration + 1;
+    let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
+    let n_sim = config::SIM_SAMPLING_FREQUENCY * config::SIM_DURATION + 1;
 
     let mut fem = FEM::from_env()?;
     // println!("{fem}");
 
     let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
-        CfdLoads::foh(".", sim_sampling_frequency)
-            .duration((sim_duration + bootstrapping_duration) as f64)
+        CfdLoads::foh(".", config::SIM_SAMPLING_FREQUENCY)
+            .duration((config::SIM_DURATION + config::BOOTSTRAPPING_DURATION) as f64)
             .windloads(&mut fem, Default::default()),
     )?;
 
@@ -103,7 +88,7 @@ async fn main() -> anyhow::Result<()> {
     //         "servos.bin",
     //         || {
     //             GmtServoMechanisms::<{ config::m1::ACTUATOR_RATE }, 1>::new(
-    //                 sim_sampling_frequency as f64,
+    //                 SIM_SAMPLING_FREQUENCY as f64,
     //                 fem,
     //             )
     //             .m1_segment_figure(M1SegmentFigure::new())
@@ -143,7 +128,7 @@ async fn main() -> anyhow::Result<()> {
             .collect();
 
         GmtServoMechanisms::<{ config::m1::segment::ACTUATOR_RATE }, 1>::new(
-            sim_sampling_frequency as f64,
+            config::SIM_SAMPLING_FREQUENCY as f64,
             fem,
         )
         .wind_loads(WindLoads::new())
@@ -159,24 +144,6 @@ async fn main() -> anyhow::Result<()> {
     )?;
     println!("SH24 to FSM reconstructor:\n{recon}");
 
-    #[cfg(feature = "qp")]
-    let mut aco = {
-        QP::<M1_RBM, M2_RBM, 27, N_MODE>::new(
-            //"../aco_impl_stdalone/SHAcO_qp_rhoP1e-3_kIp5.rs.pkl")
-            //"rustCalib_AcO_rhoP1e-12_kIp5.rs.pkl")
-            Path::new("/home/ubuntu/projects/im-sim-scripts/aco_loop_example/data")
-                .join("rustCalib_AcO_rhoP1e-12_kIp5.agws.pickle"),
-        )?
-        .update_calib(
-            Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("qp")
-                .join("sh48_calibration.pkl"),
-        )?
-        .build()?;
-        println!("{aco}");
-        aco.set_controller_gain(0.5f64);
-        aco
-    };
     let gmtb = Gmt::builder().m1(
         config::m1::segment::RAW_MODES,
         config::m1::segment::N_RAW_MODE,
@@ -199,8 +166,11 @@ async fn main() -> anyhow::Result<()> {
                 K48,
                 Sh24<{ config::agws::sh24::RATE }>,
             >::builder()
-            .load_atmosphere("atmosphere/atmosphere.toml", sim_sampling_frequency as f64)?
-            // .atmosphere(atm, sim_sampling_frequency as f64)
+            .load_atmosphere(
+                "atmosphere/atmosphere.toml",
+                config::SIM_SAMPLING_FREQUENCY as f64,
+            )?
+            // .atmosphere(atm, SIM_SAMPLING_FREQUENCY as f64)
         } else {
             Agws::<
                 { config::agws::sh48::RATE },
@@ -223,7 +193,6 @@ async fn main() -> anyhow::Result<()> {
         }
         .gmt(gmtb.clone())
         .sh24_calibration(recon);
-        #[cfg(not(feature = "qp"))]
         let agws = {
             // agws.sh48_calibration(sh48_calibration(gmtb.clone(), config::m1::segment::N_MODE)?)
 
@@ -234,13 +203,11 @@ async fn main() -> anyhow::Result<()> {
                     .recon()?,
             )
         };
-        #[cfg(feature = "qp")]
-        let agws = agws.sh48_calibration(aco);
         (agws.wave_sensor().build()?, agws.build()?)
     };
-    if let Some(p24) = config::agws::sh24::POINTING_ERROR {
-        let _ = agws.sh24_pointing(p24).await;
-    }
+    // if let Some(p24) = config::agws::sh24::POINTING_ERROR {
+    //     let _ = agws.sh24_pointing(p24).await;
+    // }
     println!("{agws}");
     println!("{agws_wss}");
 
@@ -258,18 +225,18 @@ async fn main() -> anyhow::Result<()> {
     let mut gmt_state_mon = Monitor::new();
     let gmt_state_tx = Transceiver::<OpticsState>::transmitter(address)?.run(&mut gmt_state_mon);
     actorscript! {
-         #[model(name=bootstrap)]
-         #[labels(timer="⏲",
-                  gmt_state_tx="🔊")]
-     1: timer[Tick] -> {servos::GmtFem}
+        #[model(name=bootstrap)]
+        #[labels(timer="⏲",
+                 gmt_state_tx="🔊")]
+    1: timer[Tick] -> {servos::GmtFem}
 
-     1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
-     1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
-     1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
-     1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
+    1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
 
-     }
+    }
 
     // M2 RBM SH48 calibration
     let sh48_m2_rbm_recon: Reconstructor = serde_pickle::from_reader(
@@ -342,10 +309,7 @@ async fn main() -> anyhow::Result<()> {
     //         ),
     // );
 
-    // dbg!(&optical_state);
-    // let state_print = gmt_dos_clients::print::Print::default().scale(1e9_f64);
     actorscript! {
-        // #[model(state=running)]
     #[labels(//on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
         timer="⏲",
          fsm_pzt_int="FSM\nIntegrator",
