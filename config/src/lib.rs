@@ -1,6 +1,7 @@
 pub const SIM_SAMPLING_FREQUENCY: usize = 1000; // Hz
-pub const SIM_DURATION: usize = 60_usize; // seconds
-pub const BOOTSTRAPPING_DURATION: usize = 4_usize; // seconds
+pub const BOOTSTRAPPING_DURATION: usize = 4; // seconds
+pub const FAST_SEGMENT_TIPTILT_DURATION: usize = 1; // seconds
+pub const SIM_DURATION: usize = 60; // seconds
 
 pub const ATMOSPHERE: bool = true;
 // pub const WINDLOADS: bool = true;

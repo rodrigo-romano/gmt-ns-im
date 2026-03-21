@@ -39,15 +39,15 @@ use gmt_dos_clients_windloads::{
 };
 use gmt_dos_systems_agws::{
     Agws,
-    agws::{
-        sh24::{Sh24, kernel::Sh24Kern},
-        sh48::{Sh48, kernel::Sh48Kern},
-    },
+    agws::{AgwsParts, sh24::Sh24},
     builder::shack_hartmann::ShackHartmannBuilder,
+    kernels::KernelFrame,
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::agws::{Sh48MergerReconstructor, TXY_RESIDUAL_SCALING};
+use gmt_ns_im::agws::{
+    Sh48MergerReconstructor, TXY_RESIDUAL_SCALING, calibration::Sh48Calibration,
+};
 use interface::{Left, Right, Tick};
 use matio_rs::MatFile;
 
@@ -67,9 +67,6 @@ async fn main() -> anyhow::Result<()> {
     println!("MOUNT: {}", env!("MOUNT_MODEL"));
 
     let now = Instant::now();
-
-    let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
-    let n_sim = config::SIM_SAMPLING_FREQUENCY * config::SIM_DURATION + 1;
 
     let mut fem = FEM::from_env()?;
     // println!("{fem}");
@@ -96,8 +93,6 @@ async fn main() -> anyhow::Result<()> {
     //     )?;
 
     // SERVO-MECHANISMS
-    // let mut m1s1_modes0 = vec![0f64; config::m1::segment::N_RAW_MODE];
-    // m1s1_modes0[0] = 1e-6;
     let servos = {
         let m1_sms: SingularModes = serde_pickle::from_reader(
             &File::open("calibrations/m1/modes/m1_singular_modes.pkl")?,
@@ -148,74 +143,63 @@ async fn main() -> anyhow::Result<()> {
         config::m1::segment::RAW_MODES,
         config::m1::segment::N_RAW_MODE,
     );
-    let (agws_wss, mut agws): (
-        _,
-        Sys<
-            Agws<
-                { config::agws::sh48::RATE },
-                { config::agws::sh24::RATE },
-                K48,
-                Sh24<{ config::agws::sh24::RATE }>,
-            >,
-        >,
-    ) = {
-        let agws = if config::ATMOSPHERE {
-            Agws::<
-                { config::agws::sh48::RATE },
-                { config::agws::sh24::RATE },
-                K48,
-                Sh24<{ config::agws::sh24::RATE }>,
-            >::builder()
-            .load_atmosphere(
-                "atmosphere/atmosphere.toml",
-                config::SIM_SAMPLING_FREQUENCY as f64,
-            )?
-            // .atmosphere(atm, SIM_SAMPLING_FREQUENCY as f64)
+    let AgwsParts {
+        sh48,
+        sh24,
+        sh24_kernel,
+        sh48_kernel,
+        ..
+    } = if config::ATMOSPHERE {
+        Agws::<
+            { config::agws::sh48::RATE },
+            { config::agws::sh24::RATE },
+            K48,
+            Sh24<{ config::agws::sh24::RATE }>,
+        >::builder()
+        .load_atmosphere(
+            "atmosphere/atmosphere.toml",
+            config::SIM_SAMPLING_FREQUENCY as f64,
+        )?
+        // .atmosphere(atm, SIM_SAMPLING_FREQUENCY as f64)
+    } else {
+        Agws::<
+            { config::agws::sh48::RATE },
+            { config::agws::sh24::RATE },
+            K48,
+            Sh24<{ config::agws::sh24::RATE }>,
+        >::builder()
+        .sh24(if config::agws::sh24::CALIBRATION_SRC {
+            ShackHartmannBuilder::sh24() // .source(AgwsGuideStar::sh24().zenith_azimuth(vec![0f32], vec![0f32]))
+                .use_calibration_src()
         } else {
-            Agws::<
-                { config::agws::sh48::RATE },
-                { config::agws::sh24::RATE },
-                K48,
-                Sh24<{ config::agws::sh24::RATE }>,
-            >::builder()
-            .sh24(if config::agws::sh24::CALIBRATION_SRC {
-                ShackHartmannBuilder::sh24() // .source(AgwsGuideStar::sh24().zenith_azimuth(vec![0f32], vec![0f32]))
-                    .use_calibration_src()
-            } else {
-                ShackHartmannBuilder::sh24()
-            })
-            .sh48(if config::agws::sh48::CALIBRATION_SRC {
-                ShackHartmannBuilder::sh48() // .source(AgwsGuideStar::sh48().zenith_azimuth(vec![0f32], vec![0f32]))
-                    .use_calibration_src()
-            } else {
-                ShackHartmannBuilder::sh48()
-            })
-        }
-        .gmt(gmtb.clone())
-        .sh24_calibration(recon);
-        let agws = {
-            // agws.sh48_calibration(sh48_calibration(gmtb.clone(), config::m1::segment::N_MODE)?)
-
-            use gmt_ns_im::agws::calibration::Sh48Calibration;
-            agws.sh48_calibration(
-                Sh48Calibration::new()?
-                    .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
-                    .recon()?,
-            )
-        };
-        (agws.wave_sensor().build()?, agws.build()?)
-    };
+            ShackHartmannBuilder::sh24()
+        })
+        .sh48(if config::agws::sh48::CALIBRATION_SRC {
+            ShackHartmannBuilder::sh48() // .source(AgwsGuideStar::sh48().zenith_azimuth(vec![0f32], vec![0f32]))
+                .use_calibration_src()
+        } else {
+            ShackHartmannBuilder::sh48()
+        })
+    }
+    .gmt(gmtb.clone())
+    .sh24_calibration(recon)
+    .sh48_calibration(
+        Sh48Calibration::new()?
+            .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
+            .recon()?,
+    )
+    .parts()?;
     // if let Some(p24) = config::agws::sh24::POINTING_ERROR {
     //     let _ = agws.sh24_pointing(p24).await;
     // }
-    println!("{agws}");
-    println!("{agws_wss}");
+    // println!("{agws}");
 
     // M1 edge sensors to RBMs integrator
     // let m1_es_to_rbm_int = Integrator::new(42).gain(config::m1::edge_sensor::RBM_INTEGRATOR_GAIN);
 
     println!("Model built in {}s", now.elapsed().as_secs());
 
+    let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
     let mut timer: Timer = Timer::new(n_bootstrapping);
     timer.progress();
 
@@ -224,6 +208,7 @@ async fn main() -> anyhow::Result<()> {
     let address = "127.0.0.1";
     let mut gmt_state_mon = Monitor::new();
     let gmt_state_tx = Transceiver::<OpticsState>::transmitter(address)?.run(&mut gmt_state_mon);
+
     actorscript! {
         #[model(name=bootstrap)]
         #[labels(timer="⏲",
@@ -267,11 +252,12 @@ async fn main() -> anyhow::Result<()> {
     let m2_pos_lpf = LowPassFilter::new(42, 0.0063);
 
     // let print = Print::<Vec<f64>>::new(8);
-    let timer: Timer = Timer::new(n_sim);
-    type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
+    // type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
     type AgwsSh24 = Sh24<{ config::agws::sh24::RATE }>;
-    type AgwsSh24Kernel = Sh24Kern<Sh24<{ config::agws::sh24::RATE }>>;
-    type AgwsSh48Kernel = Sh48Kern<K48>;
+    // type AgwsSh24Kernel = Sh24Kern<AgwsSh24>;
+    // type AgwsSh48Kernel = Sh48Kern<K48>;
+    type AgwsSh24Frame = KernelFrame<AgwsSh24>;
+    type AgwsSh48Frame = KernelFrame<K48>;
     // let one_to_1000 = Sampler::default();
     // let e2o = Estimate2OpticsState::new();
 
@@ -309,9 +295,63 @@ async fn main() -> anyhow::Result<()> {
     //         ),
     // );
 
+    let n_sim = config::SIM_SAMPLING_FREQUENCY * config::FAST_SEGMENT_TIPTILT_DURATION;
+    let timer: Timer = Timer::new(n_sim);
+    actorscript! {
+    #[model(name=fast_segment_tip_tilt)]
+    #[labels(//on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
+        timer="⏲",
+         fsm_pzt_int="FSM\nIntegrator",
+         // pzt_to_rbm="FSM\nto\nPositioner",
+         // pzt_to_rbm_int="Positioner\nIntegrator",
+         // split="Split SH48 Estimate into\nM2RigidBodyMotions(Left)\n& M1ModeShapes(Right)",
+         // add_m2_rbms="+",
+         sh24_kernel="SH24 Kernel",
+         optical_state_arrow="Optics State\nLog",
+         // sh48_m2_rbm_int = "∫ M2RigidBodyMotions",
+         // sh48_m1_bm_int = "∫ M1ModeShapes",
+         gmt_state_tx="🔊"
+         )]
+    1: timer[Tick] -> {servos::GmtFem}
+
+    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+
+    1: optical_state[OpticsState]!.. -> gmt_state_tx
+    1: optical_state[OpticsState]!.. -> optical_state_arrow
+
+
+    // FSM to positionner off-load
+    // 1: {servos::GmtFem}[M2PositionerNodes]
+    // 1: {servos::GmtFem}[M2FSMPiezoNodes]
+    //     -> pzt_to_rbm[M2RigidBodyMotions] //-> scope_fsm_cmd
+    //         -> m2_pos_lpf[M2RigidBodyMotions]
+    //             -> pzt_to_rbm_int[Right<M2RigidBodyMotions>]
+    //                 -> add_m2_rbms[M2RigidBodyMotions]
+    //                     -> {servos::GmtM2Hex}
+
+    // M1 edge sensor to RBMs feedback loop
+    // 1: {servos::GmtFem}[M1EdgeSensors]!
+    //     -> m1_es_to_rbm_int[M1RigidBodyMotions]
+    //         -> {servos::GmtM1}
+            // -> adder
+
+
+    // AGWS SH24 to FSMS feedback loop
+    1:  {servos::GmtFem}[OpticsState]!
+        -> optical_state[OpticsState] -> sh24[AgwsSh24Frame]! -> sh24_kernel
+    5: sh24_kernel[M2FSMFsmCommand] -> fsm_pzt_int
+    1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
+    }
+
+    let n_sim = config::SIM_SAMPLING_FREQUENCY * config::SIM_DURATION + 1;
+    let timer: Timer = Timer::new(n_sim);
     actorscript! {
     #[labels(//on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
         timer="⏲",
+         sh24_kernel="SH24 Kernel",
+         sh48_kernel="SH48 Kernel",
          fsm_pzt_int="FSM\nIntegrator",
          pzt_to_rbm="FSM\nto\nPositioner",
          pzt_to_rbm_int="Positioner\nIntegrator",
@@ -328,8 +368,6 @@ async fn main() -> anyhow::Result<()> {
     1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
     1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
-    1:  {servos::GmtFem}[OpticsState]! -> optical_state[OpticsState] -> {agws::AgwsSh24}
-    1:   optical_state[OpticsState] -> {agws::AgwsSh48}
 
     1: optical_state[OpticsState]!.. -> gmt_state_tx
     1: optical_state[OpticsState]!.. -> optical_state_arrow
@@ -352,11 +390,14 @@ async fn main() -> anyhow::Result<()> {
 
 
     // AGWS SH24 to FSMS feedback loop
-    5: {agws::AgwsSh24Kernel}[M2FSMFsmCommand] -> fsm_pzt_int
+    5: sh24_kernel[M2FSMFsmCommand] -> fsm_pzt_int
+    1:  {servos::GmtFem}[OpticsState]!
+        -> optical_state[OpticsState] -> sh24[AgwsSh24Frame]! -> sh24_kernel
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
 
     // AGWS SH48 to M2 Txy and M1 bending modes loop
-    1000: {agws::AgwsSh48Kernel}[Estimate]
+    1:   optical_state[OpticsState] -> sh48[AgwsSh48Frame]! -> sh48_kernel
+    1000: sh48_kernel[Estimate]
         -> split[Left<Estimate>]
             -> m2_txy_scaling[Left<Estimate>]
                 -> sh48_m2_rbm_int
@@ -364,7 +405,6 @@ async fn main() -> anyhow::Result<()> {
         -> sh48_m1_bm_int[M1ModeShapes] -> m1_state
     1:  sh48_m2_rbm_int[Left<Estimate>]
                 -> add_m2_rbms
-
     1: m1_state[M1State] -> {servos::GmtM1}
 
     }
