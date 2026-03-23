@@ -224,11 +224,11 @@ async fn main() -> anyhow::Result<()> {
     }
 
     // M2 RBM SH48 calibration
-    let sh48_m2_rbm_recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/sh48/open_loop_recon_sh48-to-m2-rbm.pkl")?,
-        Default::default(),
-    )?;
-    println!("SH48 to M2 RBM reconstructor:\n{sh48_m2_rbm_recon}");
+    // let sh48_m2_rbm_recon: Reconstructor = serde_pickle::from_reader(
+    //     File::open("calibrations/sh48/open_loop_recon_sh48-to-m2-rbm.pkl")?,
+    //     Default::default(),
+    // )?;
+    // println!("SH48 to M2 RBM reconstructor:\n{sh48_m2_rbm_recon}");
     // FSM OFF-LOAD TO POSITIONER
     let matfile = MatFile::load("calibrations/sh24/m2_pzt_r.mat")?;
     let pzt_to_rbm: Vec<Mat<f64>> = (0..7)
