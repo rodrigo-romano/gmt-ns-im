@@ -4,7 +4,7 @@ pub const FAST_SEGMENT_TIPTILT_DURATION: usize = 1; // seconds
 pub const SIM_DURATION: usize = 60; // seconds
 
 pub const ATMOSPHERE: bool = true;
-// pub const WINDLOADS: bool = true;
+pub const WINDLOADS: &str = "zen30az045_OS_7ms";
 
 pub mod m1 {
     // M1 polishing residual error figures (0: without, 1: with)

@@ -6,7 +6,7 @@ use gmt_dos_systems_m1::SingularModes;
 use interface::{Data, Read, Update, Write};
 
 /// Projection of M1 segment figures onto M1 segment bending modes
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct M1BendingModes {
     // bending modes data structure
     modes: SingularModes,
@@ -24,7 +24,8 @@ impl M1BendingModes {
             serde_pickle::from_reader(&mut File::open(path.as_ref())?, Default::default())?;
         Ok(Self {
             modes,
-            ..Default::default()
+            surfaces: Default::default(),
+            coefs: Default::default(),
         })
     }
 }

@@ -2,7 +2,6 @@ use std::{
     env,
     fs::{self, File},
     path::Path,
-    time::Instant,
 };
 
 use faer::{Mat, MatRef};
@@ -66,16 +65,33 @@ async fn main() -> anyhow::Result<()> {
     println!("FEM  : {}", env!("FEM_REPO"));
     println!("MOUNT: {}", env!("MOUNT_MODEL"));
 
-    let now = Instant::now();
+    // let now = Instant::now();
 
     let mut fem = FEM::from_env()?;
     // println!("{fem}");
 
+    // ===============================
+    // -- CFD WINDLOADS --
+    //
+    // CFD wind loads are loaded either from a on-disk data file
+    // or from S3 (credentials environment variables required)
+    //
+    // let store = object_store::local::LocalFileSystem::new();
+    let store = object_store::aws::AmazonS3Builder::from_env()
+        .with_region("us-east-1")
+        .with_bucket_name("gmto.cfd.2025")
+        .build()?;
     let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
-        CfdLoads::foh(".", config::SIM_SAMPLING_FREQUENCY)
-            .duration((config::SIM_DURATION + config::BOOTSTRAPPING_DURATION) as f64)
-            .windloads(&mut fem, Default::default()),
+        CfdLoads::foh(
+            &format!("CASES/{}", config::WINDLOADS),
+            config::SIM_SAMPLING_FREQUENCY,
+        )
+        .duration((config::SIM_DURATION + config::BOOTSTRAPPING_DURATION) as f64)
+        .windloads(&mut fem, Default::default())
+        .fetch_and_build(store)
+        .await?,
     )?;
+    // ===============================
 
     // M1 EDGE SENSORS TO RIGID-BODY MOTIONS TRANSFORM
     // let m1_es_2_rbm: nalgebra::DMatrix<f64> =
@@ -92,8 +108,12 @@ async fn main() -> anyhow::Result<()> {
     //         },
     //     )?;
 
-    // SERVO-MECHANISMS
+    // ===============================
+    // -- SERVO-MECHANISMS --
     let servos = {
+        // M1 segment structural modes are derived from M1 FEM
+        // They are computing with the crate [gmt_dos-systems_m1-modes](https://github.com/rconan/dos-actors/tree/gmt-ns-im/systems/m1/modes)
+        // see also: calibrations/m1/modes/README.md
         let m1_sms: SingularModes = serde_pickle::from_reader(
             &File::open("calibrations/m1/modes/m1_singular_modes.pkl")?,
             Default::default(),
@@ -131,8 +151,10 @@ async fn main() -> anyhow::Result<()> {
         .build()?
     };
     println!("{servos}");
+    // ===============================
 
-    // AGWS
+    // ===============================
+    // -- AGWS --
     let recon: Reconstructor = serde_pickle::from_reader(
         File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
@@ -193,21 +215,53 @@ async fn main() -> anyhow::Result<()> {
     //     let _ = agws.sh24_pointing(p24).await;
     // }
     // println!("{agws}");
+    // ===============================
 
     // M1 edge sensors to RBMs integrator
     // let m1_es_to_rbm_int = Integrator::new(42).gain(config::m1::edge_sensor::RBM_INTEGRATOR_GAIN);
 
-    println!("Model built in {}s", now.elapsed().as_secs());
+    // println!("Model built in {}s", now.elapsed().as_secs());
 
     let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
     let mut timer: Timer = Timer::new(n_bootstrapping);
     timer.progress();
 
-    // let state_print = gmt_dos_clients::print::Print::new(8);
-
+    // ===============================
+    // -- OPTICS STATE TRANSMITTER
     let address = "127.0.0.1";
     let mut gmt_state_mon = Monitor::new();
     let gmt_state_tx = Transceiver::<OpticsState>::transmitter(address)?.run(&mut gmt_state_mon);
+    // ===============================
+
+    // ===============================
+    // -- FSM OFF-LOAD TO POSITIONER --
+    let matfile = MatFile::load("calibrations/sh24/m2_pzt_r.mat")?;
+    let pzt_to_rbm: Vec<Mat<f64>> = (0..7)
+        .map(|i| {
+            let var: Vec<f64> = matfile.var(format!("var{i}")).unwrap();
+            let mat = MatRef::from_column_major_slice(&var, 6, 6);
+            mat.to_owned()
+        })
+        .collect();
+    let pzt_to_rbm = Gain::<f64>::new(pzt_to_rbm);
+    // -- FSM OFF-LOAD INTEGRATOR --
+    let pzt_to_rbm_int = Integrator::new(42).gain(config::fsm::OFFLOAD_INTEGRATOR_GAIN);
+    // -- FSM COMMAND INTEGRATOR --
+    let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
+    // ===============================
+
+    // ===============================
+    // -- SH48 M2 RBM integrator
+    let sh48_m2_rbm_int = Integrator::new(42).gain(config::agws::sh48::INTEGRATOR_GAIN);
+    // -- SH48 M1 bending modes integrator
+    let sh48_m1_bm_int =
+        Integrator::new(7 * config::m1::segment::N_MODE).gain(config::agws::sh48::INTEGRATOR_GAIN);
+    // ===============================
+
+    // ===============================
+    // -- M2 POSITIONNER LOW-PASS FILTER
+    let m2_pos_lpf = LowPassFilter::new(42, 0.0063);
+    // ===============================
 
     actorscript! {
         #[model(name=bootstrap)]
@@ -223,34 +277,6 @@ async fn main() -> anyhow::Result<()> {
 
     }
 
-    // M2 RBM SH48 calibration
-    // let sh48_m2_rbm_recon: Reconstructor = serde_pickle::from_reader(
-    //     File::open("calibrations/sh48/open_loop_recon_sh48-to-m2-rbm.pkl")?,
-    //     Default::default(),
-    // )?;
-    // println!("SH48 to M2 RBM reconstructor:\n{sh48_m2_rbm_recon}");
-    // FSM OFF-LOAD TO POSITIONER
-    let matfile = MatFile::load("calibrations/sh24/m2_pzt_r.mat")?;
-    let pzt_to_rbm: Vec<Mat<f64>> = (0..7)
-        .map(|i| {
-            let var: Vec<f64> = matfile.var(format!("var{i}")).unwrap();
-            let mat = MatRef::from_column_major_slice(&var, 6, 6);
-            mat.to_owned()
-        })
-        .collect();
-    let pzt_to_rbm = Gain::<f64>::new(pzt_to_rbm);
-    // FSM off-load integrator
-    let pzt_to_rbm_int = Integrator::new(42).gain(config::fsm::OFFLOAD_INTEGRATOR_GAIN);
-
-    // FSM command integrator
-    let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
-
-    let sh48_m2_rbm_int = Integrator::new(42).gain(config::agws::sh48::INTEGRATOR_GAIN);
-    let sh48_m1_bm_int =
-        Integrator::new(7 * config::m1::segment::N_MODE).gain(config::agws::sh48::INTEGRATOR_GAIN);
-
-    let m2_pos_lpf = LowPassFilter::new(42, 0.0063);
-
     // let print = Print::<Vec<f64>>::new(8);
     // type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
     type AgwsSh24 = Sh24<{ config::agws::sh24::RATE }>;
@@ -261,6 +287,8 @@ async fn main() -> anyhow::Result<()> {
     // let one_to_1000 = Sampler::default();
     // let e2o = Estimate2OpticsState::new();
 
+    // ===============================
+    // -- GMT M1 AND M2 STATES --
     let mirror = if config::m1::POLISH_ERROR_MAPS == 0 {
         MirrorState::default()
     } else {
@@ -272,19 +300,31 @@ async fn main() -> anyhow::Result<()> {
     let optical_state =
         OpticalState::m1(MirrorState::default().zeros_modes(config::m1::segment::N_RAW_MODE))
             .set_zero_point(OpticalState::m1(mirror));
-
+    // -- STATES LOG --
     let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
-        .build(config::m1::segment::N_RAW_MODE);
+        .build(config::m1::segment::N_RAW_MODE - config::m1::POLISH_ERROR_MAPS);
+    // ===============================
 
+    // ===============================
+    // -- SH48 ESTIMATE SPLITTER --
     let split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
         6 + config::m1::segment::N_MODE,
         6,
     );
+    // ===============================
 
+    // ===============================
+    // -- M2 SH48 RBMS (TXY) and SH24 (RXY) adder --
     let add_m2_rbms = Operator::plus();
+    // ===============================
 
+    // ===============================
+    // -- M1 TXY RBM SCALING FACTOR --
     let m2_txy_scaling = Gain::new(vec![TXY_RESIDUAL_SCALING as f64; 42]);
+    // ===============================
 
+    // ===============================
+    // -- GMT M1 STATE --
     let m1_state = MirrorState::default().zeros_modes(config::m1::segment::N_MODE);
     // .set_zero_point(
     //     MirrorState::default()
@@ -294,7 +334,10 @@ async fn main() -> anyhow::Result<()> {
     //             SegmentState::modes(vec![0.; config::m1::segment::N_MODE]).set_mode(0, 1e-6),
     //         ),
     // );
+    // ===============================
 
+    // ===============================
+    // -- FAST SEGMENT TIP-TILT --
     let n_sim = config::SIM_SAMPLING_FREQUENCY * config::FAST_SEGMENT_TIPTILT_DURATION;
     let timer: Timer = Timer::new(n_sim);
     actorscript! {
@@ -344,7 +387,10 @@ async fn main() -> anyhow::Result<()> {
     5: sh24_kernel[M2FSMFsmCommand] -> fsm_pzt_int
     1: fsm_pzt_int[M2FSMFsmCommand] -> {servos::GmtM2}
     }
+    // ===============================
 
+    // ===============================
+    // -- HIGH GAIN ADAPTIVE OPTICS --
     let n_sim = config::SIM_SAMPLING_FREQUENCY * config::SIM_DURATION + 1;
     let timer: Timer = Timer::new(n_sim);
     actorscript! {
@@ -408,6 +454,7 @@ async fn main() -> anyhow::Result<()> {
     1: m1_state[M1State] -> {servos::GmtM1}
 
     }
+    // ===============================
 
     gmt_state_mon.drop(gmt_state_tx).await?;
     Ok(())

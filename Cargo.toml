@@ -27,8 +27,8 @@ gmt_dos-clients = { git = "https://github.com/rconan/dos-actors.git", branch = "
   "gif",
   "faer",
 ] }
-gmt-fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.1.1" }
-gmt_dos-clients_fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.1.2", features = [
+gmt-fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.2" }
+gmt_dos-clients_fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.3", features = [
   "cuda",
 ] }
 gmt_dos-clients_io = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.3.0", features = [
@@ -70,7 +70,10 @@ gmt_dos-systems_m1 = { workspace = true, features = ["faer"] }
 tokio.workspace = true
 env_logger = "0.11.6"
 serde-pickle.workspace = true
-gmt_dos-clients_windloads = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.0.3" }
+# gmt_dos-clients_windloads = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = ["cfd2025"]}
+gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads", features = [
+  "object_store",
+] }
 anyhow.workspace = true
 matio-rs = { workspace = true, features = ["faer"] }
 faer = "0.21.9"
@@ -80,6 +83,7 @@ skyangle.workspace = true
 config = { version = "0.1.0", path = "config" }
 gmt_dos-clients_optics-state.workspace = true
 thiserror = "2.0.18"
+object_store = { version = "0.13.1", features = ["aws"] }
 
 [dev-dependencies]
 criterion = { version = "0.8.2", features = ["async_tokio"] }
@@ -97,6 +101,7 @@ codegen-units = 1
 
 [patch."https://github.com/rconan/dos-actors.git"]
 gmt_dos-actors = { path = "/home/ubuntu/projects/dos-actors/actors" }
+gmt_dos-actors_dsl = { path = "/home/ubuntu/projects/dos-actors/actors/dsl" }
 gmt_dos-clients = { path = "/home/ubuntu/projects/dos-actors/clients/core" }
 gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/interface" }
 gmt_dos-clients_fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem" }
