@@ -5,7 +5,7 @@ mount-s3 --cache ~/.s3-cache/ gmto.im.grim ~/mnt
 # path to CEO mirror modes files
 export GMT_MODES_PATH=$HOME/mnt/ceo
 # path to the FEM
-export FEM_REPO=$HOME/mnt/20230530_1756_zen_30_M1_202110_FSM_202305_Mount_202305_noStairs
+export FEM_REPO=$HOME/mnt/20250506_1715_zen_30_M1_202110_FSM_202305_Mount_202305_pier_202411_M1_actDamping
 # mount model 
 export MOUNT_MODEL=MOUNT_FDR_1kHz
 # flowchart layout
