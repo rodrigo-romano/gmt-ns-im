@@ -1,24 +1,29 @@
 pub const SIM_SAMPLING_FREQUENCY: usize = 1000; // Hz
 pub const BOOTSTRAPPING_DURATION: usize = 4; // seconds
 pub const FAST_SEGMENT_TIPTILT_DURATION: usize = 1; // seconds
-pub const SIM_DURATION: usize = 60; // seconds
+pub const HIGH_GAIN_ACO_DURATION: usize = 60; // seconds
+pub const SIM_DURATION: usize =
+    BOOTSTRAPPING_DURATION + FAST_SEGMENT_TIPTILT_DURATION + HIGH_GAIN_ACO_DURATION;
 
 pub const ATMOSPHERE: bool = true;
+// CFD 2025
 pub const WINDLOADS: &str = "zen30az045_OS_7ms";
+// CFD 2021
+// pub const WINDLOADS: &str = "zen30az045_OS7";
 
 pub mod m1 {
     // M1 polishing residual error figures (0: without, 1: with)
-    pub const POLISH_ERROR_MAPS: usize = 1;
+    pub const POLISH_ERROR_MAPS: usize = 0;
     pub mod segment {
         // use crate::m1::POLISH_ERROR_MAPS;
 
         pub const N_MODE: usize = 27;
         pub const N_RAW_MODE: usize = 335 + super::POLISH_ERROR_MAPS;
-        pub const MODES: &str = "20230530_1756_m1_bending_modes";
+        pub const MODES: &str = concat!(env!("FEM_SHORT_ID"), "_m1_bending_modes");
         pub const RAW_MODES: &str = if super::POLISH_ERROR_MAPS == 0 {
-            "20230530_1756_m1_raw_bending_modes"
+            concat!(env!("FEM_SHORT_ID"), "_m1_raw_bending_modes")
         } else {
-            "20230530_1756_m1_raw_bending_modes_polish12"
+            concat!(env!("FEM_SHORT_ID"), "_m1_raw_bending_modes_polish12")
         };
         pub const ACTUATOR_RATE: usize = 10;
     }

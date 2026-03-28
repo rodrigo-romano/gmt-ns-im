@@ -28,6 +28,7 @@ pub struct Sh48Calibration {
     m2_txy: ClosedLoopReconstructor,
     m1_bm: Option<Reconstructor>,
     m1_n_mode: usize,
+    m1_modes: String,
 }
 type Result<T> = std::result::Result<T, Sh48CalibrationError>;
 
@@ -58,6 +59,7 @@ impl Sh48Calibration {
             m2_txy: recon,
             m1_bm: None,
             m1_n_mode: 0,
+            m1_modes: String::new(),
         })
     }
     pub fn m1_modes(self, m1_modes: &str, m1_n_mode: usize) -> Result<Self> {
@@ -81,14 +83,15 @@ impl Sh48Calibration {
         Ok(Self {
             m1_bm: Some(m1_bm_recon),
             m1_n_mode,
+            m1_modes: m1_modes.to_string(),
             ..self
         })
     }
     pub fn recon(self) -> Result<Reconstructor<MixedMirrorMode>> {
         Ok(if let Some(m1_bm_recon) = self.m1_bm {
             let file_name = format!(
-                "sh48_merged_m2-txy_{}_bending-modes_recon.pkl",
-                self.m1_n_mode
+                "sh48_merged_m2-txy_{}-{}_recon.pkl",
+                self.m1_n_mode, self.m1_modes
             );
             if let Ok(recon) = Reconstructor::from_data_repo(&file_name) {
                 recon
