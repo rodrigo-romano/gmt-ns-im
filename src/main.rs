@@ -84,13 +84,20 @@ async fn main() -> anyhow::Result<()> {
     let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
         CfdLoads::foh(
             &format!("CASES/{}", config::WINDLOADS),
+            // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
             config::SIM_SAMPLING_FREQUENCY,
         )
-        .duration((config::SIM_DURATION + config::BOOTSTRAPPING_DURATION) as f64)
+        .duration(config::SIM_DURATION as f64)
         .windloads(&mut fem, Default::default())
         .fetch_and_build(store)
         .await?,
     )?;
+    // let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
+    //     CfdLoads::foh(".", config::SIM_SAMPLING_FREQUENCY)
+    //         .duration((config::SIM_DURATION + config::BOOTSTRAPPING_DURATION) as f64)
+    //         .windloads(&mut fem, Default::default())
+    //         .build()?,
+    // )?;
     // ===============================
 
     // M1 EDGE SENSORS TO RIGID-BODY MOTIONS TRANSFORM
@@ -115,10 +122,11 @@ async fn main() -> anyhow::Result<()> {
         // They are computing with the crate [gmt_dos-systems_m1-modes](https://github.com/rconan/dos-actors/tree/gmt-ns-im/systems/m1/modes)
         // see also: calibrations/m1/modes/README.md
         let m1_sms: SingularModes = serde_pickle::from_reader(
-            &File::open("calibrations/m1/modes/m1_singular_modes.pkl")?,
+            // &File::open("calibrations/m1/modes/m1_singular_modes.pkl")?,
+            &File::open(Path::new(env!("FEM_REPO")).join("m1_singular_modes.pkl"))?,
             Default::default(),
         )?;
-
+        // Bending modes coefficients to actuator forces conversion
         println!("Modes to forces matrices:");
         let b2f: Vec<_> = m1_sms
             .mode2force()
@@ -126,6 +134,7 @@ async fn main() -> anyhow::Result<()> {
             .map(|mat| mat.columns(0, config::m1::segment::N_MODE).clone_owned())
             .inspect(|x| println!("{:?}", x.shape()))
             .collect();
+        // Segment figure to raw modes (influence functions) conversion
         println!("Surfaces to raw modes matrices:");
         let s2b: Vec<_> = m1_sms
             .raw_modes_into_mat()
@@ -155,6 +164,7 @@ async fn main() -> anyhow::Result<()> {
 
     // ===============================
     // -- AGWS --
+    // SH24 M2 segment tip-tilt reconstructor
     let recon: Reconstructor = serde_pickle::from_reader(
         File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
@@ -206,6 +216,7 @@ async fn main() -> anyhow::Result<()> {
     .gmt(gmtb.clone())
     .sh24_calibration(recon)
     .sh48_calibration(
+        // SH48 M2 (closed-loop) Txy and M1 bending modes reconstructor
         Sh48Calibration::new()?
             .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
             .recon()?,
@@ -221,10 +232,6 @@ async fn main() -> anyhow::Result<()> {
     // let m1_es_to_rbm_int = Integrator::new(42).gain(config::m1::edge_sensor::RBM_INTEGRATOR_GAIN);
 
     // println!("Model built in {}s", now.elapsed().as_secs());
-
-    let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
-    let mut timer: Timer = Timer::new(n_bootstrapping);
-    timer.progress();
 
     // ===============================
     // -- OPTICS STATE TRANSMITTER
@@ -262,6 +269,11 @@ async fn main() -> anyhow::Result<()> {
     // -- M2 POSITIONNER LOW-PASS FILTER
     let m2_pos_lpf = LowPassFilter::new(42, 0.0063);
     // ===============================
+
+
+    let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
+    let mut timer: Timer = Timer::new(n_bootstrapping);
+    timer.progress();
 
     actorscript! {
         #[model(name=bootstrap)]
@@ -391,7 +403,7 @@ async fn main() -> anyhow::Result<()> {
 
     // ===============================
     // -- HIGH GAIN ADAPTIVE OPTICS --
-    let n_sim = config::SIM_SAMPLING_FREQUENCY * config::SIM_DURATION + 1;
+    let n_sim = config::SIM_SAMPLING_FREQUENCY * config::HIGH_GAIN_ACO_DURATION + 1;
     let timer: Timer = Timer::new(n_sim);
     actorscript! {
     #[labels(//on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
