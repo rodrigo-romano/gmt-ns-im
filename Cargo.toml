@@ -84,6 +84,7 @@ config = { version = "0.1.0", path = "config" }
 gmt_dos-clients_optics-state.workspace = true
 thiserror = "2.0.18"
 object_store = { version = "0.13.1", features = ["aws"] }
+dotenvy = "0.15.7"
 
 [dev-dependencies]
 criterion = { version = "0.8.2", features = ["async_tokio"] }
