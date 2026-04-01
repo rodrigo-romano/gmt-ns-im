@@ -80,15 +80,21 @@ async fn main() -> anyhow::Result<()> {
         .with_region("us-east-1")
         .with_bucket_name("gmto.cfd.2025")
         .build()?;
-    let cfd_loads = CfdLoads::foh(
-        &format!("CASES/{}", config::WINDLOADS),
-        // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
-        config::SIM_SAMPLING_FREQUENCY,
-    )
-    .duration(config::SIM_DURATION as f64)
-    .windloads(&mut fem, Default::default())
-    .fetch_and_build(store)
-    .await?;
+    let mut cfd_loads = if let Some(wind_loads) = &config::WINDLOADS {
+        Some(
+            CfdLoads::foh(
+                &format!("CASES/{}", wind_loads),
+                // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
+                config::SIM_SAMPLING_FREQUENCY,
+            )
+            .duration(config::SIM_DURATION as f64)
+            .windloads(&mut fem, Default::default())
+            .fetch_and_build(store)
+            .await?,
+        )
+    } else {
+        None
+    };
     // let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
     //     CfdLoads::foh(".", config::SIM_SAMPLING_FREQUENCY)
     //         .duration((config::SIM_DURATION + config::BOOTSTRAPPING_DURATION) as f64)
@@ -148,11 +154,18 @@ async fn main() -> anyhow::Result<()> {
             .inspect(|x| println!("{:?}", x.shape()))
             .collect();
 
-        GmtServoMechanisms::<{ config::m1::segment::ACTUATOR_RATE }, 1>::new(
-            config::SIM_SAMPLING_FREQUENCY as f64,
-            fem,
-        )
-        .wind_loads(WindLoads::new(cfd_loads))
+        if let Some(cfd_loads) = cfd_loads.take() {
+            GmtServoMechanisms::<{ config::m1::segment::ACTUATOR_RATE }, 1>::new(
+                config::SIM_SAMPLING_FREQUENCY as f64,
+                fem,
+            )
+            .wind_loads(WindLoads::new(cfd_loads))
+        } else {
+            GmtServoMechanisms::<{ config::m1::segment::ACTUATOR_RATE }, 1>::new(
+                config::SIM_SAMPLING_FREQUENCY as f64,
+                fem,
+            )
+        }
         .m1_segment_figure(M1SegmentFigure::new().transforms(s2b).modes_to_forces(b2f))
         .build()?
     };
