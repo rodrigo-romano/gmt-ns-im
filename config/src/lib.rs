@@ -5,11 +5,11 @@ pub const HIGH_GAIN_ACO_DURATION: usize = 60; // seconds
 pub const SIM_DURATION: usize =
     BOOTSTRAPPING_DURATION + FAST_SEGMENT_TIPTILT_DURATION + HIGH_GAIN_ACO_DURATION;
 
-pub const ATMOSPHERE: bool = true;
+pub const ATMOSPHERE: bool = false;
 // CFD 2025
-pub const WINDLOADS: &str = "zen30az000_OS_7ms";
+pub const WINDLOADS: Option<&str> = None; //Some("zen30az000_OS_7ms");
 // CFD 2021
-// pub const WINDLOADS: &str = "zen30az045_OS7";
+// pub const WINDLOADS: &str = Some("zen30az045_OS7");
 
 pub mod m1 {
     // M1 polishing residual error figures (0: without, 1: with)
