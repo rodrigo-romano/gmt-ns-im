@@ -7,7 +7,7 @@ pub const SIM_DURATION: usize =
 
 pub const ATMOSPHERE: bool = true;
 // CFD 2025
-pub const WINDLOADS: &str = "zen30az045_OS_7ms";
+pub const WINDLOADS: &str = "zen30az000_OS_7ms";
 // CFD 2021
 // pub const WINDLOADS: &str = "zen30az045_OS7";
 
