@@ -5,16 +5,10 @@ use std::{
 };
 
 use faer::{Mat, MatRef};
-use gmt_dos_actors::{actorscript, system::Sys};
+use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{
-    gain::Gain,
-    integrator::{Integrator, Offset},
-    leftright,
-    low_pass_filter::LowPassFilter,
-    operator::Operator,
-    print::Print,
-    select::Select,
-    timer::Timer,
+    gain::Gain, integrator::Integrator, leftright, low_pass_filter::LowPassFilter,
+    operator::Operator, timer::Timer,
 };
 use gmt_dos_clients_crseo::{
     calibration::Reconstructor,
@@ -23,7 +17,6 @@ use gmt_dos_clients_crseo::{
 // use gmt_dos_clients_fem::{DiscreteModalSolver, solvers::Exponential};
 use gmt_dos_clients_io::{
     Estimate,
-    cfd_wind_loads::{CFDM1WindLoads, CFDM2WindLoads, CFDMountWindLoads},
     gmt_m1::M1ModeShapes,
     gmt_m2::{
         M2RigidBodyMotions,
@@ -38,10 +31,7 @@ use gmt_dos_clients_optics_state::{
     M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
 };
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
-use gmt_dos_clients_windloads::{
-    CfdLoads,
-    system::{M1, M2, Mount, SigmoidCfdLoads},
-};
+use gmt_dos_clients_windloads::CfdLoads;
 use gmt_dos_systems_agws::{
     Agws,
     agws::{AgwsParts, sh24::Sh24},
@@ -51,7 +41,7 @@ use gmt_dos_systems_agws::{
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
 use gmt_ns_im::{
-    M2Txy, M2TxyToRxy,
+    M2TxyToRxy,
     agws::{Sh48MergerReconstructor, TXY_RESIDUAL_SCALING, calibration::Sh48Calibration},
 };
 use interface::{Left, Right, Tick};
@@ -90,17 +80,15 @@ async fn main() -> anyhow::Result<()> {
         .with_region("us-east-1")
         .with_bucket_name("gmto.cfd.2025")
         .build()?;
-    let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
-        CfdLoads::foh(
-            &format!("CASES/{}", config::WINDLOADS),
-            // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
-            config::SIM_SAMPLING_FREQUENCY,
-        )
-        .duration(config::SIM_DURATION as f64)
-        .windloads(&mut fem, Default::default())
-        .fetch_and_build(store)
-        .await?,
-    )?;
+    let cfd_loads = CfdLoads::foh(
+        &format!("CASES/{}", config::WINDLOADS),
+        // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
+        config::SIM_SAMPLING_FREQUENCY,
+    )
+    .duration(config::SIM_DURATION as f64)
+    .windloads(&mut fem, Default::default())
+    .fetch_and_build(store)
+    .await?;
     // let cfd_loads = Sys::<SigmoidCfdLoads>::try_from(
     //     CfdLoads::foh(".", config::SIM_SAMPLING_FREQUENCY)
     //         .duration((config::SIM_DURATION + config::BOOTSTRAPPING_DURATION) as f64)
@@ -164,7 +152,7 @@ async fn main() -> anyhow::Result<()> {
             config::SIM_SAMPLING_FREQUENCY as f64,
             fem,
         )
-        .wind_loads(WindLoads::new())
+        .wind_loads(WindLoads::new(cfd_loads))
         .m1_segment_figure(M1SegmentFigure::new().transforms(s2b).modes_to_forces(b2f))
         .build()?
     };
@@ -305,9 +293,9 @@ async fn main() -> anyhow::Result<()> {
                  gmt_state_tx="🔊")]
     1: timer[Tick] -> {servos::GmtFem}
 
-    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
     1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
 
@@ -401,9 +389,9 @@ async fn main() -> anyhow::Result<()> {
          )]
     1: timer[Tick] -> {servos::GmtFem}
 
-    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
     1: optical_state[OpticsState]!.. -> gmt_state_tx
     1: optical_state[OpticsState]!.. -> optical_state_arrow
@@ -457,9 +445,9 @@ async fn main() -> anyhow::Result<()> {
          )]
     1: timer[Tick] -> {servos::GmtFem}
 
-    1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
-    1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::M1}[CFDM1WindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
+    // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
 
     1: optical_state[OpticsState]!.. -> gmt_state_tx
