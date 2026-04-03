@@ -8,9 +8,9 @@ use gmt_dos_clients_io::{
 };
 use gmt_dos_systems_agws::kernels::{KernelError, KernelSpecs};
 
-pub struct Sh48MergerReconstructor<const I: usize>;
+pub struct Sh48Reconstructor<const I: usize>;
 
-impl<const I: usize> KernelSpecs for Sh48MergerReconstructor<I> {
+impl<const I: usize> KernelSpecs for Sh48Reconstructor<I> {
     type Sensor = Camera<I>;
 
     type Processor = CentroidsProcessing;
