@@ -54,7 +54,7 @@ impl Sh48Calibration {
             recon.to_data_repo(file_name)?;
             recon
         };
-        println!("{recon}");
+        // println!("{recon}");
         Ok(Self {
             m2_txy: recon,
             m1_bm: None,
@@ -79,7 +79,7 @@ impl Sh48Calibration {
                 recon.to_data_repo(file_name)?;
                 recon
             };
-        println!("{m1_bm_recon}");
+        // println!("{m1_bm_recon}");
         Ok(Self {
             m1_bm: Some(m1_bm_recon),
             m1_n_mode,
@@ -138,7 +138,7 @@ impl Sh48Calibration {
                     .truncated_pseudoinverse(vec![2; 7])
                     // .pseudoinverse()
                     .to_data_repo(&file_name)?;
-                println!("{recon}");
+                // println!("{recon}");
                 recon
             }
         } else {

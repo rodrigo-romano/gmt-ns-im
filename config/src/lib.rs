@@ -1,19 +1,19 @@
 pub const SIM_SAMPLING_FREQUENCY: usize = 1000; // Hz
 pub const BOOTSTRAPPING_DURATION: usize = 4; // seconds
 pub const FAST_SEGMENT_TIPTILT_DURATION: usize = 1; // seconds
-pub const HIGH_GAIN_ACO_DURATION: usize = 60; // seconds
+pub const HIGH_GAIN_ACO_DURATION: usize = 10; // seconds
 pub const SIM_DURATION: usize =
     BOOTSTRAPPING_DURATION + FAST_SEGMENT_TIPTILT_DURATION + HIGH_GAIN_ACO_DURATION;
 
-pub const ATMOSPHERE: bool = false;
+pub const ATMOSPHERE: bool = true;
 // CFD 2025
-pub const WINDLOADS: Option<&str> = None; //Some("zen30az000_OS_7ms");
+pub const WINDLOADS: Option<&str> = Some("zen30az000_OS_7ms");
 // CFD 2021
 // pub const WINDLOADS: &str = Some("zen30az045_OS7");
 
 pub mod m1 {
     // M1 polishing residual error figures (0: without, 1: with)
-    pub const POLISH_ERROR_MAPS: usize = 0;
+    pub const POLISH_ERROR_MAPS: usize = 1;
     pub mod segment {
         // use crate::m1::POLISH_ERROR_MAPS;
 
@@ -49,5 +49,5 @@ pub mod agws {
 }
 
 pub mod fsm {
-    pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 1e-2;
+    pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 0.;//1e-2;
 }

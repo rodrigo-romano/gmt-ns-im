@@ -2,6 +2,7 @@ use std::{
     env,
     fs::{self, File},
     path::Path,
+    time::Instant,
 };
 
 use faer::{Mat, MatRef};
@@ -23,9 +24,7 @@ use gmt_dos_clients_io::{
         fsm::{M2FSMFsmCommand, M2FSMPiezoNodes},
     },
 };
-use gmt_dos_clients_servos::{
-    GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtServoMechanisms, M1SegmentFigure, WindLoads,
-};
+use gmt_dos_clients_servos::{GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtServoMechanisms, M1SegmentFigure};
 
 use gmt_dos_clients_optics_state::{
     M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
@@ -40,14 +39,11 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::{
-    M2TxyToRxy,
-    agws::{Sh48MergerReconstructor, TXY_RESIDUAL_SCALING, calibration::Sh48Calibration},
-};
+use gmt_ns_im::agws::{Sh48Reconstructor, TXY_RESIDUAL_SCALING, calibration::Sh48Calibration};
 use interface::{Left, Right, Tick};
 use matio_rs::MatFile;
 
-type K48 = Sh48MergerReconstructor<{ config::agws::sh48::RATE }>;
+type K48 = Sh48Reconstructor<{ config::agws::sh48::RATE }>;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -64,9 +60,21 @@ async fn main() -> anyhow::Result<()> {
     println!("FEM  : {}", env!("FEM_REPO"));
     println!("MOUNT: {}", env!("MOUNT_MODEL"));
 
-    // let now = Instant::now();
+    // -------------------------------------------
+    // ===========================================
+    // ***** INTEGRATED MODEL DEFINITIONS ******
+    // ===========================================
+    // --------------------------------------------
 
+    // loading GMT FEM (require "FEM_REPO" env. var.)
+    println!(" ==>> loading GMT FEM: {} ...", env!("FEM_REPO"));
+    let now = Instant::now();
     let mut fem = FEM::from_env()?;
+    println!(
+        " ==>> GMT FEM: {}, loaded in {:?}",
+        env!("FEM_REPO"),
+        now.elapsed()
+    );
     // println!("{fem}");
 
     // ===============================
@@ -75,23 +83,29 @@ async fn main() -> anyhow::Result<()> {
     // CFD wind loads are loaded either from a on-disk data file
     // or from S3 (credentials environment variables required)
     //
-    // let store = object_store::local::LocalFileSystem::new();
-    let store = object_store::aws::AmazonS3Builder::from_env()
-        .with_region("us-east-1")
-        .with_bucket_name("gmto.cfd.2025")
-        .build()?;
     let mut cfd_loads = if let Some(wind_loads) = &config::WINDLOADS {
-        Some(
-            CfdLoads::foh(
-                &format!("CASES/{}", wind_loads),
-                // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
-                config::SIM_SAMPLING_FREQUENCY,
-            )
-            .duration(config::SIM_DURATION as f64)
-            .windloads(&mut fem, Default::default())
-            .fetch_and_build(store)
-            .await?,
+        println!(" ==>> loading GMT CFD wind loads: {} ...", wind_loads);
+        let now = Instant::now();
+        // let store = object_store::local::LocalFileSystem::new();
+        let store = object_store::aws::AmazonS3Builder::from_env()
+            .with_region("us-east-1")
+            .with_bucket_name("gmto.cfd.2025")
+            .build()?;
+        let cfd_loads = CfdLoads::foh(
+            &format!("CASES/{}", wind_loads),
+            // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
+            config::SIM_SAMPLING_FREQUENCY,
         )
+        .duration(config::SIM_DURATION as f64)
+        .windloads(&mut fem, Default::default())
+        .fetch_and_build(store)
+        .await?;
+        println!(
+            " ==>> GMT CFD wind loads: {}, loaded in {:?}",
+            wind_loads,
+            now.elapsed()
+        );
+        Some(cfd_loads)
     } else {
         None
     };
@@ -120,6 +134,8 @@ async fn main() -> anyhow::Result<()> {
 
     // ===============================
     // -- SERVO-MECHANISMS --
+    println!(" ==>> Building GMT mount, M1 & M2 servo-mechanisms");
+    let now = Instant::now();
     let servos = {
         // M1 segment structural modes are derived from M1 FEM
         // They are computing with the crate [gmt_dos-systems_m1-modes](https://github.com/rconan/dos-actors/tree/gmt-ns-im/systems/m1/modes)
@@ -135,7 +151,7 @@ async fn main() -> anyhow::Result<()> {
             .mode2force()
             .into_iter()
             .map(|mat| mat.columns(0, config::m1::segment::N_MODE).clone_owned())
-            .inspect(|x| println!("{:?}", x.shape()))
+            // .inspect(|x| println!("{:?}", x.shape()))
             .collect();
         // Segment figure to raw modes (influence functions) conversion
         println!("Surfaces to raw modes matrices:");
@@ -151,7 +167,7 @@ async fn main() -> anyhow::Result<()> {
                 }
             })
             .map(|x| x.transpose())
-            .inspect(|x| println!("{:?}", x.shape()))
+            // .inspect(|x| println!("{:?}", x.shape()))
             .collect();
 
         if let Some(cfd_loads) = cfd_loads.take() {
@@ -159,7 +175,7 @@ async fn main() -> anyhow::Result<()> {
                 config::SIM_SAMPLING_FREQUENCY as f64,
                 fem,
             )
-            .wind_loads(WindLoads::new(cfd_loads))
+            .wind_loads(cfd_loads)
         } else {
             GmtServoMechanisms::<{ config::m1::segment::ACTUATOR_RATE }, 1>::new(
                 config::SIM_SAMPLING_FREQUENCY as f64,
@@ -170,6 +186,11 @@ async fn main() -> anyhow::Result<()> {
         .build()?
     };
     println!("{servos}");
+    println!(
+        " ==>> Built GMT mount, M1 & M2 servo-mechanisms in {:?}",
+        now.elapsed()
+    );
+    
     // ===============================
 
     // ===============================
@@ -179,8 +200,10 @@ async fn main() -> anyhow::Result<()> {
         File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
         Default::default(),
     )?;
-    println!("SH24 to FSM reconstructor:\n{recon}");
+    // println!("SH24 to FSM reconstructor:\n{recon}");
 
+    println!(" ==>> Building GMT AGWS");
+    let now = Instant::now();
     let gmtb = Gmt::builder().m1(
         config::m1::segment::RAW_MODES,
         config::m1::segment::N_RAW_MODE,
@@ -232,6 +255,11 @@ async fn main() -> anyhow::Result<()> {
             .recon()?,
     )
     .parts()?;
+    println!(
+        " ==>> Built GMT AGWS in {:?}",
+        now.elapsed()
+    );
+
     // if let Some(p24) = config::agws::sh24::POINTING_ERROR {
     //     let _ = agws.sh24_pointing(p24).await;
     // }
@@ -294,8 +322,36 @@ async fn main() -> anyhow::Result<()> {
         config::SIM_SAMPLING_FREQUENCY as f64 / 1000f64,
     );
     println!("{m2_pzt_lpf}");
+
+    // ===============================
+    // -- GMT M1 AND M2 STATES --
+    let m1 = if config::m1::POLISH_ERROR_MAPS == 0 {
+        MirrorState::default()
+    } else {
+        MirrorState::from(
+            SegmentState::modes(vec![0f64; config::m1::segment::N_RAW_MODE])
+                .set_mode(config::m1::segment::N_RAW_MODE - 1, 1f64),
+        )
+    };
+    let m2 = MirrorState::default(); //.set_segment_state(1, SegmentState::rbms([1e-6, 0., 0., 0., 0., 0.]));
+    let optical_state =
+        OpticalState::m1(MirrorState::default().zeros_modes(config::m1::segment::N_RAW_MODE))
+            .set_zero_point(OpticalState::new(m1, m2));
+    // -- STATES LOG --
+    let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
+        .build(config::m1::segment::N_RAW_MODE - config::m1::POLISH_ERROR_MAPS);
     // ===============================
 
+    // ===============================
+
+    // -------------------------------
+    // ===============================
+    // ***** INTEGRATED MODELS ******
+    // ===============================
+    // -------------------------------
+
+    // ===============================
+    // -- FEM BOOTSTRAPPING INTEGRATED MODEL --
     let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
     let mut timer: Timer = Timer::new(n_bootstrapping);
     timer.progress();
@@ -310,9 +366,10 @@ async fn main() -> anyhow::Result<()> {
     // 1: {cfd_loads::M2}[CFDM2WindLoads] -> {servos::GmtFem}
     // 1: {cfd_loads::Mount}[CFDMountWindLoads] -> {servos::GmtFem}
 
-    1: {servos::GmtFem}[OpticsState].. -> gmt_state_tx
+    1: {servos::GmtFem}[OpticsState].. -> optical_state[OpticsState] -> gmt_state_tx
 
     }
+    // ===============================
 
     // let print = Print::<Vec<f64>>::new(8);
     // type AgwsSh48 = Sh48<{ config::agws::sh48::RATE }>;
@@ -323,24 +380,6 @@ async fn main() -> anyhow::Result<()> {
     type AgwsSh48Frame = KernelFrame<K48>;
     // let one_to_1000 = Sampler::default();
     // let e2o = Estimate2OpticsState::new();
-
-    // ===============================
-    // -- GMT M1 AND M2 STATES --
-    let mirror = if config::m1::POLISH_ERROR_MAPS == 0 {
-        MirrorState::default()
-    } else {
-        MirrorState::from(
-            SegmentState::modes(vec![0f64; config::m1::segment::N_RAW_MODE])
-                .set_mode(config::m1::segment::N_RAW_MODE - 1, 1f64),
-        )
-    };
-    let optical_state =
-        OpticalState::m1(MirrorState::default().zeros_modes(config::m1::segment::N_RAW_MODE))
-            .set_zero_point(OpticalState::m1(mirror));
-    // -- STATES LOG --
-    let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
-        .build(config::m1::segment::N_RAW_MODE - config::m1::POLISH_ERROR_MAPS);
-    // ===============================
 
     // ===============================
     // -- SH48 ESTIMATE SPLITTER --
@@ -382,8 +421,12 @@ async fn main() -> anyhow::Result<()> {
     // ===============================
 
     // ===============================
-    // -- FAST SEGMENT TIP-TILT --
+    // -- FAST SEGMENT TIP-TILT INTEGRATED MODEL --
     let n_sim = config::SIM_SAMPLING_FREQUENCY * config::FAST_SEGMENT_TIPTILT_DURATION;
+    if n_sim == 0 {
+        gmt_state_mon.drop(gmt_state_tx).await?;
+        return Ok(());
+    }
     let timer: Timer = Timer::new(n_sim);
     actorscript! {
     #[model(name=fast_segment_tip_tilt)]
@@ -434,12 +477,15 @@ async fn main() -> anyhow::Result<()> {
     // ===============================
 
     // ===============================
-    // -- HIGH GAIN ADAPTIVE OPTICS --
+    // -- HIGH GAIN ADAPTIVE OPTICS INTEGRATED MODEL --
 
     // let aprint = Print::new(6);
-    let m2_txy_2_rxy = M2TxyToRxy::new()?;
 
     let n_sim = config::SIM_SAMPLING_FREQUENCY * config::HIGH_GAIN_ACO_DURATION + 1;
+    if n_sim == 0 {
+        gmt_state_mon.drop(gmt_state_tx).await?;
+        return Ok(());
+    }
     let timer: Timer = Timer::new(n_sim);
     actorscript! {
     #[labels(//on_axis = "GMT Optics & Atmosphere\nw/ On-Axis Star",
@@ -471,10 +517,11 @@ async fn main() -> anyhow::Result<()> {
     1: {servos::GmtFem}[M2PositionerNodes]
     1: {servos::GmtFem}[M2FSMPiezoNodes]
         -> pzt_to_rbm[M2RigidBodyMotions] //-> scope_fsm_cmd
-            -> m2_pos_lpf[M2RigidBodyMotions]
                 -> pzt_to_rbm_int[Right<M2RigidBodyMotions>]
-                    -> add_m2_rbms[M2RigidBodyMotions]
+                    -> add_m2_rbms[M2RigidBodyMotions]//${42}
+            -> m2_pos_lpf[M2RigidBodyMotions]
                         -> {servos::GmtM2Hex}
+    1: {servos::GmtFem}[M2PositionerNodes]//${84}
 
     // M1 edge sensor to RBMs feedback loop
     // 1: {servos::GmtFem}[M1EdgeSensors]!
@@ -494,11 +541,21 @@ async fn main() -> anyhow::Result<()> {
         -> split[Left<Estimate>]
             -> m2_txy_scaling[Left<Estimate>]
                 -> sh48_m2_rbm_int
+    1: sh48_m2_rbm_int[Left<Estimate>]
+                    // -> m2_txy_2_rxy[Left<Estimate>]
+                        -> add_m2_rbms
+    // 1000: sh48_m2_rbm_int[Left<Estimate>] -> m2_txy_2_rxy
+    // 5: m2_txy_2_rxy[M2FSMFsmCommand] -> lpf[M2FSMFsmCommand]${21}
+    // 5: lpf[Offset<M2FSMFsmCommand>] -> fsm_pzt_int
+                    // -> m2_txy_2_rxy[Left<Estimate>]
+    // 1000: sh48[AgwsSh48Frame]! -> sh48_kernel[Estimate]
+    //     -> split[Left<Estimate>]
+    //         -> m2_txy_scaling[Left<Estimate>]
+    //             -> sh48_m2_rbm_int[Left<Estimate>]
+    //                 -> m2_txy_2_rxy[Left<Estimate>]
+    //                     -> add_m2_rbms
     1000: split[Right<Estimate>]
         -> sh48_m1_bm_int[M1ModeShapes] -> m1_state
-    1000:  sh48_m2_rbm_int[Left<Estimate>]
-            -> m2_txy_2_rxy[Left<Estimate>]
-                -> add_m2_rbms
     1: m1_state[M1State] -> {servos::GmtM1}
 
     // 1000:  sh48_m2_rbm_int[Left<Estimate>] -> m2_pzt_lpf[Left<Estimate>] -> m2_txy_2_rxy
