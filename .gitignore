@@ -14,3 +14,4 @@ calibrations/m1/modes/m1_fem_bending_modes.ipynb
 *.data
 *.old
 *.dot
+.env
