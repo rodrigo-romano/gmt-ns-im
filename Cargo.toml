@@ -70,10 +70,7 @@ gmt_dos-systems_m1 = { workspace = true, features = ["faer"] }
 tokio.workspace = true
 env_logger = "0.11.6"
 serde-pickle.workspace = true
-# gmt_dos-clients_windloads = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = ["cfd2025"]}
-gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads", features = [
-  "object_store",
-] }
+gmt_dos-clients_windloads = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = ["object_store"]}
 anyhow.workspace = true
 matio-rs = { workspace = true, features = ["faer"] }
 faer = "0.21.9"
