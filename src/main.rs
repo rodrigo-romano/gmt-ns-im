@@ -8,7 +8,7 @@ use std::{
 use faer::{Mat, MatRef};
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{
-    gain::Gain, integrator::Integrator, leftright, low_pass_filter::LowPassFilter,
+    gain::Gain, iir::IIRFilter, integrator::Integrator, leftright, low_pass_filter::LowPassFilter,
     operator::Operator, timer::Timer,
 };
 use gmt_dos_clients_crseo::{
@@ -146,7 +146,7 @@ async fn main() -> anyhow::Result<()> {
             Default::default(),
         )?;
         // Bending modes coefficients to actuator forces conversion
-        println!("Modes to forces matrices:");
+        // println!("Modes to forces matrices:");
         let b2f: Vec<_> = m1_sms
             .mode2force()
             .into_iter()
@@ -154,7 +154,7 @@ async fn main() -> anyhow::Result<()> {
             // .inspect(|x| println!("{:?}", x.shape()))
             .collect();
         // Segment figure to raw modes (influence functions) conversion
-        println!("Surfaces to raw modes matrices:");
+        // println!("Surfaces to raw modes matrices:");
         let s2b: Vec<_> = m1_sms
             .raw_modes_into_mat()
             .into_iter()
@@ -190,7 +190,7 @@ async fn main() -> anyhow::Result<()> {
         " ==>> Built GMT mount, M1 & M2 servo-mechanisms in {:?}",
         now.elapsed()
     );
-    
+
     // ===============================
 
     // ===============================
@@ -255,10 +255,7 @@ async fn main() -> anyhow::Result<()> {
             .recon()?,
     )
     .parts()?;
-    println!(
-        " ==>> Built GMT AGWS in {:?}",
-        now.elapsed()
-    );
+    println!(" ==>> Built GMT AGWS in {:?}", now.elapsed());
 
     // if let Some(p24) = config::agws::sh24::POINTING_ERROR {
     //     let _ = agws.sh24_pointing(p24).await;
@@ -298,7 +295,12 @@ async fn main() -> anyhow::Result<()> {
     // -- FSM OFF-LOAD INTEGRATOR --
     let pzt_to_rbm_int = Integrator::new(42).gain(config::fsm::OFFLOAD_INTEGRATOR_GAIN);
     // -- FSM COMMAND INTEGRATOR --
-    let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
+    // let fsm_pzt_int = Integrator::new(21).gain(config::agws::sh24::INTEGRATOR_GAIN);
+    let fsm_pzt_int = IIRFilter::new(
+        config::agws::sh24::double_integrator::B_COEFFS.to_vec(),
+        config::agws::sh24::double_integrator::A_COEFFS.to_vec(),
+        21,
+    );
     // ===============================
 
     // ===============================
