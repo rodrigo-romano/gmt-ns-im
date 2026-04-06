@@ -4,7 +4,7 @@ use crseo::{Atmosphere, Builder, FromBuilder, RayTracing};
 use skyangle::Conversion;
 
 fn main() -> anyhow::Result<()> {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("atmosphere.bin");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("20mn_10arcmin_atmosphere.bin");
     let _atm = Atmosphere::builder()
         .ray_tracing(
             RayTracing::default()
@@ -12,7 +12,7 @@ fn main() -> anyhow::Result<()> {
                 .field_size(10f64.from_arcmin())
                 .duration(30f64)
                 .filepath(path.as_os_str())
-                .n_duration(1),
+                .n_duration(40),
         )
         .build()?;
     Ok(())
