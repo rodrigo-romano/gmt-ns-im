@@ -42,6 +42,11 @@ name = "sh24"
 path = "src/bin/sh24.rs"
 required-features = ["gmt_dos-systems_agws/shk24","interface/serde-pickle"]
 
+[[bin]]
+name = "sh24_iir"
+path = "src/bin/sh24_iir.rs"
+required-features = ["gmt_dos-systems_agws/shk24","interface/serde-pickle"]
+
 [features]
 acoqp = ["gmt_dos-systems_agws/shk48", "nanorand"]
 nanorand = ["dep:nanorand"]
