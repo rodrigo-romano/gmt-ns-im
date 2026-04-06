@@ -35,10 +35,31 @@ pub mod m1 {
 pub mod agws {
     pub mod sh24 {
         pub const RATE: usize = 5;
-        pub const INTEGRATOR_GAIN: f64 = 0.3;
+        // pub const INTEGRATOR_GAIN: f64 = 0.3;
         pub const POINTING_ERROR: Option<(f64, f64)> = None; // Some((150f64.from_mas(), -100f64.from_mas()));
         // use a resolved source
         pub const CALIBRATION_SRC: bool = !crate::ATMOSPHERE;
+        // IIR filter coefficients (segment TT controller)
+        pub mod simple_integrator {
+            // Feed-forward coefficients
+            pub const B_COEFFS: [f64; 1] = [-0.5];
+            // Feedback coefficients (excluding a[0]=1.0)
+            pub const A_COEFFS: [f64; 1] = [-1.0];
+        }
+        pub mod double_integrator_tustin {
+            // Feed-forward coefficients
+            pub const B_COEFFS: [f64; 3] = [-0.07128, -0.00495, 0.06633];
+            // Feedback coefficients (excluding a[0]=1.0)
+            pub const A_COEFFS: [f64; 2] = [-2.0, 1.0];
+        }
+        pub mod double_integrator_zoh {
+            // Feed-forward coefficients
+            pub const B_COEFFS: [f64; 2] = [-0.1426, 0.1327];
+            // Feedback coefficients (excluding a[0]=1.0)
+            pub const A_COEFFS: [f64; 2] = [-2.0, 1.0];
+        }
+        // Default double integrator
+        pub use double_integrator_zoh as double_integrator;
     }
     pub mod sh48 {
         pub const RATE: usize = 1000;
@@ -49,5 +70,5 @@ pub mod agws {
 }
 
 pub mod fsm {
-    pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 0.;//1e-2;
+    pub const OFFLOAD_INTEGRATOR_GAIN: f64 = 0.; //1e-2;
 }
