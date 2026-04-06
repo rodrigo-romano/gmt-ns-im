@@ -26,6 +26,7 @@ gmt_dos-clients_scope = { git = "https://github.com/rconan/dos-actors.git", bran
   "server",
 ]  }
 faer = "0.21.9"
+thiserror = "2.0.18"
 
 [[bin]]
 name = "acoqp"
