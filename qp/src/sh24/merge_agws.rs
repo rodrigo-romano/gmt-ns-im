@@ -1,5 +1,7 @@
 use gmt_dos_clients_io::{Estimate, gmt_m2::M2RigidBodyMotions};
-use gmt_dos_clients_optics_state::{M1State, M2State, MirrorState, SegmentState};
+use gmt_dos_clients_optics_state::{
+    M1State, M2State, MirrorState, OpticalState, OpticsState, SegmentState,
+};
 use interface::{Data, Read, Update, Write};
 
 use super::{M1_N_MODE, TXY_RESIDUAL_SCALING};
@@ -60,5 +62,17 @@ impl Write<M1State> for MergeAgws {
             .map(|modes| SegmentState::modes(modes))
             .collect();
         Some(Data::new(m1))
+    }
+}
+
+impl Write<OpticsState> for MergeAgws {
+    fn write(&mut self) -> Option<Data<OpticsState>> {
+        Some(Data::new(OpticalState::new(
+            self.m1_modes
+                .chunks(M1_N_MODE)
+                .map(|modes| SegmentState::modes(modes))
+                .collect(),
+            MirrorState::from_rbms(&self.m2_rbms).into(),
+        )))
     }
 }
