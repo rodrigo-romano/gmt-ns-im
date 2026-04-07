@@ -236,13 +236,13 @@ fn m2_rbm_merged_closed_loop(m2_rbm: Vec<Vec<f64>>,om48: &mut OpticalModel<Camer
         &mut wavefronts 
     );
     interface::chain!(
-        M2RigidBodyMotions: m2_rbm.clone()-m2_rbm_tt.clone();
-        om48;
-        KernelFrame<Sh48<1>>;
-        kern48;
-        SensorData; 
-        &mut sh48_m2_rbm_recon;
-        SplitEstimate<0>: m2_rbm_e);
+        M2RigidBodyMotions: m2_rbm.clone()-m2_rbm_tt.clone();   // "Closed-loop" perturbation
+        om48;           // Optical model SH48 (Ray-tracing)
+        KernelFrame<Sh48<1>>;   // Take the output from the optical model
+        kern48;                 // Post-process the detector frame (calculate the centroids)
+        SensorData;             // Take the centroids
+        &mut sh48_m2_rbm_recon;         // Compute the reconstructed state
+        SplitEstimate<0>: m2_rbm_e);    // Take just the m2 RBM from the reconstructed state
     println!("M2 RBM Estimates:");
     m2_rbm_e
         .chunks(6)

@@ -111,7 +111,8 @@ async fn main() -> anyhow::Result<()> {
     let gmtb = Gmt::builder().m1(config::m1::segment::MODES, config::m1::segment::N_MODE);
 
     // Active optics control algorithm
-    let data_path = Path::new("/home/ubuntu/projects/im-sim-scripts/aco_loop_example/data");
+    //let data_path = Path::new("/home/ubuntu/projects/im-sim-scripts/aco_loop_example/data");
+    let data_path = Path::new("/home/rromano/Workspace/misc/aco-rust-sim/aco_loop_example/data");
     let aco = QP::<M1_RBM, M2_RBM, 27, N_MODE>::new(
         //"../aco_impl_stdalone/SHAcO_qp_rhoP1e-3_kIp5.rs.pkl")
         //"rustCalib_AcO_rhoP1e-12_kIp5.rs.pkl")

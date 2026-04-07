@@ -163,7 +163,7 @@ async fn main() -> anyhow::Result<()> {
 
         let merge_agws = MergeAgws::new();
 
-        let timer: Timer = Timer::new(200);
+        let timer: Timer = Timer::new(50);
 
         type Sh48Frame = KernelFrame<Sh48MergerReconstructor<R>>;
 

@@ -22,11 +22,10 @@ import matplotlib.tri as tri
 # In[2]:
 
 
-# root = "/home/ubuntu/mnt/20230530_1756_zen_30_M1_202110_FSM_202305_Mount_202305_noStairs"
-root = os.environ["FEM_REPO"]
-last_part = root.split("/")[-1]
-date_time = last_part.split("_")[:2]
-fem_id = "_".join(date_time)
+root = "/home/rromano/Workspace/gmt-data/20230612_1451_zen_30_M1_202110_FSM_202305_Mount_202305_concreteODC"
+last_part = root.split('/')[-1]
+date_time = last_part.split('_')[:2]
+fem_id = '_'.join(date_time)
 fem_id
 
 

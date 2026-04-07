@@ -17,6 +17,10 @@ use gmt_dos_systems_agws::builder::shack_hartmann::ShackHartmannBuilder;
 
 const M1_N_MODE: usize = 27;
 
+// Calibrate the M1 & M2 RBMs and the M1 BM using the SH48 calibration source. The resulting reconstructor is saved in a pickle file.
+// Use:
+// cargo r -r --bin calibration --features gmt_dos-systems_agws/shk48
+
 fn main() -> Result<(), Box<dyn Error>> {
     let sh48 = ShackHartmannBuilder::<Reconstructor>::sh48().use_calibration_src();
     let gmtb = Gmt::builder().m1(config::m1::segment::MODES, config::m1::segment::N_MODE);
