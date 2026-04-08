@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow.workspace = true
+crossterm = { version = "0.28", optional = true }
 gmt_dos-clients_io.workspace = true
 gmt_dos-clients_lom.workspace = true
 gmt_dos-clients_optics-state.workspace = true
@@ -16,3 +17,8 @@ interface.workspace = true
 tokio.workspace = true
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+
+[[bin]]
+name = "rbms"
+path = "src/bin/rbms.rs"
+required-features = ["crossterm"]
