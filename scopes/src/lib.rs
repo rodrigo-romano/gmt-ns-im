@@ -1,6 +1,5 @@
 use gmt_dos_clients_io::{
-    mount::AverageMountEncoders,
-    optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms},
+    gmt_m1::M1RigidBodyMotions, gmt_m2::M2RigidBodyMotions, mount::AverageMountEncoders, optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms}
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
 use gmt_dos_clients_scope::scopehub;
@@ -24,6 +23,11 @@ pub enum OnAxisScopes {
     Scope(WfeRms<-9>, SegmentWfeRms<-9>),
     Scope(SegmentPiston<-9>),
     Scope(Mas<TipTilt>, Mas<SegmentTipTilt>),
+}
+#[scopehub]
+pub enum M12Scopes {
+    Scope(M1RigidBodyMotions),
+    Scope(M2RigidBodyMotions),
 }
 #[scopehub]
 pub enum M1Scopes {
