@@ -1,3 +1,5 @@
+use gmt_dos_clients_optics_state::{MirrorState, SegmentState};
+
 pub const SIM_SAMPLING_FREQUENCY: usize = 1000; // Hz
 pub const BOOTSTRAPPING_DURATION: usize = 4; // seconds
 pub const FAST_SEGMENT_TIPTILT_DURATION: usize = 1; // seconds
@@ -12,7 +14,11 @@ pub const WINDLOADS: Option<&str> = Some("zen30az000_OS_7ms");
 // pub const WINDLOADS: &str = Some("zen30az045_OS7");
 
 pub mod m1 {
+    use super::*;
+
     // M1 polishing residual error figures (0: without, 1: with)
+    // M1 modes must have been augmented with M1 polishing error maps
+    // using `calibrations/m1/modes/polishing_error_maps.py`
     pub const POLISH_ERROR_MAPS: usize = 1;
     pub mod segment {
         // use crate::m1::POLISH_ERROR_MAPS;
@@ -29,6 +35,24 @@ pub mod m1 {
     }
     pub mod edge_sensor {
         pub const RBM_INTEGRATOR_GAIN: f64 = 0e-3;
+    }
+    pub fn zero_point() -> MirrorState {
+        if POLISH_ERROR_MAPS == 0 {
+            MirrorState::default()
+        } else {
+            MirrorState::from(
+                SegmentState::modes(vec![0f64; segment::N_RAW_MODE])
+                    .set_mode(segment::N_RAW_MODE - 1, 1f64),
+            )
+        }
+    }
+}
+
+pub mod m2 {
+    use super::*;
+
+    pub fn zero_point() -> MirrorState {
+        MirrorState::default()//.set_segment_state(1, SegmentState::rbms([1e-6, 0., 0., 0., 0., 0.]))
     }
 }
 

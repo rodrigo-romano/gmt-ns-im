@@ -2,3 +2,6 @@
 name = "config"
 version = "0.1.0"
 edition = "2024"
+
+[dependencies]
+gmt_dos-clients_optics-state.workspace = true

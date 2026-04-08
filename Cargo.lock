@@ -1719,6 +1719,9 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.1.0"
+dependencies = [
+ "gmt_dos-clients_optics-state",
+]
 
 [[package]]
 name = "console"

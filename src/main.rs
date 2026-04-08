@@ -204,6 +204,7 @@ async fn main() -> anyhow::Result<()> {
 
     println!(" ==>> Building GMT AGWS");
     let now = Instant::now();
+    // GMT optical model builder
     let gmtb = Gmt::builder().m1(
         config::m1::segment::RAW_MODES,
         config::m1::segment::N_RAW_MODE,
@@ -327,18 +328,12 @@ async fn main() -> anyhow::Result<()> {
 
     // ===============================
     // -- GMT M1 AND M2 STATES --
-    let m1 = if config::m1::POLISH_ERROR_MAPS == 0 {
-        MirrorState::default()
-    } else {
-        MirrorState::from(
-            SegmentState::modes(vec![0f64; config::m1::segment::N_RAW_MODE])
-                .set_mode(config::m1::segment::N_RAW_MODE - 1, 1f64),
-        )
-    };
-    let m2 = MirrorState::default(); //.set_segment_state(1, SegmentState::rbms([1e-6, 0., 0., 0., 0., 0.]));
     let optical_state =
         OpticalState::m1(MirrorState::default().zeros_modes(config::m1::segment::N_RAW_MODE))
-            .set_zero_point(OpticalState::new(m1, m2));
+            .set_zero_point(OpticalState::new(
+                config::m1::zero_point(),
+                config::m2::zero_point(),
+            ));
     // -- STATES LOG --
     let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
         .build(config::m1::segment::N_RAW_MODE - config::m1::POLISH_ERROR_MAPS);
