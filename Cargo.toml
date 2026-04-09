@@ -47,7 +47,7 @@ interface = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns
 serde-pickle = "1.2.0"
 skyangle = "0.3.1"
 tokio = { version = "1.43.0", features = ["full"] }
-gmt_dos-clients_mount = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.1.1" }
+gmt_dos-clients_mount = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.1.2" }
 gmt_dos-clients_optics-state = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0", features = [
   "serde",
   "gmt_dos-clients_arrow",
