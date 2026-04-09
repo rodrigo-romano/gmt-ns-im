@@ -5,6 +5,7 @@ use std::{
     time::Instant,
 };
 
+use anyhow::Context;
 use faer::{Mat, MatRef};
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{
@@ -27,7 +28,7 @@ use gmt_dos_clients_io::{
 use gmt_dos_clients_servos::{GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtServoMechanisms, M1SegmentFigure};
 
 use gmt_dos_clients_optics_state::{
-    M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
+    M1State, MirrorState, OpticalState, OpticsState, arrow::OpticalStateArrow,
 };
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_clients_windloads::CfdLoads;
@@ -48,8 +49,6 @@ type K48 = Sh48Reconstructor<{ config::agws::sh48::RATE }>;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     env_logger::init();
-
-    dotenvy::dotenv()?;
 
     let data_repo = Path::new(&env::var("DATA_REPO")?).join("main");
     fs::create_dir_all(&data_repo)?;
@@ -87,6 +86,8 @@ async fn main() -> anyhow::Result<()> {
         println!(" ==>> loading GMT CFD wind loads: {} ...", wind_loads);
         let now = Instant::now();
         // let store = object_store::local::LocalFileSystem::new();
+        dotenvy::dotenv()
+            .with_context(|| "failed to parse the \".env\" file, it may be missing")?;
         let store = object_store::aws::AmazonS3Builder::from_env()
             .with_region("us-east-1")
             .with_bucket_name("gmto.cfd.2025")
