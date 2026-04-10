@@ -277,6 +277,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use gmt_dos_clients_io::gmt_m2::M2RigidBodyMotions;
+
     pub use super::*;
 
     #[test]

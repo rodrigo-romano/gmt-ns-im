@@ -14,6 +14,8 @@ pub const WINDLOADS: Option<&str> = Some("zen30az000_OS_7ms");
 // pub const WINDLOADS: &str = Some("zen30az045_OS7");
 
 pub mod m1 {
+    use skyangle::Conversion;
+
     use super::*;
 
     // M1 polishing residual error figures (0: without, 1: with)
@@ -39,6 +41,7 @@ pub mod m1 {
     pub fn zero_point() -> MirrorState {
         if POLISH_ERROR_MAPS == 0 {
             MirrorState::default()
+                // .set_segment_state(1, SegmentState::rbms([1e-6, 0., 0., 0., 0., 0.]))
         } else {
             MirrorState::from(
                 SegmentState::modes(vec![0f64; segment::N_RAW_MODE])

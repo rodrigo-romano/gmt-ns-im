@@ -40,11 +40,15 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::agws::{Sh48Reconstructor, TXY_RESIDUAL_SCALING, calibration::Sh48Calibration};
+use gmt_ns_im::agws::{
+    Sh48Reconstructor,
+    calibration::{self, M2Txyz, Sh48Calibration},
+};
 use interface::{Left, Right, Tick};
 use matio_rs::MatFile;
 
 type K48 = Sh48Reconstructor<{ config::agws::sh48::RATE }>;
+type Sh48ReconstructorKind = calibration::Stack;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -252,7 +256,7 @@ async fn main() -> anyhow::Result<()> {
     .sh24_calibration(recon)
     .sh48_calibration(
         // SH48 M2 (closed-loop) Txy and M1 bending modes reconstructor
-        Sh48Calibration::new()?
+        Sh48Calibration::<Sh48ReconstructorKind, M2Txyz>::new()?
             .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
             .recon()?,
     )
@@ -402,7 +406,11 @@ async fn main() -> anyhow::Result<()> {
     //
     // This is also the same scaling factor applied to the closed-loop calibration
     // matrix of M2 Txy
-    let m2_txy_scaling = Gain::new(vec![TXY_RESIDUAL_SCALING as f64; 42]);
+    let m2_txy_scaling = Gain::new(vec![
+        <Sh48ReconstructorKind as calibration::Sh48Reconstructor>::TXY_RESIDUAL_SCALING
+            as f64;
+        42
+    ]);
     // ===============================
 
     // ===============================
