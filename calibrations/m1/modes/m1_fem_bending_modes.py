@@ -33,7 +33,7 @@ fem_id
 # In[3]:
 
 
-data = np.load("m1_singular_modes.pkl", allow_pickle=True)["modes"]
+data = np.load(root+"/"+"m1_singular_modes.pkl", allow_pickle=True)["modes"]
 data[0].keys()
 
 
