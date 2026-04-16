@@ -944,7 +944,7 @@ dependencies = [
  "gmt_dos-actors 12.1.0",
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "skyangle 0.3.1",
  "tokio",
 ]
@@ -1412,7 +1412,7 @@ dependencies = [
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-systems_agws",
  "serde-pickle 1.2.0",
  "skyangle 0.3.1",
@@ -2183,8 +2183,6 @@ dependencies = [
 [[package]]
 name = "dos-uid-derive"
 version = "5.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8718723acfbed6bc862c637ccadc61054a4f92ecc49eeca1b14bfd0450def587"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2194,7 +2192,8 @@ dependencies = [
 [[package]]
 name = "dos-uid-derive"
 version = "5.0.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8718723acfbed6bc862c637ccadc61054a4f92ecc49eeca1b14bfd0450def587"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2740,7 +2739,6 @@ dependencies = [
 [[package]]
 name = "fem-cuda-solver"
 version = "0.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "bindgen 0.71.1",
  "cc",
@@ -3397,14 +3395,13 @@ dependencies = [
 [[package]]
 name = "gmt-fem"
 version = "5.2.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "anyhow",
  "arrow",
  "bincode 2.0.1",
  "bytes",
  "geotrans 0.1.1",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "log",
  "matio-rs",
  "nalgebra 0.33.3",
@@ -3414,6 +3411,18 @@ dependencies = [
  "serde",
  "serde-pickle 0.6.3",
  "tempfile",
+ "thiserror 2.0.18",
+ "zip 4.6.1",
+]
+
+[[package]]
+name = "gmt-fem-code-builder"
+version = "2.3.8"
+dependencies = [
+ "anyhow",
+ "arrow",
+ "bytes",
+ "parquet",
  "thiserror 2.0.18",
  "zip 4.6.1",
 ]
@@ -3481,9 +3490,9 @@ dependencies = [
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
  "gmt_dos-clients_optics-state",
  "gmt_dos-clients_servos",
@@ -3526,7 +3535,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors"
 version = "12.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3561,10 +3569,9 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors-clients_interface"
 version = "1.5.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "bincode 2.0.1",
- "dos-uid-derive 5.0.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "dos-uid-derive 5.0.1",
  "log",
  "paris",
  "serde",
@@ -3588,7 +3595,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors_dsl"
 version = "2.2.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "prettyplease",
  "proc-macro2",
@@ -3600,7 +3606,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients"
 version = "5.0.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "ab_glyph",
  "colorous",
@@ -3622,6 +3627,19 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_arrow"
 version = "2.3.0"
+dependencies = [
+ "arrow",
+ "gmt_dos-actors-clients_interface 1.5.1",
+ "log",
+ "parquet",
+ "paste",
+ "regex",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gmt_dos-clients_arrow"
+version = "2.3.0"
 source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "arrow",
@@ -3636,7 +3654,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_crseo"
 version = "5.0.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -3645,8 +3662,8 @@ dependencies = [
  "faer-ext",
  "geotrans 1.2.0",
  "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_domeseeing 3.2.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_domeseeing 3.2.0",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_optics-state",
  "indicatif 0.17.11",
  "log",
@@ -3656,6 +3673,19 @@ dependencies = [
  "skyangle 0.2.2",
  "thiserror 2.0.18",
  "toml",
+]
+
+[[package]]
+name = "gmt_dos-clients_domeseeing"
+version = "3.2.0"
+dependencies = [
+ "bincode 1.3.3",
+ "glob",
+ "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-clients_io 4.3.0",
+ "log",
+ "serde",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3674,23 +3704,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "gmt_dos-clients_domeseeing"
-version = "3.2.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
-dependencies = [
- "bincode 1.3.3",
- "glob",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "log",
- "serde",
- "thiserror 2.0.18",
-]
-
-[[package]]
 name = "gmt_dos-clients_fem"
 version = "5.3.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "anyhow",
  "arrow",
@@ -3701,10 +3716,10 @@ dependencies = [
  "fem-cuda-solver",
  "geotrans 0.2.2",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_optics-state",
  "log",
  "nalgebra 0.33.3",
@@ -3720,6 +3735,17 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_io"
 version = "4.3.0"
+dependencies = [
+ "anyhow",
+ "crseo",
+ "gmt-fem-code-builder 2.3.8",
+ "gmt_dos-actors-clients_interface 1.5.1",
+ "serde",
+]
+
+[[package]]
+name = "gmt_dos-clients_io"
+version = "4.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a50bd13fa496100c24c94c252532d68e13d64d4b9f0fae040c6d47c574cf1807"
 dependencies = [
@@ -3730,26 +3756,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "gmt_dos-clients_io"
-version = "4.3.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
-dependencies = [
- "anyhow",
- "crseo",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-actors-clients_interface 1.5.1",
- "serde",
-]
-
-[[package]]
 name = "gmt_dos-clients_lom"
 version = "1.2.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "flate2",
  "gmt-lom",
  "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_optics-state",
  "nalgebra 0.33.3",
 ]
@@ -3757,13 +3770,12 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_m1-ctrl"
 version = "6.0.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_m1-ctrl_center-actuators 0.2.1",
  "gmt_m1-ctrl_center-actuators 1.0.0",
  "gmt_m1-ctrl_hardpoints-dynamics 0.2.1",
@@ -3778,14 +3790,13 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_m2-ctrl"
 version = "4.0.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "bincode 2.0.1",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_optics-state",
  "gmt_m2-ctrl_asm_pid-damping",
  "gmt_m2-ctrl_asm_positionner",
@@ -3803,13 +3814,29 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_mount"
 version = "4.1.2"
+dependencies = [
+ "anyhow",
+ "gmt-fem-code-builder 2.3.8",
+ "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-clients_fem",
+ "gmt_dos-clients_io 4.3.0",
+ "gmt_mount-ctrl_controller",
+ "gmt_mount-ctrl_driver",
+ "log",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gmt_dos-clients_mount"
+version = "4.1.2"
 source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "anyhow",
  "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_mount-ctrl_controller",
  "gmt_mount-ctrl_driver",
  "log",
@@ -3820,11 +3847,10 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_optics-state"
 version = "0.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_arrow",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow 2.3.0",
+ "gmt_dos-clients_io 4.3.0",
  "serde",
 ]
 
@@ -3869,18 +3895,17 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_servos"
 version = "3.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_m2-ctrl",
- "gmt_dos-clients_mount",
+ "gmt_dos-clients_mount 4.1.2",
  "gmt_dos-clients_windloads",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
@@ -3897,7 +3922,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_transceiver"
 version = "2.0.3"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "anyhow",
  "bincode 2.0.1",
@@ -3919,16 +3943,15 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_windloads"
 version = "3.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "geotrans 0.2.2",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "log",
  "nalgebra 0.33.3",
  "object_store",
@@ -3940,13 +3963,12 @@ dependencies = [
 [[package]]
 name = "gmt_dos-systems_agws"
 version = "0.2.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_optics-state",
  "log",
  "serde-pickle 1.2.0",
@@ -3957,17 +3979,16 @@ dependencies = [
 [[package]]
 name = "gmt_dos-systems_m1"
 version = "1.0.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "bincode 2.0.1",
  "faer 0.21.9",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_m1-ctrl",
  "gmt_dos-clients_optics-state",
  "log",
@@ -3979,16 +4000,15 @@ dependencies = [
 [[package]]
 name = "gmt_dos-systems_m2"
 version = "0.1.1"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#e5e3625fc88904e155bb608db420bbace1844775"
 dependencies = [
  "bincode 2.0.1",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_m2-ctrl",
  "gmt_m2-ctrl_asm_pid-damping",
  "gmt_m2-ctrl_asm_positionner",
@@ -5219,11 +5239,11 @@ dependencies = [
  "gmt-ns-im",
  "gmt_dos-actors 12.1.0",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-clients_mount",
+ "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_mount 4.1.2 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
@@ -5243,7 +5263,7 @@ dependencies = [
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-systems_m1",
  "matio-rs",
  "nalgebra 0.33.3",
@@ -5425,11 +5445,11 @@ dependencies = [
  "gmt-ns-im",
  "gmt_dos-actors 12.1.0",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-clients_mount",
+ "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_mount 4.1.2 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m2",
  "serde-pickle 1.2.0",
@@ -6826,9 +6846,9 @@ dependencies = [
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_optics-state",
  "gmt_dos-clients_scope",
  "gmt_dos-systems_agws",
@@ -7562,7 +7582,7 @@ dependencies = [
  "anyhow",
  "crossterm",
  "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
  "gmt_dos-clients_optics-state",
  "gmt_dos-clients_scope",
@@ -7582,9 +7602,9 @@ dependencies = [
  "gmt_dos-actors 12.1.0",
  "gmt_dos-actors-clients_interface 1.5.1",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io 4.3.0",
  "gmt_dos-clients_lom",
  "gmt_dos-clients_optics-state",
  "gmt_dos-clients_scope",
