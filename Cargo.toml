@@ -56,7 +56,7 @@ gmt_dos-clients_optics-state = { git = "https://github.com/rconan/dos-actors.git
 [dependencies]
 gmt-fem.workspace = true
 gmt_dos-actors.workspace = true
-interface.workspace = true
+interface = { workspace = true, features = ["filing", "serde-pickle"] }
 gmt_dos-clients.workspace = true
 gmt_dos-clients_crseo.workspace = true
 gmt_dos-clients_io.workspace = true
@@ -70,7 +70,9 @@ gmt_dos-systems_m1 = { workspace = true, features = ["faer"] }
 tokio.workspace = true
 env_logger = "0.11.6"
 serde-pickle.workspace = true
-gmt_dos-clients_windloads = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = ["object_store"]}
+gmt_dos-clients_windloads = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = [
+  "object_store",
+] }
 anyhow.workspace = true
 matio-rs = { workspace = true, features = ["faer"] }
 faer = "0.21.9"
@@ -104,6 +106,7 @@ codegen-units = 1
 # gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/interface" }
 # gmt_dos-clients_fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem" }
 # gmt_dos-clients_io = { path = "/home/ubuntu/projects/dos-actors/clients/io" }
+# gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads" }
 # gmt_dos-clients_lom = { path = "/home/ubuntu/projects/dos-actors/clients/lom" }
 # gmt_dos-clients_crseo = { path = "/home/ubuntu/projects/dos-actors/clients/crseo" }
 # gmt_dos-clients_optics-state = { path = "/home/ubuntu/projects/dos-actors/clients/optics-state" }

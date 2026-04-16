@@ -1,7 +1,7 @@
 #![allow(unreachable_code)]
 
 use gmt_dos_clients_io::{
-    gmt_m2::fsm::M2FSMFsmCommand,
+    mount::AverageMountEncoders,
     optics::{SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, WfeRms},
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
@@ -24,6 +24,11 @@ pub enum M2SegmentTipTilt {}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    tracing::subscriber::set_global_default(
+        tracing_subscriber::FmtSubscriber::builder()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .finish(),
+    )?;
     loop {
         if let Ok(scope) = env::var("SCOPE") {
             match scope.as_str() {
@@ -44,14 +49,24 @@ async fn main() -> anyhow::Result<()> {
                     .signal::<Mas<TipTilt>>()?
                     .signal::<Mas<SegmentTipTilt>>()?
                     .show(),
-                "M1 M2 SegmentPiston" => Scope::new()
-                    .name("M1 & M2 Segment Piston")
+                "Mount" => Scope::new()
+                    .name("Mount Encoders")
+                    .signal::<Mas<AverageMountEncoders>>()?
+                    .show(),
+                "M1 SegmentPiston" => Scope::new()
+                    .name("M1 Segment Piston")
                     .signal::<M1SegmentPiston>()?
+                    .show(),
+                "M2 SegmentPiston" => Scope::new()
+                    .name("M2 Segment Piston")
                     .signal::<M2SegmentPiston>()?
                     .show(),
-                "M1 M2 SegmentTipTilt" => Scope::new()
-                    .name("M1 & M2 Segment TipTilt")
+                "M1 SegmentTipTilt" => Scope::new()
+                    .name("M1 Segment TipTilt")
                     .signal::<M1SegmentTipTilt>()?
+                    .show(),
+                "M2 SegmentTipTilt" => Scope::new()
+                    .name("M2 Segment TipTilt")
                     .signal::<M2SegmentTipTilt>()?
                     .show(),
                 // "M2" => Scope::new()
@@ -66,7 +81,12 @@ async fn main() -> anyhow::Result<()> {
                 //     .name("Segment Piston from M2 Shell Voice Coils")
                 //     .signal::<M2SegmentMeanActuator>()?
                 //     .show(),
-                other => panic!("expected M1, M2, M2RB or M2S, found {other}"),
+                _ => {
+                    println!(
+                        r#"SCOPE must be: SegmentPiston, TipTilt, Mount, "M1 M2 SegmentPiston" or "M1 M2 SegmentTipTilt""#
+                    );
+                    break;
+                }
             }
         } else {
             Scope::new()

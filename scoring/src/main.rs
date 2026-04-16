@@ -9,12 +9,16 @@ use gmt_dos_clients_crseo::{
     },
     sensors::Camera,
 };
-use gmt_dos_clients_io::optics::{
-    Dev, Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront,
-    WfeRms,
+use gmt_dos_clients_io::{
+    gmt_m1::M1RigidBodyMotions,
+    gmt_m2::M2RigidBodyMotions,
+    optics::{
+        Dev, Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront,
+        WfeRms,
+    },
 };
 use gmt_dos_clients_lom::LinearOpticalModel;
-use gmt_dos_clients_optics_state::{M1State, M2State, OpticalState, OpticsState};
+use gmt_dos_clients_optics_state::{M1State, M2State, MirrorState, OpticalState, OpticsState};
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_systems_agws::Agws;
 use interface::units::Mas;
@@ -96,15 +100,16 @@ async fn main() -> anyhow::Result<()> {
     println!("{on_axis}");
 
     // Linear Optical Models
-    let m1_lom = LinearOpticalModel::new()?;
-    let m2_lom = LinearOpticalModel::new()?;
+    // let m1_lom = LinearOpticalModel::new()?;
+    // let m2_lom = LinearOpticalModel::new()?;
 
     // SCOPES
     let shub = OnAxisScopes::new()?;
     // let mount_scopes = MountScopes::new()?;
 
-    let m1_scopes = M1Scopes::new()?;
-    let m2_scopes = M2Scopes::new()?;
+    let m12_scopes = M12Scopes::new()?;
+    // let m1_scopes = M1Scopes::new()?;
+    // let m2_scopes = M2Scopes::new()?;
     // ---
 
     let tx_address = "127.0.0.1";
@@ -118,6 +123,8 @@ async fn main() -> anyhow::Result<()> {
         Transceiver::<OpticsState>::receiver(tx_address, rx_address)?.run(&mut gmt_state_mon);
     let aprint = Print::<Vec<f64>>::new(6);
     let optical_state = OpticalState::default();
+    let m1 = MirrorState::default();
+    let m2 = MirrorState::default();
 
     // let state_print = Print::default().scale(1e9_f64);
 
@@ -134,12 +141,15 @@ async fn main() -> anyhow::Result<()> {
     1000: on_axis[PSSn]! -> aprint
     1000: on_axis[Wavefront]!.. -> on_axis_wavefront
 
-    1: gmt_state_rx[OpticsState].. -> optical_state [M1State] -> m1_lom
-    1: optical_state [M2State] -> m2_lom
-    1: m1_lom[M1SegmentPiston].. -> m1_scopes
-    1: m2_lom[M2SegmentPiston].. -> m2_scopes
-    1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
-    1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
+    1: gmt_state_rx[OpticsState].. -> optical_state
+    1: optical_state[M1State] -> m1[M1RigidBodyMotions] -> m12_scopes
+    1: optical_state[M2State] -> m2[M2RigidBodyMotions] -> m12_scopes
+    // 1: gmt_state_rx[OpticsState].. -> optical_state [M1State] -> m1_lom
+    // 1: optical_state [M2State] -> m2_lom
+    // 1: m1_lom[M1SegmentPiston].. -> m1_scopes
+    // 1: m2_lom[M2SegmentPiston].. -> m2_scopes
+    // 1: m1_lom[M1SegmentTipTilt].. -> m1_scopes
+    // 1: m2_lom[M2SegmentTipTilt].. -> m2_scopes
 
     }
 
@@ -148,8 +158,8 @@ async fn main() -> anyhow::Result<()> {
     if env::var("FOREGO_SCOPES").is_err() {
         shub.lock().await.close().await?;
         // (&mut *mount_scopes.lock().await).await?;
-        m1_scopes.lock().await.close().await?;
-        m2_scopes.lock().await.close().await?;
+        // m1_scopes.lock().await.close().await?;
+        // m2_scopes.lock().await.close().await?;
     }
     Ok(())
 }
