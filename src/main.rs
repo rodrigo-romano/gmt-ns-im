@@ -44,7 +44,7 @@ use gmt_ns_im::agws::{
     Sh48Reconstructor,
     calibration::{self, M2Txyz, Sh48Calibration},
 };
-use interface::{Left, Right, Tick};
+use interface::{Left, Right, Tick, filing::Filing};
 use matio_rs::MatFile;
 
 type K48 = Sh48Reconstructor<{ config::agws::sh48::RATE }>;
@@ -57,7 +57,7 @@ async fn main() -> anyhow::Result<()> {
     let data_repo = Path::new(&env::var("DATA_REPO")?).join("main");
     fs::create_dir_all(&data_repo)?;
     unsafe {
-        env::set_var("DATA_REPO", data_repo);
+        env::set_var("DATA_REPO", &data_repo);
     }
 
     println!("FEM  : {}", env!("FEM_REPO"));
@@ -200,14 +200,12 @@ async fn main() -> anyhow::Result<()> {
 
     // ===============================
     // -- AGWS --
+    println!(" ==>> Building GMT AGWS");
     // SH24 M2 segment tip-tilt reconstructor
-    let recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
-        Default::default(),
-    )?;
+    // The calibration is done in `calibrations/sh24`
+    let recon = Reconstructor::from_data_repo("recon_sh24-to-pzt_pth.pkl")?;
     // println!("SH24 to FSM reconstructor:\n{recon}");
 
-    println!(" ==>> Building GMT AGWS");
     let now = Instant::now();
     // GMT optical model builder
     let gmtb = Gmt::builder().m1(
@@ -289,7 +287,8 @@ async fn main() -> anyhow::Result<()> {
     //
     // It uses P. Thomson method to convert segment tip-tilt into
     // piston, tip and tilt FSM actuactor commands
-    let matfile = MatFile::load("calibrations/sh24/m2_pzt_r.mat")?;
+    // See also: `calibrations/sh24/README.md`
+    let matfile = MatFile::load(data_repo.join("m2_pzt_r.mat"))?;
     let pzt_to_rbm: Vec<Mat<f64>> = (0..7)
         .map(|i| {
             let var: Vec<f64> = matfile.var(format!("var{i}")).unwrap();
