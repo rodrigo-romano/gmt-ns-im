@@ -3,9 +3,11 @@
 # mount the S3 repository where some data are loaded from
 # mount-s3 --cache ~/.s3-cache/ gmto.im.grim ~/mnt
 # path to CEO mirror modes files
-export GMT_MODES_PATH=$HOME/mnt/ceo
+export GMT_MODES_PATH=$HOME/Workspace/gmt-data/ceo_data
+#$HOME/mnt/ceo
 # path to the FEM
-export FEM_REPO=$HOME/Workspace/gmt-data/20230612_1451_zen_30_M1_202110_FSM_202305_Mount_202305_concreteODC
+export FEM_REPO=$HOME/Workspace/gmt-data/20250506_1715_zen_30_M1_202110_FSM_202305_Mount_202305_pier_202411_M1_actDamping
+#export FEM_REPO=$HOME/Workspace/gmt-data/20230612_1451_zen_30_M1_202110_FSM_202305_Mount_202305_concreteODC
 # mount model 
 export MOUNT_MODEL=MOUNT_FDR_1kHz
 # flowchart layout

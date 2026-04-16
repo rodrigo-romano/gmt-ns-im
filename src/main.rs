@@ -49,14 +49,14 @@ type K48 = Sh48Reconstructor<{ config::agws::sh48::RATE }>;
 async fn main() -> anyhow::Result<()> {
     env_logger::init();
 
-    dotenvy::dotenv()?;
+    //dotenvy::dotenv()?;
 
     let data_repo = Path::new(&env::var("DATA_REPO")?).join("main");
     fs::create_dir_all(&data_repo)?;
     unsafe {
         env::set_var("DATA_REPO", data_repo);
     }
-
+    
     println!("FEM  : {}", env!("FEM_REPO"));
     println!("MOUNT: {}", env!("MOUNT_MODEL"));
 
@@ -86,14 +86,14 @@ async fn main() -> anyhow::Result<()> {
     let mut cfd_loads = if let Some(wind_loads) = &config::WINDLOADS {
         println!(" ==>> loading GMT CFD wind loads: {} ...", wind_loads);
         let now = Instant::now();
-        // let store = object_store::local::LocalFileSystem::new();
-        let store = object_store::aws::AmazonS3Builder::from_env()
-            .with_region("us-east-1")
-            .with_bucket_name("gmto.cfd.2025")
-            .build()?;
+        let store = object_store::local::LocalFileSystem::new();
+        // let store = object_store::aws::AmazonS3Builder::from_env()
+        //     .with_region("us-east-1")
+        //     .with_bucket_name("gmto.cfd.2025")
+        //     .build()?;
         let cfd_loads = CfdLoads::foh(
-            &format!("CASES/{}", wind_loads),
-            // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
+            //&format!("CASES/{}", wind_loads),
+            "/home/rromano/Workspace/gr-ns-im/cfd_wl_cases",
             config::SIM_SAMPLING_FREQUENCY,
         )
         .duration(config::SIM_DURATION as f64)
