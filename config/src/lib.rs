@@ -14,6 +14,7 @@ pub const WINDLOADS: Option<&str> = Some("zen30az000_OS_7ms");
 // pub const WINDLOADS: &str = Some("zen30az045_OS7");
 
 pub mod m1 {
+    #[allow(unused_imports)]
     use skyangle::Conversion;
 
     use super::*;

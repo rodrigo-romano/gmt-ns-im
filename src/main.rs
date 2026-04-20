@@ -53,7 +53,19 @@ const TXY_RESIDUAL_SCALING: f64 =
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    env_logger::init();
+    // check for "console" feature
+    // if enabled it allows the monitoring of tasks
+    // with tokio-console
+    // Note that `tokio_unstable` is required e.g.
+    // `RUSTFLAGS="--cfg tokio_unstable" cargo r -r --features console`
+    #[cfg(feature = "console")]
+    console_subscriber::init();
+    #[cfg(not(feature = "console"))]
+    env_logger::builder()
+        .format_timestamp_millis()
+        // .format_timestamp(None)
+        .format_target(false)
+        .init();
 
     let data_repo = Path::new(&env::var("DATA_REPO")?).join("main");
     fs::create_dir_all(&data_repo)?;
@@ -355,9 +367,7 @@ async fn main() -> anyhow::Result<()> {
     // ===============================
     // -- FEM BOOTSTRAPPING INTEGRATED MODEL --
     let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
-    let mut timer: Timer = Timer::new(n_bootstrapping);
-    timer.progress();
-
+    let timer: Timer = Timer::new(n_bootstrapping);
     actorscript! {
         #[model(name=bootstrap)]
         #[labels(timer="⏲",
