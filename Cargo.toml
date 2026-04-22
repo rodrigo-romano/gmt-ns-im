@@ -97,7 +97,8 @@ console = ["dep:console-subscriber"]
 name = "agws"
 harness = false
 
-[profile.release]
+[profile.production]
+inherits = "release"
 lto = "thin"
 codegen-units = 1
 
