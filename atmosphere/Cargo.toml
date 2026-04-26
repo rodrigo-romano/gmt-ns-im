@@ -6,7 +6,7 @@ default-run = "main"
 
 [dependencies]
 anyhow = { workspace = true, optional = true }
-crseo = "2.3.0"
+crseo = "2.5.3"
 gmt_dos-actors = { workspace = true, optional = true }
 gmt_dos-clients = { workspace = true, optional = true }
 gmt_dos-clients_crseo = { workspace = true, optional = true }

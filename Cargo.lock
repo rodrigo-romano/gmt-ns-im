@@ -329,8 +329,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
 dependencies = [
  "cfg-if",
- "cipher",
+ "cipher 0.4.4",
  "cpufeatures 0.2.17",
+]
+
+[[package]]
+name = "aes"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66bd29a732b644c0431c6140f370d097879203d79b80c94a6747ba0872adaef8"
+dependencies = [
+ "cipher 0.5.1",
+ "cpubits",
+ "cpufeatures 0.3.0",
 ]
 
 [[package]]
@@ -568,19 +579,40 @@ version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3f15b4c6b148206ff3a2b35002e08929c2462467b62b9c02036d9c34f9ef994"
 dependencies = [
- "arrow-arith",
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-csv",
- "arrow-data",
- "arrow-ipc",
- "arrow-json",
- "arrow-ord",
- "arrow-row",
- "arrow-schema",
- "arrow-select",
- "arrow-string",
+ "arrow-arith 55.2.0",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-cast 55.2.0",
+ "arrow-csv 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-ipc 55.2.0",
+ "arrow-json 55.2.0",
+ "arrow-ord 55.2.0",
+ "arrow-row 55.2.0",
+ "arrow-schema 55.2.0",
+ "arrow-select 55.2.0",
+ "arrow-string 55.2.0",
+]
+
+[[package]]
+name = "arrow"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d441fdda254b65f3e9025910eb2c2066b6295d9c8ed409522b8d2ace1ff8574c"
+dependencies = [
+ "arrow-arith 58.1.0",
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-cast 58.1.0",
+ "arrow-csv 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-ipc 58.1.0",
+ "arrow-json 58.1.0",
+ "arrow-ord 58.1.0",
+ "arrow-row 58.1.0",
+ "arrow-schema 58.1.0",
+ "arrow-select 58.1.0",
+ "arrow-string 58.1.0",
 ]
 
 [[package]]
@@ -589,12 +621,26 @@ version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30feb679425110209ae35c3fbf82404a39a4c0436bb3ec36164d8bffed2a4ce4"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
  "chrono",
  "num",
+]
+
+[[package]]
+name = "arrow-arith"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ced5406f8b720cc0bc3aa9cf5758f93e8593cda5490677aa194e4b4b383f9a59"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
+ "chrono",
+ "num-traits",
 ]
 
 [[package]]
@@ -604,13 +650,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70732f04d285d49054a48b72c54f791bb3424abae92d27aafdf776c98af161c8"
 dependencies = [
  "ahash",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
  "chrono",
  "half",
  "hashbrown 0.15.5",
  "num",
+]
+
+[[package]]
+name = "arrow-array"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "772bd34cacdda8baec9418d80d23d0fb4d50ef0735685bd45158b83dfeb6e62d"
+dependencies = [
+ "ahash",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
+ "chrono",
+ "half",
+ "hashbrown 0.16.1",
+ "num-complex",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]
@@ -625,16 +689,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrow-buffer"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "898f4cf1e9598fdb77f356fdf2134feedfd0ee8d5a4e0a5f573e7d0aec16baa4"
+dependencies = [
+ "bytes",
+ "half",
+ "num-bigint 0.4.6",
+ "num-traits",
+]
+
+[[package]]
 name = "arrow-cast"
 version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4f12eccc3e1c05a766cafb31f6a60a46c2f8efec9b74c6e0648766d30686af8"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
+ "arrow-select 55.2.0",
  "atoi",
  "base64 0.22.1",
  "chrono",
@@ -645,14 +721,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrow-cast"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0127816c96533d20fc938729f48c52d3e48f99717e7a0b5ade77d742510736d"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-ord 58.1.0",
+ "arrow-schema 58.1.0",
+ "arrow-select 58.1.0",
+ "atoi",
+ "base64 0.22.1",
+ "chrono",
+ "half",
+ "lexical-core",
+ "num-traits",
+ "ryu",
+]
+
+[[package]]
 name = "arrow-csv"
 version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "012c9fef3f4a11573b2c74aec53712ff9fdae4a95f4ce452d1bbf088ee00f06b"
 dependencies = [
- "arrow-array",
- "arrow-cast",
- "arrow-schema",
+ "arrow-array 55.2.0",
+ "arrow-cast 55.2.0",
+ "arrow-schema 55.2.0",
+ "chrono",
+ "csv",
+ "csv-core",
+ "regex",
+]
+
+[[package]]
+name = "arrow-csv"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca025bd0f38eeecb57c2153c0123b960494138e6a957bbda10da2b25415209fe"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-cast 58.1.0",
+ "arrow-schema 58.1.0",
  "chrono",
  "csv",
  "csv-core",
@@ -665,10 +777,23 @@ version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8de1ce212d803199684b658fc4ba55fb2d7e87b213de5af415308d2fee3619c2"
 dependencies = [
- "arrow-buffer",
- "arrow-schema",
+ "arrow-buffer 55.2.0",
+ "arrow-schema 55.2.0",
  "half",
  "num",
+]
+
+[[package]]
+name = "arrow-data"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42d10beeab2b1c3bb0b53a00f7c944a178b622173a5c7bcabc3cb45d90238df4"
+dependencies = [
+ "arrow-buffer 58.1.0",
+ "arrow-schema 58.1.0",
+ "half",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]
@@ -677,10 +802,24 @@ version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9ea5967e8b2af39aff5d9de2197df16e305f47f404781d3230b2dc672da5d92"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
+ "flatbuffers",
+]
+
+[[package]]
+name = "arrow-ipc"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "609a441080e338147a84e8e6904b6da482cefb957c5cdc0f3398872f69a315d0"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
+ "arrow-select 58.1.0",
  "flatbuffers",
 ]
 
@@ -690,11 +829,11 @@ version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5709d974c4ea5be96d900c01576c7c0b99705f4a3eec343648cb1ca863988a9c"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-cast 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
  "chrono",
  "half",
  "indexmap",
@@ -707,16 +846,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrow-json"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ead0914e4861a531be48fe05858265cf854a4880b9ed12618b1d08cba9bebc8"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-cast 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
+ "chrono",
+ "half",
+ "indexmap",
+ "itoa",
+ "lexical-core",
+ "memchr",
+ "num-traits",
+ "ryu",
+ "serde_core",
+ "serde_json",
+ "simdutf8",
+]
+
+[[package]]
 name = "arrow-ord"
 version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6506e3a059e3be23023f587f79c82ef0bcf6d293587e3272d20f2d30b969b5a7"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
+ "arrow-select 55.2.0",
+]
+
+[[package]]
+name = "arrow-ord"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "763a7ba279b20b52dad300e68cfc37c17efa65e68623169076855b3a9e941ca5"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
+ "arrow-select 58.1.0",
 ]
 
 [[package]]
@@ -725,10 +901,23 @@ version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52bf7393166beaf79b4bed9bfdf19e97472af32ce5b6b48169d321518a08cae2"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
+ "half",
+]
+
+[[package]]
+name = "arrow-row"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e14fe367802f16d7668163ff647830258e6e0aeea9a4d79aaedf273af3bdcd3e"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
  "half",
 ]
 
@@ -739,17 +928,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af7686986a3bf2254c9fb130c623cdcb2f8e1f15763e7c71c310f0834da3d292"
 
 [[package]]
+name = "arrow-schema"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c30a1365d7a7dc50cc847e54154e6af49e4c4b0fddc9f607b687f29212082743"
+
+[[package]]
 name = "arrow-select"
 version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd2b45757d6a2373faa3352d02ff5b54b098f5e21dccebc45a21806bc34501e5"
 dependencies = [
  "ahash",
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
  "num",
+]
+
+[[package]]
+name = "arrow-select"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78694888660a9e8ac949853db393af2a8b8fc82c19ce333132dfa2e72cc1a7fe"
+dependencies = [
+ "ahash",
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
+ "num-traits",
 ]
 
 [[package]]
@@ -758,13 +967,30 @@ version = "55.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0377d532850babb4d927a06294314b316e23311503ed580ec6ce6a0158f49d40"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-schema 55.2.0",
+ "arrow-select 55.2.0",
  "memchr",
  "num",
+ "regex",
+ "regex-syntax",
+]
+
+[[package]]
+name = "arrow-string"
+version = "58.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61e04a01f8bb73ce54437514c5fd3ee2aa3e8abe4c777ee5cc55853b1652f79e"
+dependencies = [
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-schema 58.1.0",
+ "arrow-select 58.1.0",
+ "memchr",
+ "num-traits",
  "regex",
  "regex-syntax",
 ]
@@ -941,11 +1167,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "crseo",
- "gmt_dos-actors 12.1.0",
+ "gmt_dos-actors",
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0",
- "skyangle 0.3.1",
+ "gmt_dos-clients_io",
+ "skyangle",
  "tokio",
 ]
 
@@ -1148,15 +1374,6 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 
 [[package]]
 name = "bincode"
-version = "1.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "bincode"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36eaf5d7b090263e8150820482d5d93cd964a81e4019913c972f4edcc6edb740"
@@ -1302,6 +1519,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdd35008169921d80bc60d3d0ab416eecb028c4cd653352907921d95084790be"
 dependencies = [
  "hybrid-array",
+ "zeroize",
 ]
 
 [[package]]
@@ -1446,12 +1664,12 @@ name = "calibrations-sh24"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "faer 0.21.9",
+ "faer 0.24.0",
  "gmt_dos-clients_crseo",
  "gmt_dos-systems_agws",
  "matio-rs",
  "serde-pickle 1.2.0",
- "skyangle 0.3.1",
+ "skyangle",
 ]
 
 [[package]]
@@ -1461,13 +1679,13 @@ dependencies = [
  "anyhow",
  "geotrans 1.2.0",
  "gmt-ns-im",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-systems_agws",
  "serde-pickle 1.2.0",
- "skyangle 0.3.1",
+ "skyangle",
 ]
 
 [[package]]
@@ -1529,9 +1747,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.2.60"
+version = "1.2.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43c5703da9466b66a946814e1adf53ea2c90f10063b86290cc9eb67ce3478a20"
+checksum = "d16d90359e986641506914ba71350897565610e87ce0ad9e6f28569db3dd5c6d"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -1634,7 +1852,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
 dependencies = [
  "crypto-common 0.1.7",
- "inout",
+ "inout 0.1.4",
+]
+
+[[package]]
+name = "cipher"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e34d8227fe1ba289043aeb13792056ff80fd6de1a9f49137a5f499de8e8c78ea"
+dependencies = [
+ "crypto-common 0.2.1",
+ "inout 0.2.2",
 ]
 
 [[package]]
@@ -1722,6 +1950,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "cmov"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f88a43d011fc4a6876cb7344703e297c71dda42494fee094d5f7c76bf13f746"
+
+[[package]]
 name = "codespan-reporting"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1773,20 +2007,7 @@ name = "config"
 version = "0.1.0"
 dependencies = [
  "gmt_dos-clients_optics-state",
- "skyangle 0.3.1",
-]
-
-[[package]]
-name = "console"
-version = "0.15.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "054ccb5b10f9f2cbf51eb355ca1d05c2d279ce1804688d0db74b4733a5aeafd8"
-dependencies = [
- "encode_unicode",
- "libc",
- "once_cell",
- "unicode-width 0.2.2",
- "windows-sys 0.59.0",
+ "skyangle",
 ]
 
 [[package]]
@@ -1880,6 +2101,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 
 [[package]]
+name = "constant_time_eq"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
+
+[[package]]
 name = "convert_case"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1948,6 +2175,12 @@ dependencies = [
  "core-foundation 0.9.4",
  "libc",
 ]
+
+[[package]]
+name = "cpubits"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15b85f9c39137c3a891689859392b1bd49812121d0d61c9caf00d46ed5ce06ae"
 
 [[package]]
 name = "cpufeatures"
@@ -2070,15 +2303,17 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "crossterm"
-version = "0.28.1"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "829d955a0bb380ef178a640b91779e3987da38c9aea133b20614cfed8cdea9c6"
+checksum = "d8b9f2e4c67f833b660cdb0a3523065869fb35570177239812ed4c905aeff87b"
 dependencies = [
  "bitflags 2.11.1",
  "crossterm_winapi",
+ "derive_more",
+ "document-features",
  "mio",
  "parking_lot",
- "rustix 0.38.44",
+ "rustix 1.1.4",
  "signal-hook",
  "signal-hook-mio",
  "winapi",
@@ -2100,18 +2335,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e3afceb55b5438d8f6895f02b0d6dacd4eb5523d8958872e1a5c884deda12bf"
 dependencies = [
  "crseo-sys",
- "indicatif 0.18.4",
+ "indicatif",
  "libm",
  "log",
- "nalgebra 0.34.2",
+ "nalgebra",
  "rand 0.10.1",
  "rayon",
  "roots",
  "serde",
  "serde-pickle 1.2.0",
- "skyangle 0.4.0",
+ "skyangle",
  "thiserror 2.0.18",
- "toml 1.1.2+spec-1.1.0",
+ "toml",
 ]
 
 [[package]]
@@ -2168,6 +2403,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "704a3c26996a80471189265814dbc2c257598b96b8a7feae2d31ace646bb9782"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "ctutils"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d5515a3834141de9eafb9717ad39eea8247b5674e6066c404e8c4b365d2a29e"
+dependencies = [
+ "cmov",
 ]
 
 [[package]]
@@ -2251,6 +2495,8 @@ dependencies = [
  "block-buffer 0.12.0",
  "const-oid",
  "crypto-common 0.2.1",
+ "ctutils",
+ "zeroize",
 ]
 
 [[package]]
@@ -2301,6 +2547,8 @@ dependencies = [
 [[package]]
 name = "dos-uid-derive"
 version = "5.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8718723acfbed6bc862c637ccadc61054a4f92ecc49eeca1b14bfd0450def587"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2310,8 +2558,7 @@ dependencies = [
 [[package]]
 name = "dos-uid-derive"
 version = "5.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8718723acfbed6bc862c637ccadc61054a4f92ecc49eeca1b14bfd0450def587"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#716f089b3c83fecbcde142cfd10c04d9e174f7bb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2619,6 +2866,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "equator"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02da895aab06bbebefb6b2595f6d637b18c9ff629b4cd840965bb3164e4194b0"
+dependencies = [
+ "equator-macro 0.6.0",
+]
+
+[[package]]
 name = "equator-macro"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2639,6 +2895,12 @@ dependencies = [
  "quote",
  "syn 2.0.117",
 ]
+
+[[package]]
+name = "equator-macro"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b14b339eb76d07f052cdbad76ca7c1310e56173a138095d3bf42a23c06ef5d8"
 
 [[package]]
 name = "equivalent"
@@ -2700,32 +2962,6 @@ dependencies = [
 
 [[package]]
 name = "faer"
-version = "0.21.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebe9ac2a073e05ca749eeea503fae16a91440b20d2e92b6fc6f6c6919b9964eb"
-dependencies = [
- "bytemuck",
- "dyn-stack",
- "equator 0.4.2",
- "faer-macros 0.21.0",
- "faer-traits 0.21.5",
- "gemm",
- "generativity",
- "libm",
- "nano-gemm",
- "npyz",
- "num-complex",
- "num-traits",
- "pulp",
- "rand 0.8.6",
- "rand_distr 0.4.3",
- "rayon",
- "reborrow",
- "serde",
-]
-
-[[package]]
-name = "faer"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cb922206162d9405f9fc059052b3f997bdc92745da7bfd620645f5092df20d1"
@@ -2733,19 +2969,46 @@ dependencies = [
  "bytemuck",
  "dyn-stack",
  "equator 0.4.2",
- "faer-macros 0.22.1",
+ "faer-macros",
  "faer-traits 0.23.2",
- "gemm",
+ "gemm 0.18.2",
  "generativity",
  "libm",
- "nano-gemm",
- "npyz",
+ "nano-gemm 0.1.3",
+ "npyz 0.8.4",
  "num-complex",
  "num-traits",
  "private-gemm-x86",
- "pulp",
+ "pulp 0.21.5",
  "rand 0.9.4",
- "rand_distr 0.5.1",
+ "rand_distr",
+ "rayon",
+ "reborrow",
+ "serde",
+ "spindle",
+]
+
+[[package]]
+name = "faer"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02d2ecfb80b6f8b0c569e36988a052e64b14d8def9d372390b014e8bf79f299a"
+dependencies = [
+ "bytemuck",
+ "dyn-stack",
+ "equator 0.6.0",
+ "faer-traits 0.24.0",
+ "gemm 0.19.0",
+ "generativity",
+ "libm",
+ "nano-gemm 0.2.2",
+ "npyz 0.8.4",
+ "num-complex",
+ "num-traits",
+ "private-gemm-x86",
+ "pulp 0.22.2",
+ "rand 0.9.4",
+ "rand_distr",
  "rayon",
  "reborrow",
  "spindle",
@@ -2753,24 +3016,13 @@ dependencies = [
 
 [[package]]
 name = "faer-ext"
-version = "0.5.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9756e068191bf4f6b6a36dd131687f1f802cd2e3fce8b1ec4dbd5a5f5dfbafe1"
+checksum = "aa4d037166f25435671ecc6054ae76b964f17da513353f1617690470680efdf0"
 dependencies = [
- "faer 0.21.9",
- "nalgebra 0.33.3",
+ "faer 0.23.2",
+ "nalgebra",
  "num-complex",
-]
-
-[[package]]
-name = "faer-macros"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d0a255d1442b5825c61812a7eafda9034ec53d969c98555251085e148428e6a"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
 ]
 
 [[package]]
@@ -2786,36 +3038,36 @@ dependencies = [
 
 [[package]]
 name = "faer-traits"
-version = "0.21.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1430e111b20872c7eaa82c7ada071bff1c3e3ac09cc6f4df676065fd2d41eb62"
-dependencies = [
- "bytemuck",
- "dyn-stack",
- "faer-macros 0.21.0",
- "generativity",
- "libm",
- "num-complex",
- "num-traits",
- "pulp",
- "reborrow",
-]
-
-[[package]]
-name = "faer-traits"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24b69235b5f54416286c485fb047f2f499fc935a4eee2caadf4757f3c94c7b62"
 dependencies = [
  "bytemuck",
  "dyn-stack",
- "faer-macros 0.22.1",
+ "faer-macros",
  "generativity",
  "libm",
  "num-complex",
  "num-traits",
- "pulp",
- "qd",
+ "pulp 0.21.5",
+ "qd 0.7.7",
+ "reborrow",
+]
+
+[[package]]
+name = "faer-traits"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b87d23ed7ab1f26c0cba0e5b9e061a796fbb7dc170fa8bee6970055a1308bb0f"
+dependencies = [
+ "bytemuck",
+ "dyn-stack",
+ "generativity",
+ "libm",
+ "num-complex",
+ "num-traits",
+ "pulp 0.22.2",
+ "qd 0.8.0",
  "reborrow",
 ]
 
@@ -2824,26 +3076,15 @@ name = "fastrand"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
+dependencies = [
+ "getrandom 0.3.4",
+]
 
 [[package]]
 name = "fax"
-version = "0.2.6"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f05de7d48f37cd6730705cbca900770cab77a89f413d23e100ad7fad7795a0ab"
-dependencies = [
- "fax_derive",
-]
-
-[[package]]
-name = "fax_derive"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0aca10fb742cb43f9e7bb8467c91aa9bcb8e3ffbc6a6f7389bb93ffc920577d"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
+checksum = "caf1079563223d5d59d83c85886a56e586cfd5c1a26292e971a0fa266531ac5a"
 
 [[package]]
 name = "fdeflate"
@@ -2856,9 +3097,11 @@ dependencies = [
 
 [[package]]
 name = "fem-cuda-solver"
-version = "0.1.0"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98c2f28fa42a4891afafc82be8058a0a58d07f9befaecab28e88d7c1cbadcf89"
 dependencies = [
- "bindgen 0.71.1",
+ "bindgen 0.72.1",
  "cc",
 ]
 
@@ -2891,13 +3134,13 @@ dependencies = [
 
 [[package]]
 name = "flume"
-version = "0.11.1"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da0e4dd2a88388a1f4ccc7c9ce104604dab68d9f408dc34cd45823d5a9069095"
+checksum = "5e139bc46ca777eb5efaf62df0ab8cc5fd400866427e56c68b22e414e53bd3be"
 dependencies = [
+ "fastrand",
  "futures-core",
  "futures-sink",
- "nanorand 0.7.0",
  "spin 0.9.8",
 ]
 
@@ -3057,12 +3300,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab96b703d31950f1aeddded248bc95543c9efc7ac9c4a21fda8703a83ee35451"
 dependencies = [
  "dyn-stack",
- "gemm-c32",
- "gemm-c64",
- "gemm-common",
- "gemm-f16",
- "gemm-f32",
- "gemm-f64",
+ "gemm-c32 0.18.2",
+ "gemm-c64 0.18.2",
+ "gemm-common 0.18.2",
+ "gemm-f16 0.18.2",
+ "gemm-f32 0.18.2",
+ "gemm-f64 0.18.2",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "raw-cpuid",
+ "seq-macro",
+]
+
+[[package]]
+name = "gemm"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa0673db364b12263d103b68337a68fbecc541d6f6b61ba72fe438654709eacb"
+dependencies = [
+ "dyn-stack",
+ "gemm-c32 0.19.0",
+ "gemm-c64 0.19.0",
+ "gemm-common 0.19.0",
+ "gemm-f16 0.19.0",
+ "gemm-f32 0.19.0",
+ "gemm-f64 0.19.0",
  "num-complex",
  "num-traits",
  "paste",
@@ -3077,7 +3340,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6db9fd9f40421d00eea9dd0770045a5603b8d684654816637732463f4073847"
 dependencies = [
  "dyn-stack",
- "gemm-common",
+ "gemm-common 0.18.2",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "raw-cpuid",
+ "seq-macro",
+]
+
+[[package]]
+name = "gemm-c32"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "086936dbdcb99e37aad81d320f98f670e53c1e55a98bee70573e83f95beb128c"
+dependencies = [
+ "dyn-stack",
+ "gemm-common 0.19.0",
  "num-complex",
  "num-traits",
  "paste",
@@ -3092,7 +3370,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfcad8a3d35a43758330b635d02edad980c1e143dc2f21e6fd25f9e4eada8edf"
 dependencies = [
  "dyn-stack",
- "gemm-common",
+ "gemm-common 0.18.2",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "raw-cpuid",
+ "seq-macro",
+]
+
+[[package]]
+name = "gemm-c64"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20c8aeeeec425959bda4d9827664029ba1501a90a0d1e6228e48bef741db3a3f"
+dependencies = [
+ "dyn-stack",
+ "gemm-common 0.19.0",
  "num-complex",
  "num-traits",
  "paste",
@@ -3114,7 +3407,28 @@ dependencies = [
  "num-traits",
  "once_cell",
  "paste",
- "pulp",
+ "pulp 0.21.5",
+ "raw-cpuid",
+ "rayon",
+ "seq-macro",
+ "sysctl",
+]
+
+[[package]]
+name = "gemm-common"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88027625910cc9b1085aaaa1c4bc46bb3a36aad323452b33c25b5e4e7c8e2a3e"
+dependencies = [
+ "bytemuck",
+ "dyn-stack",
+ "half",
+ "libm",
+ "num-complex",
+ "num-traits",
+ "once_cell",
+ "paste",
+ "pulp 0.22.2",
  "raw-cpuid",
  "rayon",
  "seq-macro",
@@ -3128,8 +3442,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cff95ae3259432f3c3410eaa919033cd03791d81cebd18018393dc147952e109"
 dependencies = [
  "dyn-stack",
- "gemm-common",
- "gemm-f32",
+ "gemm-common 0.18.2",
+ "gemm-f32 0.18.2",
+ "half",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "raw-cpuid",
+ "rayon",
+ "seq-macro",
+]
+
+[[package]]
+name = "gemm-f16"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3df7a55202e6cd6739d82ae3399c8e0c7e1402859b30e4cb780e61525d9486e"
+dependencies = [
+ "dyn-stack",
+ "gemm-common 0.19.0",
+ "gemm-f32 0.19.0",
  "half",
  "num-complex",
  "num-traits",
@@ -3146,7 +3478,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc8d3d4385393304f407392f754cd2dc4b315d05063f62cf09f47b58de276864"
 dependencies = [
  "dyn-stack",
- "gemm-common",
+ "gemm-common 0.18.2",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "raw-cpuid",
+ "seq-macro",
+]
+
+[[package]]
+name = "gemm-f32"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02e0b8c9da1fbec6e3e3ab2ce6bc259ef18eb5f6f0d3e4edf54b75f9fd41a81c"
+dependencies = [
+ "dyn-stack",
+ "gemm-common 0.19.0",
  "num-complex",
  "num-traits",
  "paste",
@@ -3161,7 +3508,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "35b2a4f76ce4b8b16eadc11ccf2e083252d8237c1b589558a49b0183545015bd"
 dependencies = [
  "dyn-stack",
- "gemm-common",
+ "gemm-common 0.18.2",
+ "num-complex",
+ "num-traits",
+ "paste",
+ "raw-cpuid",
+ "seq-macro",
+]
+
+[[package]]
+name = "gemm-f64"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "056131e8f2a521bfab322f804ccd652520c79700d81209e9d9275bbdecaadc6a"
+dependencies = [
+ "dyn-stack",
+ "gemm-common 0.19.0",
  "num-complex",
  "num-traits",
  "paste",
@@ -3171,9 +3533,9 @@ dependencies = [
 
 [[package]]
 name = "generativity"
-version = "1.1.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5881e4c3c2433fe4905bb19cfd2b5d49d4248274862b68c27c33d9ba4e13f9ec"
+checksum = "d2c81fb5260e37854d09d5c87183309fd8c555b75289427884b25660bc87a85e"
 
 [[package]]
 name = "generator"
@@ -3205,15 +3567,6 @@ name = "geotrans"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3237277dbaf611664120f4f1267531d01ec3883c98018de26941e8918b24874f"
-
-[[package]]
-name = "geotrans"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d791e216517eb08f3717cc87af4134a23d824eda5dee14e05c6846d2491b97a"
-dependencies = [
- "thiserror 1.0.69",
-]
 
 [[package]]
 name = "geotrans"
@@ -3268,21 +3621,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0de51e6874e94e7bf76d726fc5d13ba782deca734ff60d5bb2fb2607c7406555"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
  "r-efi 6.0.0",
  "rand_core 0.10.1",
  "wasip2",
  "wasip3",
-]
-
-[[package]]
-name = "gif"
-version = "0.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ae047235e33e2829703574b54fdec96bfbad892062d97fed2f76022287de61b"
-dependencies = [
- "color_quant",
- "weezl",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -3512,37 +3857,27 @@ dependencies = [
 
 [[package]]
 name = "gmt-fem"
-version = "5.2.1"
+version = "5.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "640e3b50565d2ca6307e2fcf5dcf7c1b7909e917c438eadc9f50656a4a6ffb55"
 dependencies = [
  "anyhow",
- "arrow",
- "bincode 2.0.1",
+ "arrow 58.1.0",
+ "bincode",
  "bytes",
  "geotrans 0.1.1",
- "gmt-fem-code-builder 2.3.8",
+ "gmt-fem-code-builder",
  "log",
  "matio-rs",
- "nalgebra 0.33.3",
+ "nalgebra",
  "num-complex",
- "parquet",
+ "parquet 58.1.0",
  "rayon",
  "serde",
  "serde-pickle 0.6.3",
  "tempfile",
  "thiserror 2.0.18",
- "zip 4.6.1",
-]
-
-[[package]]
-name = "gmt-fem-code-builder"
-version = "2.3.8"
-dependencies = [
- "anyhow",
- "arrow",
- "bytes",
- "parquet",
- "thiserror 2.0.18",
- "zip 4.6.1",
+ "zip 8.6.0",
 ]
 
 [[package]]
@@ -3552,46 +3887,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f426f6ea5ac67772b3aac935ae79b3bf9590e5a6f4d4699ffac0d5a4265614f5"
 dependencies = [
  "anyhow",
- "arrow",
+ "arrow 55.2.0",
  "bytes",
- "parquet",
- "thiserror 2.0.18",
- "zip 4.6.1",
-]
-
-[[package]]
-name = "gmt-fem-code-builder"
-version = "2.3.8"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#489c8f8d9ee935dc20c77ed5400217097965f296"
-dependencies = [
- "anyhow",
- "arrow",
- "bytes",
- "parquet",
+ "parquet 55.2.0",
  "thiserror 2.0.18",
  "zip 4.6.1",
 ]
 
 [[package]]
 name = "gmt-lom"
-version = "2.6.2"
+version = "2.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd9ddd3c9d2733a720e6c5d7408458dd1bb6a87ee76891a76b99fec711b2f52"
+checksum = "0716c1a6afe14612b592da631d1f65d69c0347b370ccf698e36894495715c750"
 dependencies = [
  "anyhow",
- "arrow",
- "bincode 1.3.3",
+ "arrow 58.1.0",
+ "bincode",
  "csv",
  "env_logger",
  "log",
- "nalgebra 0.33.3",
+ "nalgebra",
  "num-complex",
- "parquet",
+ "parquet 58.1.0",
  "serde",
  "serde-pickle 1.2.0",
- "skyangle 0.2.2",
+ "skyangle",
  "structopt",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3604,64 +3926,43 @@ dependencies = [
  "criterion",
  "dotenvy",
  "env_logger",
- "faer 0.21.9",
+ "faer 0.23.2",
  "gmt-fem",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_lom",
  "gmt_dos-clients_optics-state",
  "gmt_dos-clients_servos",
- "gmt_dos-clients_transceiver",
+ "gmt_dos-clients_transceiver 2.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_windloads",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m1",
  "matio-rs",
- "nalgebra 0.33.3",
+ "nalgebra",
  "object_store",
  "serde-pickle 1.2.0",
- "skyangle 0.3.1",
+ "skyangle",
  "thiserror 2.0.18",
  "tokio",
-]
-
-[[package]]
-name = "gmt_dos-actors"
-version = "12.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f45d436060725ea24c78511d4de76146f285bbe86f740760df725c030d7e8607"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "flume",
- "futures",
- "gmt_dos-actors-clients_interface 1.5.0",
- "gmt_dos-actors_dsl 2.2.0",
- "html-escape",
- "humantime",
- "log",
- "open",
- "svg",
- "thiserror 1.0.69",
- "tokio",
- "vec_box",
 ]
 
 [[package]]
 name = "gmt_dos-actors"
 version = "12.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89bb55f9a9657d0490c2eb81bcbbbf7984be60d7eb0e34714225e27bbf519520"
 dependencies = [
  "anyhow",
  "async-trait",
  "chrono",
  "flume",
  "futures",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-actors_dsl 2.2.1",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-actors_dsl",
  "html-escape",
  "humantime",
  "log",
@@ -3675,22 +3976,12 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-actors-clients_interface"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "efb834be42f95b2c4b54395b177e33a9881d29a4386a012b4fa841f8293aedf0"
-dependencies = [
- "dos-uid-derive 5.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "log",
- "paris",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "gmt_dos-actors-clients_interface"
 version = "1.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ea6289f22fc6444b4aff4147608325274c0d23c9d38813b9e6c6bb1093f9490"
 dependencies = [
- "bincode 2.0.1",
- "dos-uid-derive 5.0.1",
+ "bincode",
+ "dos-uid-derive 5.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log",
  "paris",
  "serde",
@@ -3699,21 +3990,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "gmt_dos-actors_dsl"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b453ebf7b9f6abb41af1f009f8203e8e8561ab0297e36b2635c0262b0389a3b7"
+name = "gmt_dos-actors-clients_interface"
+version = "1.5.1"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#716f089b3c83fecbcde142cfd10c04d9e174f7bb"
 dependencies = [
- "prettyplease",
- "proc-macro2",
- "quote",
- "syn 2.0.117",
- "tracing",
+ "dos-uid-derive 5.0.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "log",
+ "paris",
+ "serde",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gmt_dos-actors_dsl"
 version = "2.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1829052026313f8331dea3f8cbb557a0ad79e805f7a5ceab9a96183d75dfa405"
 dependencies = [
  "prettyplease",
  "proc-macro2",
@@ -3724,19 +4016,21 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients"
-version = "5.0.0"
+version = "5.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ac886761707acba85e83c10ba9839e23bd515452dcc3a20e5e6d3dc16c49840"
 dependencies = [
  "ab_glyph",
  "colorous",
- "faer 0.21.9",
+ "faer 0.23.2",
  "faer-ext",
- "faer-traits 0.21.5",
- "gif 0.13.3",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "faer-traits 0.23.2",
+ "gif",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_optics-state",
  "image",
  "imageproc",
- "indicatif 0.17.11",
+ "indicatif",
  "matio-rs",
  "num-traits",
  "serde",
@@ -3746,25 +4040,13 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_arrow"
 version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50cc737d10b14fe959df16ff781198ac5e4407de70ebbe86594b8b0d40fa4346"
 dependencies = [
- "arrow",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "arrow 58.1.0",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log",
- "parquet",
- "paste",
- "regex",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "gmt_dos-clients_arrow"
-version = "2.3.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#489c8f8d9ee935dc20c77ed5400217097965f296"
-dependencies = [
- "arrow",
- "gmt_dos-actors-clients_interface 1.5.1",
- "log",
- "parquet",
+ "parquet 58.1.0",
  "paste",
  "regex",
  "thiserror 2.0.18",
@@ -3772,39 +4054,28 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_crseo"
-version = "5.0.1"
+version = "5.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a0c11f221b55ce6432f9e17334c36f34613bdf0d48439fec1e925fb96262be5"
 dependencies = [
  "anyhow",
- "bincode 2.0.1",
+ "bincode",
  "crseo",
- "faer 0.21.9",
+ "faer 0.23.2",
  "faer-ext",
  "geotrans 1.2.0",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_domeseeing 3.2.0",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_domeseeing 4.0.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
- "indicatif 0.17.11",
+ "indicatif",
  "log",
- "nalgebra 0.33.3",
+ "nalgebra",
  "rayon",
  "serde",
- "skyangle 0.2.2",
+ "skyangle",
  "thiserror 2.0.18",
- "toml 0.8.23",
-]
-
-[[package]]
-name = "gmt_dos-clients_domeseeing"
-version = "3.2.0"
-dependencies = [
- "bincode 1.3.3",
- "glob",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_io 4.3.0",
- "log",
- "serde",
- "thiserror 2.0.18",
+ "toml",
 ]
 
 [[package]]
@@ -3814,87 +4085,98 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "359a53edf564e04d0f0cb02e0f8a22f4adb1661f7bcb00aa55ffceee5dbec236"
 dependencies = [
  "glob",
- "gmt_dos-actors-clients_interface 1.5.0",
- "gmt_dos-clients_io 4.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_io",
  "log",
- "npyz",
+ "npyz 0.8.4",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gmt_dos-clients_domeseeing"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe394522fda13affb6c5b9cfa43bfd9504eebe0c5b19efd4e7cd19c8035c7102"
+dependencies = [
+ "bincode",
+ "glob",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_io",
+ "log",
  "serde",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gmt_dos-clients_fem"
-version = "5.3.0"
+version = "5.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "571e44e86b99813b1cb3d24d7ba56b902a50241563e43994689e362e39f61a55"
 dependencies = [
  "anyhow",
- "arrow",
- "bincode 2.0.1",
+ "arrow 58.1.0",
+ "bincode",
  "bytes",
- "faer 0.21.9",
+ "faer 0.23.2",
  "faer-ext",
  "fem-cuda-solver",
- "geotrans 0.2.2",
+ "geotrans 1.2.0",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
  "log",
- "nalgebra 0.33.3",
+ "nalgebra",
  "num-complex",
- "parquet",
+ "parquet 58.1.0",
  "rayon",
  "serde",
  "serde-pickle 1.2.0",
  "thiserror 2.0.18",
- "zip 4.6.1",
+ "zip 8.6.0",
 ]
 
 [[package]]
 name = "gmt_dos-clients_io"
-version = "4.3.0"
+version = "4.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "648e89c55962e5ee95d53db03ea6e0b62880194b219c822c4c42744f905bb038"
 dependencies = [
  "anyhow",
  "crseo",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
-]
-
-[[package]]
-name = "gmt_dos-clients_io"
-version = "4.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a50bd13fa496100c24c94c252532d68e13d64d4b9f0fae040c6d47c574cf1807"
-dependencies = [
- "anyhow",
- "gmt-fem-code-builder 2.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "gmt_dos-actors 12.0.0",
- "gmt_dos-actors-clients_interface 1.5.0",
 ]
 
 [[package]]
 name = "gmt_dos-clients_lom"
 version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a414eb0ebd7d9aab673b33e34c89bc2bbdd5a116f5f48cad1d6deb3c5698f1fb"
 dependencies = [
  "flate2",
  "gmt-lom",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
- "nalgebra 0.33.3",
+ "nalgebra",
 ]
 
 [[package]]
 name = "gmt_dos-clients_m1-ctrl"
 version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4db95e0587fb6f1f99737f979c5b4bd3d8000404ab29d08c906f9c24d568202b"
 dependencies = [
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_m1-ctrl_center-actuators 0.2.1",
  "gmt_m1-ctrl_center-actuators 1.0.0",
  "gmt_m1-ctrl_hardpoints-dynamics 0.2.1",
@@ -3902,20 +4184,22 @@ dependencies = [
  "gmt_m1-ctrl_outer-actuators 0.2.1",
  "gmt_m1-ctrl_outer-actuators 1.0.0",
  "log",
- "nalgebra 0.33.3",
+ "nalgebra",
  "serde",
 ]
 
 [[package]]
 name = "gmt_dos-clients_m2-ctrl"
-version = "4.0.0"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed1a3a2476e7d2a6f6185d0cd5222a28d0bc46ad1cd4970fe7c2e4cfc1a5b7db"
 dependencies = [
- "bincode 2.0.1",
+ "bincode",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
  "gmt_m2-ctrl_asm_pid-damping",
  "gmt_m2-ctrl_asm_positionner",
@@ -3924,7 +4208,7 @@ dependencies = [
  "gmt_m2-ctrl_fsm-piezo-246",
  "gmt_m2-ctrl_fsm-piezo-7",
  "gmt_m2-ctrl_fsm_positionner",
- "nalgebra 0.33.3",
+ "nalgebra",
  "rayon",
  "serde",
  "thiserror 2.0.18",
@@ -3932,30 +4216,15 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_mount"
-version = "4.1.2"
+version = "4.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce62518946e4298a5bef7bd42c719fc61527733c7c725574b3f2c6330624e925"
 dependencies = [
  "anyhow",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
- "gmt_mount-ctrl_controller",
- "gmt_mount-ctrl_driver",
- "log",
- "serde",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "gmt_dos-clients_mount"
-version = "4.1.2"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#489c8f8d9ee935dc20c77ed5400217097965f296"
-dependencies = [
- "anyhow",
- "gmt-fem-code-builder 2.3.8 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_mount-ctrl_controller",
  "gmt_mount-ctrl_driver",
  "log",
@@ -3966,27 +4235,30 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_optics-state"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8212ed29a16eed310e0131ad273c5f9b2fff586481fe103f8283e2365507849b"
 dependencies = [
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_arrow 2.3.0",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_arrow",
+ "gmt_dos-clients_io",
  "serde",
 ]
 
 [[package]]
 name = "gmt_dos-clients_scope"
-version = "3.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#489c8f8d9ee935dc20c77ed5400217097965f296"
+version = "3.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27dd8bb6be2e4043d6760b86d6521b2d62e07453ed72df4d88bf26ab7cbd1d37"
 dependencies = [
  "colorous",
  "eframe",
  "egui_plot",
  "epaint",
  "flume",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_scopehub",
- "gmt_dos-clients_transceiver",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_scopehub 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_transceiver 2.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "log",
  "serde",
  "thiserror 2.0.18",
@@ -3995,17 +4267,42 @@ dependencies = [
 ]
 
 [[package]]
-name = "gmt_dos-clients_scope-client"
-version = "0.2.2"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#489c8f8d9ee935dc20c77ed5400217097965f296"
+name = "gmt_dos-clients_scope"
+version = "3.1.1"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#716f089b3c83fecbcde142cfd10c04d9e174f7bb"
 dependencies = [
- "gmt_dos-clients_scope",
+ "gmt_dos-actors-clients_interface 1.5.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_scopehub 0.1.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_transceiver 2.0.4 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "log",
+ "serde",
+ "thiserror 2.0.18",
+ "tracing",
+]
+
+[[package]]
+name = "gmt_dos-clients_scope-client"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e1cc331826304d34bb469863bc934983bae0794913e19b39965f0c29a1c76c9"
+dependencies = [
+ "gmt_dos-clients_scope 3.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "gmt_dos-clients_scopehub"
 version = "0.1.0"
-source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#489c8f8d9ee935dc20c77ed5400217097965f296"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8263c05f512bca87d232503fba9e3d53bce10785cd943534e44e9132eca69743"
+dependencies = [
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
+name = "gmt_dos-clients_scopehub"
+version = "0.1.0"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#716f089b3c83fecbcde142cfd10c04d9e174f7bb"
 dependencies = [
  "quote",
  "syn 2.0.117",
@@ -4014,23 +4311,25 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_servos"
 version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b69c3e712727cd7e8c131384fc11c12d51cd4bd5b6c8e51789ac48f67a582822"
 dependencies = [
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow 2.3.0",
+ "gmt_dos-clients_arrow",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_m2-ctrl",
- "gmt_dos-clients_mount 4.1.2",
+ "gmt_dos-clients_mount",
  "gmt_dos-clients_windloads",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
  "log",
  "matio-rs",
- "nalgebra 0.33.3",
+ "nalgebra",
  "rayon",
  "serde",
  "serde-pickle 1.2.0",
@@ -4040,14 +4339,38 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_transceiver"
-version = "2.0.3"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4115a94aaf89ac53abd18c3fe1c5012168cecdf9b9ec17d2e204e9d4f86206c5"
 dependencies = [
  "anyhow",
- "bincode 2.0.1",
+ "bincode",
  "bytesize",
  "flume",
  "futures",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "humantime",
+ "quinn 0.10.2",
+ "quinn-proto 0.10.6",
+ "rcgen",
+ "rustls 0.21.12",
+ "serde",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "gmt_dos-clients_transceiver"
+version = "2.0.4"
+source = "git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im#716f089b3c83fecbcde142cfd10c04d9e174f7bb"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "bytesize",
+ "flume",
+ "futures",
+ "gmt_dos-actors-clients_interface 1.5.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "humantime",
  "quinn 0.10.2",
  "quinn-proto 0.10.6",
@@ -4062,17 +4385,19 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_windloads"
 version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a0bd96e8cde4cfb51cdeda601546bbfc9bb5ec8579e1a74bb630382c7f08e9d"
 dependencies = [
- "geotrans 0.2.2",
+ "geotrans 1.2.0",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "log",
- "nalgebra 0.33.3",
+ "nalgebra",
  "object_store",
  "parse-monitors",
  "serde",
@@ -4081,60 +4406,66 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-systems_agws"
-version = "0.2.0"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8316c02d6cd6685d19c1c62024d0425e70a4c2e34dc956d2129e4f131d16d74"
 dependencies = [
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
  "log",
  "serde-pickle 1.2.0",
- "skyangle 0.3.1",
+ "skyangle",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gmt_dos-systems_m1"
 version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83f9c37fcbafc3586d43e8ec213d8f62b3c4a04c7a4f509da3fce03a2916d53d"
 dependencies = [
- "bincode 2.0.1",
- "faer 0.21.9",
+ "bincode",
+ "faer 0.23.2",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_m1-ctrl",
  "gmt_dos-clients_optics-state",
  "log",
- "nalgebra 0.33.3",
+ "nalgebra",
  "serde",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "gmt_dos-systems_m2"
-version = "0.1.1"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2453a74888be9571608f69d77cb0142b10e07092e69f6762af4cf3148fa346dd"
 dependencies = [
- "bincode 2.0.1",
+ "bincode",
  "gmt-fem",
- "gmt-fem-code-builder 2.3.8",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt-fem-code-builder",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_m2-ctrl",
  "gmt_m2-ctrl_asm_pid-damping",
  "gmt_m2-ctrl_asm_positionner",
  "gmt_m2-ctrl_asm_preshape-filter",
  "log",
  "matio-rs",
- "nalgebra 0.33.3",
+ "nalgebra",
  "paste",
  "rayon",
  "serde",
@@ -4398,6 +4729,12 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+
+[[package]]
+name = "hashbrown"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f467dd6dccf739c208452f8014c75c18bb8301b050ad1cfb27153803edb0f51"
@@ -4464,6 +4801,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
 dependencies = [
  "digest 0.10.7",
+]
+
+[[package]]
+name = "hmac"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6303bc9732ae41b04cb554b844a762b4115a61bfaa81e3e83050991eeb56863f"
+dependencies = [
+ "digest 0.11.2",
 ]
 
 [[package]]
@@ -4554,9 +4900,9 @@ checksum = "135b12329e5e3ce057a9f972339ea52bc954fe1e9358ef27f95e89716fbc5424"
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.10"
+version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3944cf8cf766b40e2a1a333ee5e9b563f854d5fa49d6a8ca2764e97c6eddb214"
+checksum = "08d46837a0ed51fe95bd3b05de33cd64a1ee88fc797477ca48446872504507c5"
 dependencies = [
  "typenum",
 ]
@@ -4592,7 +4938,7 @@ dependencies = [
  "http 1.4.0",
  "hyper",
  "hyper-util",
- "rustls 0.23.39",
+ "rustls 0.23.40",
  "rustls-native-certs 0.8.3",
  "tokio",
  "tokio-rustls",
@@ -4760,9 +5106,9 @@ dependencies = [
 
 [[package]]
 name = "idna_adapter"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
+checksum = "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
@@ -4778,7 +5124,7 @@ dependencies = [
  "byteorder-lite",
  "color_quant",
  "exr",
- "gif 0.14.2",
+ "gif",
  "image-webp",
  "moxcms",
  "num-traits",
@@ -4813,19 +5159,19 @@ dependencies = [
  "getrandom 0.3.4",
  "image",
  "itertools 0.14.0",
- "nalgebra 0.34.2",
+ "nalgebra",
  "num",
  "rand 0.9.4",
- "rand_distr 0.5.1",
+ "rand_distr",
  "rayon",
  "rustdct",
 ]
 
 [[package]]
 name = "imgref"
-version = "1.12.0"
+version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7c5cedc30da3a610cac6b4ba17597bdf7152cf974e8aab3afb3d54455e371c8"
+checksum = "40fac9d56ed6437b198fddba683305e8e2d651aa42647f00f5ae542e7f5c94a2"
 
 [[package]]
 name = "immutable-chunkmap"
@@ -4856,25 +5202,11 @@ dependencies = [
 
 [[package]]
 name = "indicatif"
-version = "0.17.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "183b3088984b400f4cfac3620d5e076c84da5364016b4f49473de574b2586235"
-dependencies = [
- "console 0.15.11",
- "number_prefix",
- "portable-atomic",
- "rayon",
- "unicode-width 0.2.2",
- "web-time",
-]
-
-[[package]]
-name = "indicatif"
 version = "0.18.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25470f23803092da7d239834776d653104d551bc4d7eacaf31e6837854b8e9eb"
 dependencies = [
- "console 0.16.3",
+ "console",
  "portable-atomic",
  "rayon",
  "unicode-width 0.2.2",
@@ -4889,6 +5221,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "879f10e63c20629ecabbb64a8010319738c66a5cd0c29b02d63d272b03751d01"
 dependencies = [
  "generic-array",
+]
+
+[[package]]
+name = "inout"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4250ce6452e92010fdf7268ccc5d14faa80bb12fc741938534c58f16804e03c7"
+dependencies = [
+ "hybrid-array",
 ]
 
 [[package]]
@@ -5099,9 +5440,9 @@ dependencies = [
 
 [[package]]
 name = "js-sys"
-version = "0.3.95"
+version = "0.3.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2964e92d1d9dc3364cae4d718d93f227e3abb088e747d92e0395bfdedf1c12ca"
+checksum = "a1840c94c045fbcf8ba2812c95db44499f7c64910a912551aaaa541decebcacf"
 dependencies = [
  "cfg-if",
  "futures-util",
@@ -5221,9 +5562,9 @@ checksum = "b3a6a8c165077efc8f3a971534c50ea6a1a18b329ef4a66e897a7e3a1494565f"
 
 [[package]]
 name = "libc"
-version = "0.2.185"
+version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52ff2c0fe9bc6cb6b14a0592c2ff4fa9ceb83eea9db979b0487cd054946a2b8f"
+checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
 
 [[package]]
 name = "libfuzzer-sys"
@@ -5386,24 +5727,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "lz4_flex"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db9a0d582c2874f68138a16ce1867e0ffde6c0bb0a0df85e1f36d04146db488a"
+dependencies = [
+ "twox-hash",
+]
+
+[[package]]
+name = "lzma-rust2"
+version = "0.16.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47bb1e988e6fb779cf720ad431242d3f03167c1b3f2b1aae7f1a94b2495b36ae"
+dependencies = [
+ "sha2",
+]
+
+[[package]]
 name = "m1-assembly"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "gmt-fem",
  "gmt-ns-im",
- "gmt_dos-actors 12.1.0",
+ "gmt_dos-actors",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
- "gmt_dos-clients_mount 4.1.2 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io",
+ "gmt_dos-clients_mount",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
  "matio-rs",
- "nalgebra 0.33.3",
+ "nalgebra",
  "serde-pickle 1.2.0",
  "tokio",
 ]
@@ -5414,14 +5773,14 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "gmt-ns-im",
- "gmt_dos-actors 12.1.0",
+ "gmt_dos-actors",
  "gmt_dos-clients",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-systems_m1",
  "matio-rs",
- "nalgebra 0.33.3",
+ "nalgebra",
  "serde-pickle 1.2.0",
  "tokio",
 ]
@@ -5452,14 +5811,14 @@ checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
 
 [[package]]
 name = "matio-rs"
-version = "1.6.2"
+version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36638211ef2667b345a4e756ff095212ce0ead1faa3872e346332cc5bf7ee488"
+checksum = "670e37618814f4225d3e6d1e8a4a78655dc0f0135524f9a207089fad4516fbff"
 dependencies = [
  "faer 0.23.2",
  "matio-rs-sys",
  "matio-rs_derive",
- "nalgebra 0.33.3",
+ "nalgebra",
  "paste",
  "thiserror 2.0.18",
 ]
@@ -5604,13 +5963,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "gmt-ns-im",
- "gmt_dos-actors 12.1.0",
+ "gmt_dos-actors",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
- "gmt_dos-clients_io 4.3.0",
- "gmt_dos-clients_mount 4.1.2 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_io",
+ "gmt_dos-clients_mount",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m2",
  "serde-pickle 1.2.0",
@@ -5650,43 +6009,6 @@ dependencies = [
 
 [[package]]
 name = "nalgebra"
-version = "0.32.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b5c17de023a86f59ed79891b2e5d5a94c705dbe904a5b5c9c952ea6221b03e4"
-dependencies = [
- "approx",
- "matrixmultiply",
- "nalgebra-macros 0.2.2",
- "num-complex",
- "num-rational",
- "num-traits",
- "rand 0.8.6",
- "rand_distr 0.4.3",
- "simba 0.8.1",
- "typenum",
-]
-
-[[package]]
-name = "nalgebra"
-version = "0.33.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d43ddcacf343185dfd6de2ee786d9e8b1c2301622afab66b6c73baf9882abfd"
-dependencies = [
- "approx",
- "matrixmultiply",
- "nalgebra-macros 0.2.2",
- "num-complex",
- "num-rational",
- "num-traits",
- "rand 0.8.6",
- "rand_distr 0.4.3",
- "serde",
- "simba 0.9.1",
- "typenum",
-]
-
-[[package]]
-name = "nalgebra"
 version = "0.34.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df76ea0ff5c7e6b88689085804d6132ded0ddb9de5ca5b8aeb9eeadc0508a70a"
@@ -5711,24 +6033,15 @@ dependencies = [
  "glam 0.31.1",
  "glam 0.32.1",
  "matrixmultiply",
- "nalgebra-macros 0.3.0",
+ "nalgebra-macros",
  "num-complex",
  "num-rational",
  "num-traits",
+ "rand 0.9.4",
+ "rand_distr",
  "serde",
- "simba 0.9.1",
+ "simba",
  "typenum",
-]
-
-[[package]]
-name = "nalgebra-macros"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "254a5372af8fc138e36684761d3c0cdb758a4410e938babcff1c860ce14ddbfc"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
 ]
 
 [[package]]
@@ -5749,12 +6062,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb5ba2bea1c00e53de11f6ab5bd0761ba87dc0045d63b0c87ee471d2d3061376"
 dependencies = [
  "equator 0.2.2",
- "nano-gemm-c32",
- "nano-gemm-c64",
- "nano-gemm-codegen",
- "nano-gemm-core",
- "nano-gemm-f32",
- "nano-gemm-f64",
+ "nano-gemm-c32 0.1.0",
+ "nano-gemm-c64 0.1.0",
+ "nano-gemm-codegen 0.1.0",
+ "nano-gemm-core 0.1.0",
+ "nano-gemm-f32 0.1.0",
+ "nano-gemm-f64 0.1.0",
+ "num-complex",
+]
+
+[[package]]
+name = "nano-gemm"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e04345dc84b498ff89fe0d38543d1f170da9e43a2c2bcee73a0f9069f72d081"
+dependencies = [
+ "equator 0.2.2",
+ "nano-gemm-c32 0.2.1",
+ "nano-gemm-c64 0.2.1",
+ "nano-gemm-codegen 0.2.1",
+ "nano-gemm-core 0.2.1",
+ "nano-gemm-f32 0.2.1",
+ "nano-gemm-f64 0.2.1",
  "num-complex",
 ]
 
@@ -5764,8 +6093,19 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a40449e57a5713464c3a1208c4c3301c8d29ee1344711822cf022bc91373a91b"
 dependencies = [
- "nano-gemm-codegen",
- "nano-gemm-core",
+ "nano-gemm-codegen 0.1.0",
+ "nano-gemm-core 0.1.0",
+ "num-complex",
+]
+
+[[package]]
+name = "nano-gemm-c32"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0775b1e2520e64deee8fc78b7732e3091fb7585017c0b0f9f4b451757bbbc562"
+dependencies = [
+ "nano-gemm-codegen 0.2.1",
+ "nano-gemm-core 0.2.1",
  "num-complex",
 ]
 
@@ -5775,8 +6115,19 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "743a6e6211358fba85d1009616751e4107da86f4c95b24e684ce85f25c25b3bf"
 dependencies = [
- "nano-gemm-codegen",
- "nano-gemm-core",
+ "nano-gemm-codegen 0.1.0",
+ "nano-gemm-core 0.1.0",
+ "num-complex",
+]
+
+[[package]]
+name = "nano-gemm-c64"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9af49a20d58816e6b5ee65f64142e50edb5eba152678d4bb7377fcbf63f8437a"
+dependencies = [
+ "nano-gemm-codegen 0.2.1",
+ "nano-gemm-core 0.2.1",
  "num-complex",
 ]
 
@@ -5787,10 +6138,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "963bf7c7110d55430169dc74c67096375491ed580cd2ef84842550ac72e781fa"
 
 [[package]]
+name = "nano-gemm-codegen"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6cc8d495c791627779477a2cf5df60049f5b165342610eb0d76bee5ff5c5d74c"
+
+[[package]]
 name = "nano-gemm-core"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe3fc4f83ae8861bad79dc3c016bd6b0220da5f9de302e07d3112d16efc24aa6"
+
+[[package]]
+name = "nano-gemm-core"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d998dfa644de87a0f8660e5ea511d7cb5c33b5a2d9847b7af57a2565105089f0"
 
 [[package]]
 name = "nano-gemm-f32"
@@ -5798,8 +6161,18 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e3681b7ce35658f79da94b7f62c60a005e29c373c7111ed070e3bf64546a8bb"
 dependencies = [
- "nano-gemm-codegen",
- "nano-gemm-core",
+ "nano-gemm-codegen 0.1.0",
+ "nano-gemm-core 0.1.0",
+]
+
+[[package]]
+name = "nano-gemm-f32"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "879d962e79bc8952e4ad21ca4845a21132540ed3f5e01184b2ff7f720e666523"
+dependencies = [
+ "nano-gemm-codegen 0.2.1",
+ "nano-gemm-core 0.2.1",
 ]
 
 [[package]]
@@ -5808,17 +6181,18 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc1e619ed04d801809e1f63e61b669d380c4119e8b0cdd6ed184c6b111f046d8"
 dependencies = [
- "nano-gemm-codegen",
- "nano-gemm-core",
+ "nano-gemm-codegen 0.1.0",
+ "nano-gemm-core 0.1.0",
 ]
 
 [[package]]
-name = "nanorand"
-version = "0.7.0"
+name = "nano-gemm-f64"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a51313c5820b0b02bd422f4b44776fbf47961755c74ce64afc73bfad10226c3"
+checksum = "b9a513473dce7dc00c7e7c318481ca4494034e76997218d8dad51bd9f007a815"
 dependencies = [
- "getrandom 0.2.17",
+ "nano-gemm-codegen 0.2.1",
+ "nano-gemm-core 0.2.1",
 ]
 
 [[package]]
@@ -5930,6 +6304,18 @@ name = "npyz"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f0e759e014e630f90af745101b614f761306ddc541681e546649068e25ec1b9"
+dependencies = [
+ "byteorder",
+ "num-bigint 0.4.6",
+ "py_literal",
+ "zip 0.6.6",
+]
+
+[[package]]
+name = "npyz"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5887ec0a3c42ff9ee97c2dc9f2763637ebee24a7ef2641ee89933131e048dd51"
 dependencies = [
  "byteorder",
  "num-bigint 0.4.6",
@@ -6082,12 +6468,6 @@ dependencies = [
  "quote",
  "syn 2.0.117",
 ]
-
-[[package]]
-name = "number_prefix"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3"
 
 [[package]]
 name = "objc"
@@ -6538,13 +6918,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b17da4150748086bd43352bc77372efa9b6e3dbd06a04831d2a98c041c225cfa"
 dependencies = [
  "ahash",
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-data",
- "arrow-ipc",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 55.2.0",
+ "arrow-buffer 55.2.0",
+ "arrow-cast 55.2.0",
+ "arrow-data 55.2.0",
+ "arrow-ipc 55.2.0",
+ "arrow-schema 55.2.0",
+ "arrow-select 55.2.0",
  "base64 0.22.1",
  "brotli",
  "bytes",
@@ -6552,7 +6932,7 @@ dependencies = [
  "flate2",
  "half",
  "hashbrown 0.15.5",
- "lz4_flex",
+ "lz4_flex 0.11.6",
  "num",
  "num-bigint 0.4.6",
  "paste",
@@ -6565,10 +6945,43 @@ dependencies = [
 ]
 
 [[package]]
-name = "parse-monitors"
-version = "0.4.0"
+name = "parquet"
+version = "58.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c74840ef66452eb2251517f20585dceb6b9d3f7de07ac1ff9a5a69ad4639257f"
+checksum = "7d3f9f2205199603564127932b89695f52b62322f541d0fc7179d57c2e1c9877"
+dependencies = [
+ "ahash",
+ "arrow-array 58.1.0",
+ "arrow-buffer 58.1.0",
+ "arrow-data 58.1.0",
+ "arrow-ipc 58.1.0",
+ "arrow-schema 58.1.0",
+ "arrow-select 58.1.0",
+ "base64 0.22.1",
+ "brotli",
+ "bytes",
+ "chrono",
+ "flate2",
+ "half",
+ "hashbrown 0.16.1",
+ "lz4_flex 0.13.0",
+ "num-bigint 0.4.6",
+ "num-integer",
+ "num-traits",
+ "paste",
+ "seq-macro",
+ "simdutf8",
+ "snap",
+ "thrift",
+ "twox-hash",
+ "zstd 0.13.3",
+]
+
+[[package]]
+name = "parse-monitors"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09dcdb08ea542229406e140dcc4128f23d851942e5e806ccdc4b54a7008d0b1b"
 dependencies = [
  "anyhow",
  "clap 4.6.1",
@@ -6576,16 +6989,16 @@ dependencies = [
  "csv",
  "env_logger",
  "flate2",
- "geotrans 0.2.2",
+ "geotrans 1.2.0",
  "glob",
  "gmt-lom",
- "gmt_dos-clients_domeseeing 3.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "indicatif 0.18.4",
+ "gmt_dos-clients_domeseeing 3.2.0",
+ "indicatif",
  "itertools 0.14.0",
  "linya",
  "log",
- "nalgebra 0.32.6",
- "npyz",
+ "nalgebra",
+ "npyz 0.9.0",
  "object_store",
  "rayon",
  "regex",
@@ -6635,7 +7048,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "83a0692ec44e4cf1ef28ca317f14f8f07da2d95ec3fa01f86e4467b725e60917"
 dependencies = [
  "digest 0.10.7",
- "hmac",
+ "hmac 0.12.1",
  "password-hash",
  "sha2",
 ]
@@ -6647,7 +7060,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8ed6a7761f76e3b9f92dfb0a60a6a6477c61024b775147ff0973a02653abaf2"
 dependencies = [
  "digest 0.10.7",
- "hmac",
+ "hmac 0.12.1",
+]
+
+[[package]]
+name = "pbkdf2"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "112d82ceb8c5bf524d9af484d4e4970c9fd5a0cc15ba14ad93dccd28873b0629"
+dependencies = [
+ "digest 0.11.2",
+ "hmac 0.13.0",
 ]
 
 [[package]]
@@ -6899,7 +7322,7 @@ version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e67ba7e9b2b56446f1d419b1d807906278ffa1a658a8a5d8a39dcb1f5a78614f"
 dependencies = [
- "toml_edit 0.25.11+spec-1.1.0",
+ "toml_edit",
 ]
 
 [[package]]
@@ -7001,6 +7424,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pulp"
+version = "0.22.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e205bb30d5b916c55e584c22201771bcf2bad9aabd5d4127f38387140c38632"
+dependencies = [
+ "bytemuck",
+ "cfg-if",
+ "libm",
+ "num-complex",
+ "paste",
+ "pulp-wasm-simd-flag",
+ "raw-cpuid",
+ "reborrow",
+ "version_check",
+]
+
+[[package]]
+name = "pulp-wasm-simd-flag"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "40e24eee682d89fb193496edf918a7f407d30175b2e785fe057e4392dfd182e0"
+
+[[package]]
 name = "pxfm"
 version = "0.1.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7028,7 +7474,19 @@ dependencies = [
  "bytemuck",
  "libm",
  "num-traits",
- "pulp",
+ "pulp 0.21.5",
+]
+
+[[package]]
+name = "qd"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15f1304a5aecdcfe9ee72fbba90aa37b3aa067a69d14cb7f3d9deada0be7c07c"
+dependencies = [
+ "bytemuck",
+ "libm",
+ "num-traits",
+ "pulp 0.22.2",
 ]
 
 [[package]]
@@ -7048,17 +7506,17 @@ dependencies = [
  "clap 4.6.1",
  "config",
  "env_logger",
- "faer 0.21.9",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "faer 0.24.0",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
- "gmt_dos-clients_scope",
+ "gmt_dos-clients_scope 3.1.1 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
  "gmt_dos-systems_agws",
- "nanorand 0.8.0",
+ "nanorand",
  "serde-pickle 1.2.0",
  "thiserror 2.0.18",
  "tokio",
@@ -7119,7 +7577,7 @@ dependencies = [
  "quinn-proto 0.11.14",
  "quinn-udp 0.5.14",
  "rustc-hash 2.1.2",
- "rustls 0.23.39",
+ "rustls 0.23.40",
  "socket2 0.6.3",
  "thiserror 2.0.18",
  "tokio",
@@ -7157,7 +7615,7 @@ dependencies = [
  "rand 0.9.4",
  "ring 0.17.14",
  "rustc-hash 2.1.2",
- "rustls 0.23.39",
+ "rustls 0.23.40",
  "rustls-pki-types",
  "slab",
  "thiserror 2.0.18",
@@ -7289,16 +7747,6 @@ name = "rand_core"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
-
-[[package]]
-name = "rand_distr"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32cb0b9bc82b0a0876c2dd994a7e7a2683d3e7390ca40e6886785ef0c7e3ee31"
-dependencies = [
- "num-traits",
- "rand 0.8.6",
-]
 
 [[package]]
 name = "rand_distr"
@@ -7509,7 +7957,7 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "quinn 0.11.9",
- "rustls 0.23.39",
+ "rustls 0.23.40",
  "rustls-native-certs 0.8.3",
  "rustls-pki-types",
  "serde",
@@ -7654,9 +8102,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.39"
+version = "0.23.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c2c118cb077cca2822033836dfb1b975355dfb784b5e8da48f7b6c5db74e60e"
+checksum = "ef86cd5876211988985292b91c96a8f2d298df24e75989a43a3c73f2d4d8168b"
 dependencies = [
  "once_cell",
  "ring 0.17.14",
@@ -7701,9 +8149,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-pki-types"
-version = "1.14.0"
+version = "1.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be040f8b0a225e40375822a563fa9524378b9d63112f53e19ffff34df5d33fdd"
+checksum = "30a7197ae7eb376e574fe940d068c30fe0462554a3ddbe4eca7838e049c937a9"
 dependencies = [
  "web-time",
  "zeroize",
@@ -7787,11 +8235,11 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "crossterm",
- "gmt_dos-actors-clients_interface 1.5.1",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_lom",
  "gmt_dos-clients_optics-state",
- "gmt_dos-clients_scope",
+ "gmt_dos-clients_scope 3.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_scope-client",
  "tokio",
  "tracing",
@@ -7805,21 +8253,21 @@ dependencies = [
  "anyhow",
  "config",
  "env_logger",
- "gmt_dos-actors 12.1.0",
- "gmt_dos-actors-clients_interface 1.5.1",
+ "gmt_dos-actors",
+ "gmt_dos-actors-clients_interface 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow 2.3.0 (git+https://github.com/rconan/dos-actors.git?branch=gmt-ns-im)",
+ "gmt_dos-clients_arrow",
  "gmt_dos-clients_crseo",
- "gmt_dos-clients_io 4.3.0",
+ "gmt_dos-clients_io",
  "gmt_dos-clients_lom",
  "gmt_dos-clients_optics-state",
- "gmt_dos-clients_scope",
+ "gmt_dos-clients_scope 3.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_scope-client",
- "gmt_dos-clients_transceiver",
+ "gmt_dos-clients_transceiver 2.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-systems_agws",
  "scopes",
  "serde-pickle 1.2.0",
- "skyangle 0.3.1",
+ "skyangle",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -7978,15 +8426,6 @@ dependencies = [
 
 [[package]]
 name = "serde_spanned"
-version = "0.6.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf41e0cfaf7226dca15e8197172c295a782857fcb97fad1808a166870dee75a3"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "serde_spanned"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6662b5879511e06e8999a8a235d848113e942c9124f211511b16466ee2995f26"
@@ -8087,19 +8526,6 @@ dependencies = [
 
 [[package]]
 name = "simba"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "061507c94fc6ab4ba1c9a0305018408e312e17c041eb63bef8aa726fa33aceae"
-dependencies = [
- "approx",
- "num-complex",
- "num-traits",
- "paste",
- "wide",
-]
-
-[[package]]
-name = "simba"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c99284beb21666094ba2b75bbceda012e610f5479dfcc2d6e2426f53197ffd95"
@@ -8153,21 +8579,6 @@ dependencies = [
  "regex",
  "serde",
 ]
-
-[[package]]
-name = "skyangle"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99c2d45de41adca77991fd923b90a06c1cd8643ca316a6f2199e0de80e18bcfe"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "skyangle"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df90b01ce79c04c9ae50c66e8e4a9c58cff4c863fbef8fe7b7d3584ce8ede157"
 
 [[package]]
 name = "skyangle"
@@ -8393,15 +8804,15 @@ dependencies = [
 
 [[package]]
 name = "strum"
-version = "0.27.2"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af23d6f6c1a224baef9d3f61e287d2761385a5b88fdab4eb4c6f11aeb54c4bcf"
+checksum = "9628de9b8791db39ceda2b119bbe13134770b56c138ec1d3af810d045c04f9bd"
 
 [[package]]
 name = "strum_macros"
-version = "0.27.2"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7695ce3845ea4b33927c055a39dc438a45b059f7c1b3d91d38d10355fb8cbca7"
+checksum = "ab85eea0270ee17587ed4156089e10b9e6880ee688791d45a905f5b1ca36f664"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -8417,9 +8828,9 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "svg"
-version = "0.16.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "583e1c5c326fd6fede8797006de3b95ad6bcd60a592952952c5ba7ddd7e84c83"
+checksum = "94afda9cd163c04f6bee8b4bf2501c91548deae308373c436f36aeff3cf3c4a3"
 
 [[package]]
 name = "syn"
@@ -8600,6 +9011,7 @@ checksum = "743bd48c283afc0388f9b8827b976905fb217ad9e647fae3a379a9283c4def2c"
 dependencies = [
  "deranged",
  "itoa",
+ "js-sys",
  "num-conv",
  "powerfmt",
  "serde_core",
@@ -8727,7 +9139,7 @@ version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1729aa945f29d91ba541258c8df89027d5792d85a8841fb65e8bf0f4ede4ef61"
 dependencies = [
- "rustls 0.23.39",
+ "rustls 0.23.40",
  "tokio",
 ]
 
@@ -8757,38 +9169,17 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362"
-dependencies = [
- "serde",
- "serde_spanned 0.6.9",
- "toml_datetime 0.6.11",
- "toml_edit 0.22.27",
-]
-
-[[package]]
-name = "toml"
 version = "1.1.2+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81f3d15e84cbcd896376e6730314d59fb5a87f31e4b038454184435cd57defee"
 dependencies = [
  "indexmap",
  "serde_core",
- "serde_spanned 1.1.1",
- "toml_datetime 1.1.1+spec-1.1.0",
+ "serde_spanned",
+ "toml_datetime",
  "toml_parser",
  "toml_writer",
- "winnow 1.0.2",
-]
-
-[[package]]
-name = "toml_datetime"
-version = "0.6.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22cddaf88f4fbc13c51aebbf5f8eceb5c7c5a9da2ac40a13519eb5b0a0e8f11c"
-dependencies = [
- "serde",
+ "winnow",
 ]
 
 [[package]]
@@ -8802,28 +9193,14 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.22.27"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a"
-dependencies = [
- "indexmap",
- "serde",
- "serde_spanned 0.6.9",
- "toml_datetime 0.6.11",
- "toml_write",
- "winnow 0.7.15",
-]
-
-[[package]]
-name = "toml_edit"
 version = "0.25.11+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b59c4d22ed448339746c59b905d24568fcbb3ab65a500494f7b8c3e97739f2b"
 dependencies = [
  "indexmap",
- "toml_datetime 1.1.1+spec-1.1.0",
+ "toml_datetime",
  "toml_parser",
- "winnow 1.0.2",
+ "winnow",
 ]
 
 [[package]]
@@ -8832,14 +9209,8 @@ version = "1.1.2+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2abe9b86193656635d2411dc43050282ca48aa31c2451210f4202550afb7526"
 dependencies = [
- "winnow 1.0.2",
+ "winnow",
 ]
-
-[[package]]
-name = "toml_write"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
 name = "toml_writer"
@@ -9048,6 +9419,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "typed-path"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e28f89b80c87b8fb0cf04ab448d5dd0dd0ade2f8891bae878de66a75a28600e"
+
+[[package]]
 name = "typenum"
 version = "1.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9252,9 +9629,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bf938a0bacb0469e83c1e148908bd7d5a6010354cf4fb73279b7447422e3a89"
+checksum = "df52b6d9b87e0c74c9edfa1eb2d9bf85e5d63515474513aa50fa181b3c4f5db1"
 dependencies = [
  "cfg-if",
  "once_cell",
@@ -9265,9 +9642,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.68"
+version = "0.4.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f371d383f2fb139252e0bfac3b81b265689bf45b6874af544ffa4c975ac1ebf8"
+checksum = "af934872acec734c2d80e6617bbb5ff4f12b052dd8e6332b0817bce889516084"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -9275,9 +9652,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eeff24f84126c0ec2db7a449f0c2ec963c6a49efe0698c4242929da037ca28ed"
+checksum = "78b1041f495fb322e64aca85f5756b2172e35cd459376e67f2a6c9dffcedb103"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -9285,9 +9662,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d08065faf983b2b80a79fd87d8254c409281cf7de75fc4b773019824196c904"
+checksum = "9dcd0ff20416988a18ac686d4d4d0f6aae9ebf08a389ff5d29012b05af2a1b41"
 dependencies = [
  "bumpalo",
  "proc-macro2",
@@ -9298,9 +9675,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.118"
+version = "0.2.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fd04d9e306f1907bd13c6361b5c6bfc7b3b3c095ed3f8a9246390f8dbdee129"
+checksum = "49757b3c82ebf16c57d69365a142940b384176c24df52a087fb748e2085359ea"
 dependencies = [
  "unicode-ident",
 ]
@@ -9489,9 +9866,9 @@ dependencies = [
 
 [[package]]
 name = "web-sys"
-version = "0.3.95"
+version = "0.3.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f2dfbb17949fa2088e5d39408c48368947b86f7834484e87b73de55bc14d97d"
+checksum = "2eadbac71025cd7b0834f20d1fe8472e8495821b4e9801eb0a60bd1f19827602"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -10166,15 +10543,6 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df79d97927682d2fd8adb29682d1140b343be4ac0f08fd68b7765d9c059d3945"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "winnow"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ee1708bef14716a11bae175f579062d4554d95be2c6829f518df847b7b3fdd0"
@@ -10592,14 +10960,14 @@ version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "760394e246e4c28189f19d488c058bf16f564016aefac5d32bb1f3b51d5e9261"
 dependencies = [
- "aes",
+ "aes 0.8.4",
  "byteorder",
  "bzip2 0.4.4",
  "constant_time_eq 0.1.5",
  "crc32fast",
  "crossbeam-utils",
  "flate2",
- "hmac",
+ "hmac 0.12.1",
  "pbkdf2 0.11.0",
  "sha1 0.10.6",
  "time",
@@ -10612,7 +10980,7 @@ version = "4.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "caa8cd6af31c3b31c6631b8f483848b91589021b28fffe50adada48d4f4d2ed1"
 dependencies = [
- "aes",
+ "aes 0.8.4",
  "arbitrary",
  "bzip2 0.6.1",
  "constant_time_eq 0.3.1",
@@ -10620,7 +10988,7 @@ dependencies = [
  "deflate64",
  "flate2",
  "getrandom 0.3.4",
- "hmac",
+ "hmac 0.12.1",
  "indexmap",
  "liblzma",
  "memchr",
@@ -10628,6 +10996,33 @@ dependencies = [
  "ppmd-rust",
  "sha1 0.10.6",
  "time",
+ "zeroize",
+ "zopfli",
+ "zstd 0.13.3",
+]
+
+[[package]]
+name = "zip"
+version = "8.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d04a6b5381502aa6087c94c669499eb1602eb9c5e8198e534de571f7154809b"
+dependencies = [
+ "aes 0.9.0",
+ "bzip2 0.6.1",
+ "constant_time_eq 0.4.2",
+ "crc32fast",
+ "deflate64",
+ "flate2",
+ "getrandom 0.4.2",
+ "hmac 0.13.0",
+ "indexmap",
+ "lzma-rust2",
+ "memchr",
+ "pbkdf2 0.13.0",
+ "ppmd-rust",
+ "sha1 0.11.0",
+ "time",
+ "typed-path",
  "zeroize",
  "zopfli",
  "zstd 0.13.3",

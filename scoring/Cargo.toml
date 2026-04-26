@@ -11,20 +11,20 @@ gmt_dos-clients_crseo.workspace = true
 gmt_dos-clients_io = { workspace = true, features = ["serde"] }
 gmt_dos-clients_arrow.workspace = true
 gmt_dos-clients_transceiver.workspace = true
-gmt_dos-clients_scope = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = [
+gmt_dos-clients_scope = { version = "3.1.1", features = [
   "server",
 ], optional = true }
-gmt_dos-clients_scope-client = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.2", optional = true }
+gmt_dos-clients_scope-client = { version = "0.2.3", optional = true }
 gmt_dos-systems_agws = { workspace = true, features = ["shk48", "shk24"] }
 tokio.workspace = true
-env_logger = "0.11.6"
+env_logger = "0.11.10"
 serde-pickle.workspace = true
 anyhow.workspace = true
 gmt_dos-clients_lom.workspace = true
 scopes = { version = "0.1.0", path = "../scopes" }
 config = { version = "0.1.0", path = "../config" }
 tracing = "0.1.44"
-tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 gmt_dos-clients_optics-state.workspace = true
 skyangle.workspace = true
 

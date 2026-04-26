@@ -20,35 +20,26 @@ members = [
 ]
 
 [workspace.dependencies]
-anyhow = "1.0.96"
-matio-rs = "1.3.3"
-gmt_dos-actors = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "12.0.0" }
-gmt_dos-clients = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.0.0", features = [
-  "gif",
-  "faer",
-] }
-gmt-fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.2" }
-gmt_dos-clients_fem = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.3", features = [
-  "cuda",
-] }
-gmt_dos-clients_io = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.3.0", features = [
-  "serde",
-] }
-gmt_dos-clients_arrow = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "2.3.0" }
-gmt_dos-clients_transceiver = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "2.0.3", features = [
-  "insecure",
-] }
-gmt_dos-clients_crseo = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "5.0.0" }
-gmt_dos-clients_lom = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.2.0" }
-gmt_dos-systems_m1 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.0.0" }
-gmt_dos-systems_m2 = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0" }
-gmt_dos-systems_agws = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.2.0", default-features = false }
-interface = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "1.5.0", package = "gmt_dos-actors-clients_interface" }
+anyhow = "1.0.102"
+matio-rs = "1.6.3"
+gmt_dos-actors = { version = "12.1.0" }
+gmt_dos-clients = { version = "5.1.0", features = ["gif", "faer"] }
+gmt-fem = { version = "5.2" }
+gmt_dos-clients_fem = { version = "5.3", features = ["cuda"] }
+gmt_dos-clients_io = { version = "4.3.1", features = ["serde"] }
+gmt_dos-clients_arrow = { version = "2.3.0" }
+gmt_dos-clients_transceiver = { version = "2.0.4", features = ["insecure"] }
+gmt_dos-clients_crseo = { version = "5.1.0" }
+gmt_dos-clients_lom = { version = "1.2.1" }
+gmt_dos-systems_m1 = { version = "1.0.0" }
+gmt_dos-systems_m2 = { version = "0.1.2" }
+gmt_dos-systems_agws = { version = "0.1.0", default-features = false }
+interface = { version = "1.5.1", package = "gmt_dos-actors-clients_interface" }
 serde-pickle = "1.2.0"
-skyangle = "0.3.1"
-tokio = { version = "1.43.0", features = ["full"] }
-gmt_dos-clients_mount = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "4.1.2" }
-gmt_dos-clients_optics-state = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "0.1.0", features = [
+skyangle = "0.4.0"
+tokio = { version = "1.52.1", features = ["full"] }
+gmt_dos-clients_mount = { version = "4.1.3" }
+gmt_dos-clients_optics-state = { version = "0.1.0", features = [
   "serde",
   "gmt_dos-clients_arrow",
 ] }
@@ -62,27 +53,23 @@ gmt_dos-clients_crseo.workspace = true
 gmt_dos-clients_io.workspace = true
 gmt_dos-clients_arrow.workspace = true
 gmt_dos-clients_transceiver.workspace = true
-gmt_dos-clients_servos = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.0.0", features = [
-  "cuda",
-] }
+gmt_dos-clients_servos = { version = "3.1.0", features = ["cuda"] }
 gmt_dos-systems_agws = { workspace = true, features = ["shk48", "shk24"] }
 gmt_dos-systems_m1 = { workspace = true, features = ["faer"] }
 tokio.workspace = true
-env_logger = "0.11.6"
+env_logger = "0.11.10"
 serde-pickle.workspace = true
-gmt_dos-clients_windloads = { git = "https://github.com/rconan/dos-actors.git", branch = "gmt-ns-im", version = "3.1.0", features = [
-  "object_store",
-] }
+gmt_dos-clients_windloads = { version = "3.1.0", features = ["object_store"] }
 anyhow.workspace = true
 matio-rs = { workspace = true, features = ["faer"] }
-faer = "0.21.9"
-nalgebra = "0.33"
+faer = "0.23.2"
+nalgebra = "0.34"
 gmt_dos-clients_lom.workspace = true
 skyangle.workspace = true
 config = { version = "0.1.0", path = "config" }
 gmt_dos-clients_optics-state.workspace = true
 thiserror = "2.0.18"
-object_store = { version = "0.13.1", features = ["aws"] }
+object_store = { version = "0.13.2", features = ["aws"] }
 dotenvy = "0.15.7"
 console-subscriber = { version = "0.5.0", optional = true }
 
@@ -102,20 +89,21 @@ inherits = "release"
 lto = "thin"
 codegen-units = 1
 
-[patch."https://github.com/rconan/dos-actors.git"]
-gmt_dos-actors = { path = "/home/ubuntu/projects/dos-actors/actors" }
-gmt_dos-actors_dsl = { path = "/home/ubuntu/projects/dos-actors/actors/dsl" }
-gmt_dos-clients = { path = "/home/ubuntu/projects/dos-actors/clients/core" }
-gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/interface" }
-gmt_dos-clients_fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem" }
-gmt_dos-clients_io = { path = "/home/ubuntu/projects/dos-actors/clients/io" }
-gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads" }
-gmt_dos-clients_lom = { path = "/home/ubuntu/projects/dos-actors/clients/lom" }
-gmt_dos-clients_crseo = { path = "/home/ubuntu/projects/dos-actors/clients/crseo" }
-gmt_dos-clients_optics-state = { path = "/home/ubuntu/projects/dos-actors/clients/optics-state" }
-gmt-fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem/model" }
-gmt_dos-clients_servos = { path = "/home/ubuntu/projects/dos-actors/clients/servos" }
-gmt_dos-systems_m1 = { path = "/home/ubuntu/projects/dos-actors/systems/m1" }
-gmt_dos-systems_m2 = { path = "/home/ubuntu/projects/dos-actors/systems/m2" }
-gmt_dos-systems_agws = { path = "/home/ubuntu/projects/dos-actors/systems/agws" }
-gmt_dos-clients_transceiver = { path = "/home/ubuntu/projects/dos-actors/clients/transceiver" }
+# [patch."https://github.com/rconan/dos-actors.git"]
+# gmt_dos-actors = { path = "/home/ubuntu/projects/dos-actors/actors" }
+# gmt_dos-actors_dsl = { path = "/home/ubuntu/projects/dos-actors/actors/dsl" }
+# gmt_dos-clients = { path = "/home/ubuntu/projects/dos-actors/clients/core" }
+# gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/interface" }
+# gmt_dos-clients_fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem" }
+# gmt_dos-clients_io = { path = "/home/ubuntu/projects/dos-actors/clients/io" }
+# gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads" }
+# gmt_dos-clients_lom = { path = "/home/ubuntu/projects/dos-actors/clients/lom" }
+# gmt_dos-clients_crseo = { path = "/home/ubuntu/projects/dos-actors/clients/crseo" }
+# gmt_dos-clients_optics-state = { path = "/home/ubuntu/projects/dos-actors/clients/optics-state" }
+# gmt-fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem/model" }
+# gmt_dos-clients_servos = { path = "/home/ubuntu/projects/dos-actors/clients/servos" }
+# gmt_dos-systems_m1 = { path = "/home/ubuntu/projects/dos-actors/systems/m1" }
+# gmt_dos-systems_m2 = { path = "/home/ubuntu/projects/dos-actors/systems/m2" }
+# gmt_dos-systems_agws = { path = "/home/ubuntu/projects/dos-actors/systems/agws" }
+# gmt_dos-clients_transceiver = { path = "/home/ubuntu/projects/dos-actors/clients/transceiver" }
+# gmt_dos-clients_scope= { path = "/home/ubuntu/projects/dos-actors/clients/scope" }
