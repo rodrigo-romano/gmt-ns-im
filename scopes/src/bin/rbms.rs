@@ -15,6 +15,7 @@ use crossterm::{
 use gmt_dos_clients_io::{gmt_m1::M1RigidBodyMotions, gmt_m2::M2RigidBodyMotions};
 use gmt_dos_clients_scope_client::GridScope;
 use tokio::sync::broadcast;
+use gmt_dos_clients_optics_state::units::NmMas;
 
 const RBMS: [&str; 6] = ["Tx", "Ty", "Tz", "Rx", "Ry", "Rz"];
 
@@ -53,8 +54,8 @@ async fn main() -> anyhow::Result<()> {
     tx.send(compute_hiddens(Some(1), None))?;
 
     let grid = GridScope::new((2, 1))
-        .pin_with_legends::<M1RigidBodyMotions>((0, 0), &legends, rx)?
-        .pin_with_legends::<M2RigidBodyMotions>((1, 0), &legends, tx.subscribe())?;
+        .pin_with_legends::<NmMas<M1RigidBodyMotions>>((0, 0), &legends, rx)?
+        .pin_with_legends::<NmMas<M2RigidBodyMotions>>((1, 0), &legends, tx.subscribe())?;
 
     let repaint_ctx = grid.egui_ctx();
 
@@ -91,7 +92,7 @@ async fn main() -> anyhow::Result<()> {
                     seg = None;
                     true
                 }
-                KeyCode::Char(c @ '1'..='7') => {
+                KeyCode::Char(c @ '1'..='7') =>{
                     let i = (c as usize) - ('0' as usize);
                     seg = if seg == Some(i) { None } else { Some(i) };
                     true

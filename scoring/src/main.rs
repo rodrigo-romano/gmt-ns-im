@@ -13,12 +13,12 @@ use gmt_dos_clients_io::{
     gmt_m1::M1RigidBodyMotions,
     gmt_m2::M2RigidBodyMotions,
     optics::{
-        Dev, Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront,
-        WfeRms,
+        Frame, Host, PSSn, SegmentPiston, SegmentTipTilt, SegmentWfeRms, TipTilt, Wavefront, WfeRms,
     },
 };
-use gmt_dos_clients_lom::LinearOpticalModel;
-use gmt_dos_clients_optics_state::{M1State, M2State, MirrorState, OpticalState, OpticsState};
+use gmt_dos_clients_optics_state::{
+    M1State, M2State, MirrorState, OpticalState, OpticsState, units::NmMas,
+};
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_systems_agws::Agws;
 use interface::units::Mas;
@@ -142,8 +142,8 @@ async fn main() -> anyhow::Result<()> {
     1000: on_axis[Wavefront]!.. -> on_axis_wavefront
 
     1: gmt_state_rx[OpticsState].. -> optical_state
-    1: optical_state[M1State] -> m1[M1RigidBodyMotions] -> m12_scopes
-    1: optical_state[M2State] -> m2[M2RigidBodyMotions] -> m12_scopes
+    1: optical_state[M1State] -> m1[NmMas<M1RigidBodyMotions>] -> m12_scopes
+    1: optical_state[M2State] -> m2[NmMas<M2RigidBodyMotions>] -> m12_scopes
     // 1: gmt_state_rx[OpticsState].. -> optical_state [M1State] -> m1_lom
     // 1: optical_state [M2State] -> m2_lom
     // 1: m1_lom[M1SegmentPiston].. -> m1_scopes
