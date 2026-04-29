@@ -43,6 +43,7 @@ gmt_dos-clients_optics-state = { version = "0.1.0", features = [
   "serde",
   "gmt_dos-clients_arrow",
 ] }
+faer = "0.23.2"
 
 [dependencies]
 gmt-fem.workspace = true
@@ -62,7 +63,7 @@ serde-pickle.workspace = true
 gmt_dos-clients_windloads = { version = "3.1.0", features = ["object_store"] }
 anyhow.workspace = true
 matio-rs = { workspace = true, features = ["faer"] }
-faer = "0.23.2"
+faer.workspace = true
 nalgebra = "0.34"
 gmt_dos-clients_lom.workspace = true
 skyangle.workspace = true

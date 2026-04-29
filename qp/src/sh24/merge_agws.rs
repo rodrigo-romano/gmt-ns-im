@@ -67,12 +67,15 @@ impl Write<M1State> for MergeAgws {
 
 impl Write<OpticsState> for MergeAgws {
     fn write(&mut self) -> Option<Data<OpticsState>> {
+        let m1: MirrorState = self
+            .m1_modes
+            .chunks(M1_N_MODE)
+            .map(|modes| SegmentState::modes(modes))
+            .collect();
+
         Some(Data::new(OpticalState::new(
-            self.m1_modes
-                .chunks(M1_N_MODE)
-                .map(|modes| SegmentState::modes(modes))
-                .collect(),
-            MirrorState::from_rbms(&self.m2_rbms).into(),
+            m1,
+            MirrorState::from_rbms(&self.m2_rbms),
         )))
     }
 }

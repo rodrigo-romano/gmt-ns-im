@@ -7,8 +7,8 @@ use std::{
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{
     gif::{Frame, Gif},
-    integrator::Integrator,
     iir::IIRFilter,
+    integrator::Integrator,
     print::Print,
     sampler::Sampler,
     timer::Timer,
@@ -40,7 +40,9 @@ use qp::sh24::*;
 // From qp crate folder use:
 // cargo run --bin sh24_iir --features gmt_dos-systems_agws/shk24 --features interface/serde-pickle
 async fn main() -> anyhow::Result<()> {
-    let data_repo = Path::new(&env::var("DATA_REPO")?).join("qp").join("sh24_iir");
+    let data_repo = Path::new(&env::var("DATA_REPO")?)
+        .join("qp")
+        .join("sh24_iir");
     fs::create_dir_all(&data_repo)?;
     unsafe {
         env::set_var("DATA_REPO", data_repo);
@@ -64,7 +66,6 @@ async fn main() -> anyhow::Result<()> {
         ShackHartmannBuilder::<Reconstructor>::sh24().reconstructor(recon),
     )?;
     //.controller(Integrator::<M2RigidBodyMotions>::new(42).gain(0.5));
-    
 
     // // Double integrator IIR coefficients (segment TT controller)
     // let b_coeffs = vec![0.0, -0.295, 0.2554]; // Feed-forward coefficients
@@ -88,7 +89,7 @@ async fn main() -> anyhow::Result<()> {
         .set_segment_state(1, SegmentState::rbms(&[100e-6, 0., 0., 0., 0., 0.]));
     // .set_segment_state(2, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]))
     // .set_segment_state(7, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]));
-    let optical_state = OpticalState::default().zero_point(OpticalState::m2(mirror));
+    let optical_state = OpticalState::default().set_zero_point(OpticalState::m2(mirror));
     // let optical_state = OpticalState::default().zero_point(OpticalState::m1(mirror));
     // let optical_state = OpticalState::default().zero_point(OpticalState::m1(
     //     MirrorState::default().set_segment_state(
@@ -158,7 +159,7 @@ async fn main() -> anyhow::Result<()> {
             OpticalModelBuilder,
             calibration::{CalibrationMode, ClosedLoopCalibration, ClosedLoopReconstructor},
             centroiding::CentroidsProcessing,
-            crseo::{Imaging, gmt::GmtM2, gmt::GmtM1},
+            crseo::{Imaging, gmt::GmtM1, gmt::GmtM2},
             sensors::builders::CameraBuilder,
         };
         use gmt_dos_clients_io::Estimate;
@@ -293,7 +294,7 @@ async fn main() -> anyhow::Result<()> {
 
         let merge_agws = MergeAgws::new();
 
-        let timer: Timer = Timer::new(50);//200
+        let timer: Timer = Timer::new(50); //200
 
         type Sh48Frame = KernelFrame<Sh48MergerReconstructor<R>>;
 
