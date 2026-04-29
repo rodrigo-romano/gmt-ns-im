@@ -2335,7 +2335,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e3afceb55b5438d8f6895f02b0d6dacd4eb5523d8958872e1a5c884deda12bf"
 dependencies = [
  "crseo-sys",
- "indicatif 0.17.11",
+ "indicatif",
  "libm",
  "log",
  "nalgebra",
@@ -3863,6 +3863,7 @@ dependencies = [
  "num-complex",
  "parquet 58.1.0",
  "rayon",
+ "serde",
  "serde-pickle 0.6.3",
  "tempfile",
  "thiserror 2.0.18",
@@ -4007,7 +4008,7 @@ dependencies = [
  "gmt_dos-clients_optics-state",
  "image",
  "imageproc",
- "indicatif 0.17.11",
+ "indicatif",
  "matio-rs",
  "num-traits",
  "serde",
@@ -4045,7 +4046,7 @@ dependencies = [
  "gmt_dos-clients_domeseeing 4.0.0",
  "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
- "indicatif 0.17.11",
+ "indicatif",
  "log",
  "nalgebra",
  "rayon",
@@ -4661,7 +4662,7 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.17.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 
