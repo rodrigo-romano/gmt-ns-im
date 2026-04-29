@@ -1,7 +1,12 @@
 # run in a terminal with: . setup.sh
 
 # mount the S3 repository where some data are loaded from
-# mount-s3 --cache ~/.s3-cache/ gmto.im.grim ~/mnt
+if mountpoint -q ~/mnt; then
+    echo "gmto.im.grim is already mounted at ~/mnt, skipping."
+else
+    mount-s3 --cache ~/.s3-cache/ gmto.im.grim ~/mnt
+fi
+
 # path to CEO mirror modes files
 export GMT_MODES_PATH=$HOME/Workspace/gmt-data/ceo_data
 #$HOME/mnt/ceo
