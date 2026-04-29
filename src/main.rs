@@ -5,6 +5,7 @@ use std::{
     time::Instant,
 };
 
+use anyhow::Context;
 use faer::{Mat, MatRef};
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{
@@ -27,7 +28,7 @@ use gmt_dos_clients_io::{
 use gmt_dos_clients_servos::{GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtServoMechanisms, M1SegmentFigure};
 
 use gmt_dos_clients_optics_state::{
-    M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
+    M1State, MirrorState, OpticalState, OpticsState, arrow::OpticalStateArrow,
 };
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_clients_windloads::CfdLoads;
@@ -39,24 +40,39 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::agws::{Sh48Reconstructor, TXY_RESIDUAL_SCALING, calibration::Sh48Calibration};
-use interface::{Left, Right, Tick};
+use gmt_ns_im::agws::{Sh48Reconstructor, calibration as agws_calibration};
+use interface::{Left, Right, Tick, filing::Filing};
 use matio_rs::MatFile;
 
 type K48 = Sh48Reconstructor<{ config::agws::sh48::RATE }>;
+type Sh48ReconstructorKind = agws_calibration::Stack;
+type Sh48Calibration =
+    agws_calibration::Sh48Calibration<Sh48ReconstructorKind, agws_calibration::M2Txy>;
+const TXY_RESIDUAL_SCALING: f64 =
+    <Sh48ReconstructorKind as agws_calibration::Sh48Reconstructor>::TXY_RESIDUAL_SCALING;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    env_logger::init();
-
-    //dotenvy::dotenv()?;
+    // check for "console" feature
+    // if enabled it allows the monitoring of tasks
+    // with tokio-console
+    // Note that `tokio_unstable` is required e.g.
+    // `RUSTFLAGS="--cfg tokio_unstable" cargo r -r --features console`
+    #[cfg(feature = "console")]
+    console_subscriber::init();
+    #[cfg(not(feature = "console"))]
+    env_logger::builder()
+        .format_timestamp_millis()
+        // .format_timestamp(None)
+        .format_target(false)
+        .init();
 
     let data_repo = Path::new(&env::var("DATA_REPO")?).join("main");
     fs::create_dir_all(&data_repo)?;
     unsafe {
-        env::set_var("DATA_REPO", data_repo);
+        env::set_var("DATA_REPO", &data_repo);
     }
-    
+
     println!("FEM  : {}", env!("FEM_REPO"));
     println!("MOUNT: {}", env!("MOUNT_MODEL"));
 
@@ -86,14 +102,16 @@ async fn main() -> anyhow::Result<()> {
     let mut cfd_loads = if let Some(wind_loads) = &config::WINDLOADS {
         println!(" ==>> loading GMT CFD wind loads: {} ...", wind_loads);
         let now = Instant::now();
-        let store = object_store::local::LocalFileSystem::new();
-        // let store = object_store::aws::AmazonS3Builder::from_env()
-        //     .with_region("us-east-1")
-        //     .with_bucket_name("gmto.cfd.2025")
-        //     .build()?;
+        // let store = object_store::local::LocalFileSystem::new();
+        dotenvy::dotenv()
+            .with_context(|| "failed to parse the \".env\" file, it may be missing")?;
+        let store = object_store::aws::AmazonS3Builder::from_env()
+            .with_region("us-east-1")
+            .with_bucket_name("gmto.cfd.2025")
+            .build()?;
         let cfd_loads = CfdLoads::foh(
-            //&format!("CASES/{}", wind_loads),
-            "/home/rromano/Workspace/gr-ns-im/cfd_wl_cases",
+            &format!("CASES/{}", wind_loads),
+            // "/home/ubuntu/data/home/ubuntu/projects/gmt-ns-im",
             config::SIM_SAMPLING_FREQUENCY,
         )
         .duration(config::SIM_DURATION as f64)
@@ -190,18 +208,17 @@ async fn main() -> anyhow::Result<()> {
         " ==>> Built GMT mount, M1 & M2 servo-mechanisms in {:?}",
         now.elapsed()
     );
+
     // ===============================
 
     // ===============================
     // -- AGWS --
+    println!(" ==>> Building GMT AGWS");
     // SH24 M2 segment tip-tilt reconstructor
-    let recon: Reconstructor = serde_pickle::from_reader(
-        File::open("calibrations/sh24/recon_sh24-to-pzt_pth.pkl")?,
-        Default::default(),
-    )?;
+    // The calibration is done in `calibrations/sh24`
+    let recon = Reconstructor::from_data_repo("recon_sh24-to-pzt_pth.pkl")?;
     // println!("SH24 to FSM reconstructor:\n{recon}");
 
-    println!(" ==>> Building GMT AGWS");
     let now = Instant::now();
     // GMT optical model builder
     let gmtb = Gmt::builder().m1(
@@ -283,7 +300,8 @@ async fn main() -> anyhow::Result<()> {
     //
     // It uses P. Thomson method to convert segment tip-tilt into
     // piston, tip and tilt FSM actuactor commands
-    let matfile = MatFile::load("calibrations/sh24/m2_pzt_r.mat")?;
+    // See also: `calibrations/sh24/README.md`
+    let matfile = MatFile::load(data_repo.join("m2_pzt_r.mat"))?;
     let pzt_to_rbm: Vec<Mat<f64>> = (0..7)
         .map(|i| {
             let var: Vec<f64> = matfile.var(format!("var{i}")).unwrap();
@@ -349,9 +367,7 @@ async fn main() -> anyhow::Result<()> {
     // ===============================
     // -- FEM BOOTSTRAPPING INTEGRATED MODEL --
     let n_bootstrapping = config::SIM_SAMPLING_FREQUENCY * config::BOOTSTRAPPING_DURATION;
-    let mut timer: Timer = Timer::new(n_bootstrapping);
-    timer.progress();
-
+    let timer: Timer = Timer::new(n_bootstrapping);
     actorscript! {
         #[model(name=bootstrap)]
         #[labels(timer="⏲",

@@ -1,0 +1,8 @@
+[package]
+name = "lom"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+gmt-lom = "2.6.2"

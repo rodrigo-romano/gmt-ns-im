@@ -1,0 +1,30 @@
+
+    digraph  G {
+      overlap = scale;
+      splines = true;
+      bgcolor = gray24;
+      {node [shape=box, width=1.5, style="rounded,filled", fillcolor=lightgray]; 16076643479488049820 [label="OpticalState"]; 18417818431292236772 [label="GMT
+AGWS SH24"]; 3799508803720137329 [label="💓"]; 10139255606263030208 [label="AGWS SH24
+Kernel"]; 11249111551238374707 [label="MirrorState"];}
+      node [shape=point, fillcolor=gray24, color=lightgray];
+    
+      /* Outputs */
+    {
+      edge [arrowhead=none,colorscheme=dark28,fontsize=9, fontcolor=lightgray,fontname="times:italic"];
+      13837414622810457004 -> 16076643479488049820 [label="Tick", color=1];
+12869481382489650498 -> 16076643479488049820 [label="M2State", color=1];
+593078808854239012 -> 18417818431292236772 [label="OpticsState", color=1];
+7220434650319094841 -> 10139255606263030208 [label="KernelFrame<Sh24TT<1>>", color=1];
+17847866583979497678 -> 11249111551238374707 [label="M2RigidBodyMotions", color=1];
+    }
+      /* Inputs */
+    {
+      edge [arrowhead=vee, colorscheme=dark28]
+      16076643479488049820 -> 593078808854239012 [color=1];
+18417818431292236772 -> 7220434650319094841 [color=1, style=bold];
+3799508803720137329 -> 13837414622810457004 [color=1];
+10139255606263030208 -> 17847866583979497678 [color=1];
+11249111551238374707 -> 12869481382489650498 [color=1];
+    }
+    }
+    
