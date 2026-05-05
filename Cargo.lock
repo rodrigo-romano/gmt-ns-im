@@ -93,7 +93,7 @@ dependencies = [
  "paste",
  "static_assertions",
  "windows",
- "windows-core 0.58.0",
+ "windows-core",
 ]
 
 [[package]]
@@ -495,7 +495,7 @@ version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -506,7 +506,7 @@ checksum = "291e6a250ff86cd4a820112fb8898808a366d8f9f58ce16d1f538353ad55747d"
 dependencies = [
  "anstyle",
  "once_cell_polyfill",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -2547,8 +2547,6 @@ dependencies = [
 [[package]]
 name = "dos-uid-derive"
 version = "5.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8718723acfbed6bc862c637ccadc61054a4f92ecc49eeca1b14bfd0450def587"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2905,7 +2903,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3088,8 +3086,6 @@ dependencies = [
 [[package]]
 name = "fem-cuda-solver"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98c2f28fa42a4891afafc82be8058a0a58d07f9befaecab28e88d7c1cbadcf89"
 dependencies = [
  "bindgen 0.72.1",
  "cc",
@@ -3848,15 +3844,13 @@ dependencies = [
 [[package]]
 name = "gmt-fem"
 version = "5.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "640e3b50565d2ca6307e2fcf5dcf7c1b7909e917c438eadc9f50656a4a6ffb55"
 dependencies = [
  "anyhow",
  "arrow 58.1.0",
  "bincode",
  "bytes",
  "geotrans 0.1.1",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "log",
  "matio-rs",
  "nalgebra",
@@ -3866,6 +3860,18 @@ dependencies = [
  "serde",
  "serde-pickle 0.6.3",
  "tempfile",
+ "thiserror 2.0.18",
+ "zip 8.6.0",
+]
+
+[[package]]
+name = "gmt-fem-code-builder"
+version = "2.3.8"
+dependencies = [
+ "anyhow",
+ "arrow 58.1.0",
+ "bytes",
+ "parquet 58.1.0",
  "thiserror 2.0.18",
  "zip 8.6.0",
 ]
@@ -3921,7 +3927,7 @@ dependencies = [
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io",
  "gmt_dos-clients_lom",
@@ -3943,8 +3949,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors"
 version = "12.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89bb55f9a9657d0490c2eb81bcbbbf7984be60d7eb0e34714225e27bbf519520"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3967,8 +3971,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors-clients_interface"
 version = "1.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ea6289f22fc6444b4aff4147608325274c0d23c9d38813b9e6c6bb1093f9490"
 dependencies = [
  "bincode",
  "dos-uid-derive",
@@ -3982,8 +3984,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-actors_dsl"
 version = "2.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1829052026313f8331dea3f8cbb557a0ad79e805f7a5ceab9a96183d75dfa405"
 dependencies = [
  "prettyplease",
  "proc-macro2",
@@ -3995,8 +3995,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients"
 version = "5.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ac886761707acba85e83c10ba9839e23bd515452dcc3a20e5e6d3dc16c49840"
 dependencies = [
  "ab_glyph",
  "colorous",
@@ -4018,6 +4016,19 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_arrow"
 version = "2.3.0"
+dependencies = [
+ "arrow 58.1.0",
+ "gmt_dos-actors-clients_interface",
+ "log",
+ "parquet 58.1.0",
+ "paste",
+ "regex",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gmt_dos-clients_arrow"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50cc737d10b14fe959df16ff781198ac5e4407de70ebbe86594b8b0d40fa4346"
 dependencies = [
@@ -4032,9 +4043,7 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_crseo"
-version = "5.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a0c11f221b55ce6432f9e17334c36f34613bdf0d48439fec1e925fb96262be5"
+version = "5.2.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -4074,8 +4083,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_domeseeing"
 version = "4.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe394522fda13affb6c5b9cfa43bfd9504eebe0c5b19efd4e7cd19c8035c7102"
 dependencies = [
  "bincode",
  "glob",
@@ -4089,8 +4096,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_fem"
 version = "5.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "571e44e86b99813b1cb3d24d7ba56b902a50241563e43994689e362e39f61a55"
 dependencies = [
  "anyhow",
  "arrow 58.1.0",
@@ -4101,7 +4106,7 @@ dependencies = [
  "fem-cuda-solver",
  "geotrans 1.2.0",
  "gmt-fem",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
  "gmt_dos-clients_io",
@@ -4120,12 +4125,10 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_io"
 version = "4.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "648e89c55962e5ee95d53db03ea6e0b62880194b219c822c4c42744f905bb038"
 dependencies = [
  "anyhow",
  "crseo",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors-clients_interface",
  "serde",
 ]
@@ -4147,11 +4150,9 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_m1-ctrl"
 version = "6.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4db95e0587fb6f1f99737f979c5b4bd3d8000404ab29d08c906f9c24d568202b"
 dependencies = [
  "gmt-fem",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
@@ -4169,12 +4170,10 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_m2-ctrl"
 version = "4.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed1a3a2476e7d2a6f6185d0cd5222a28d0bc46ad1cd4970fe7c2e4cfc1a5b7db"
 dependencies = [
  "bincode",
  "gmt-fem",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
@@ -4195,11 +4194,27 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_mount"
 version = "4.1.3"
+dependencies = [
+ "anyhow",
+ "gmt-fem-code-builder 2.3.8",
+ "gmt_dos-actors-clients_interface",
+ "gmt_dos-clients_fem",
+ "gmt_dos-clients_io",
+ "gmt_mount-ctrl_controller",
+ "gmt_mount-ctrl_driver",
+ "log",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gmt_dos-clients_mount"
+version = "4.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce62518946e4298a5bef7bd42c719fc61527733c7c725574b3f2c6330624e925"
 dependencies = [
  "anyhow",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
@@ -4212,12 +4227,10 @@ dependencies = [
 
 [[package]]
 name = "gmt_dos-clients_optics-state"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8212ed29a16eed310e0131ad273c5f9b2fff586481fe103f8283e2365507849b"
+version = "0.1.1"
 dependencies = [
  "gmt_dos-actors-clients_interface",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0",
  "gmt_dos-clients_io",
  "serde",
 ]
@@ -4266,19 +4279,17 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_servos"
 version = "3.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b69c3e712727cd7e8c131384fc11c12d51cd4bd5b6c8e51789ac48f67a582822"
 dependencies = [
  "gmt-fem",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
  "gmt_dos-clients_m2-ctrl",
- "gmt_dos-clients_mount",
+ "gmt_dos-clients_mount 4.1.3",
  "gmt_dos-clients_windloads",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
@@ -4318,12 +4329,10 @@ dependencies = [
 [[package]]
 name = "gmt_dos-clients_windloads"
 version = "3.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a0bd96e8cde4cfb51cdeda601546bbfc9bb5ec8579e1a74bb630382c7f08e9d"
 dependencies = [
  "geotrans 1.2.0",
  "gmt-fem",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
@@ -4340,8 +4349,6 @@ dependencies = [
 [[package]]
 name = "gmt_dos-systems_agws"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8316c02d6cd6685d19c1c62024d0425e70a4c2e34dc956d2129e4f131d16d74"
 dependencies = [
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
@@ -4358,13 +4365,11 @@ dependencies = [
 [[package]]
 name = "gmt_dos-systems_m1"
 version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83f9c37fcbafc3586d43e8ec213d8f62b3c4a04c7a4f509da3fce03a2916d53d"
 dependencies = [
  "bincode",
  "faer 0.23.2",
  "gmt-fem",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
@@ -4381,12 +4386,10 @@ dependencies = [
 [[package]]
 name = "gmt_dos-systems_m2"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2453a74888be9571608f69d77cb0142b10e07092e69f6762af4cf3148fa346dd"
 dependencies = [
  "bincode",
  "gmt-fem",
- "gmt-fem-code-builder",
+ "gmt-fem-code-builder 2.3.8",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
@@ -4926,7 +4929,7 @@ dependencies = [
  "js-sys",
  "log",
  "wasm-bindgen",
- "windows-core 0.62.2",
+ "windows-core",
 ]
 
 [[package]]
@@ -5686,11 +5689,11 @@ dependencies = [
  "gmt-ns-im",
  "gmt_dos-actors",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
- "gmt_dos-clients_mount",
+ "gmt_dos-clients_mount 4.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m1",
  "gmt_dos-systems_m2",
@@ -5898,11 +5901,11 @@ dependencies = [
  "gmt-ns-im",
  "gmt_dos-actors",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_fem",
  "gmt_dos-clients_io",
- "gmt_dos-clients_mount",
+ "gmt_dos-clients_mount 4.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-systems_agws",
  "gmt_dos-systems_m2",
  "serde-pickle 1.2.0",
@@ -6262,7 +6265,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -7444,11 +7447,12 @@ dependencies = [
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io",
  "gmt_dos-clients_optics-state",
  "gmt_dos-clients_scope",
+ "gmt_dos-clients_scope-client",
  "gmt_dos-systems_agws",
  "nanorand",
  "serde-pickle 1.2.0",
@@ -8006,7 +8010,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -8019,7 +8023,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -8190,7 +8194,7 @@ dependencies = [
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",
- "gmt_dos-clients_arrow",
+ "gmt_dos-clients_arrow 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gmt_dos-clients_crseo",
  "gmt_dos-clients_io",
  "gmt_dos-clients_lom",
@@ -8636,7 +8640,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3a766e1110788c36f4fa1c2b71b387a7815aa65f88ce0229841826633d93723e"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -8832,7 +8836,7 @@ dependencies = [
  "getrandom 0.4.2",
  "once_cell",
  "rustix 1.1.4",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -9378,7 +9382,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
 dependencies = [
  "memoffset",
  "tempfile",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -10003,7 +10007,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -10018,7 +10022,7 @@ version = "0.58.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd04d41d93c4992d421894c18c8b43496aa748dd4c081bac0dc93eb0489272b6"
 dependencies = [
- "windows-core 0.58.0",
+ "windows-core",
  "windows-targets 0.52.6",
 ]
 
@@ -10028,24 +10032,11 @@ version = "0.58.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ba6d44ec8c2591c134257ce647b7ea6b20335bf6379a27dac5f1641fcf59f99"
 dependencies = [
- "windows-implement 0.58.0",
- "windows-interface 0.58.0",
+ "windows-implement",
+ "windows-interface",
  "windows-result 0.2.0",
- "windows-strings 0.1.0",
+ "windows-strings",
  "windows-targets 0.52.6",
-]
-
-[[package]]
-name = "windows-core"
-version = "0.62.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8e83a14d34d0623b51dce9581199302a221863196a1dde71a7663a4c2be9deb"
-dependencies = [
- "windows-implement 0.60.2",
- "windows-interface 0.59.3",
- "windows-link",
- "windows-result 0.4.1",
- "windows-strings 0.5.1",
 ]
 
 [[package]]
@@ -10060,32 +10051,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "windows-implement"
-version = "0.60.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
 name = "windows-interface"
 version = "0.58.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "053c4c462dc91d3b1504c6fe5a726dd15e216ba718e84a0e46a88fbe5ded3515"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "windows-interface"
-version = "0.59.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -10124,15 +10093,6 @@ checksum = "4cd9b125c486025df0eabcb585e62173c6c9eddcec5d117d3b6e8c30e2ee4d10"
 dependencies = [
  "windows-result 0.2.0",
  "windows-targets 0.52.6",
-]
-
-[[package]]
-name = "windows-strings"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7837d08f69c77cf6b07689544538e017c1bfcf57e34b4c0ff58e6c2cd3b37091"
-dependencies = [
- "windows-link",
 ]
 
 [[package]]
