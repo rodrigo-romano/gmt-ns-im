@@ -9,7 +9,6 @@ fi
 
 # path to CEO mirror modes files
 export GMT_MODES_PATH=$HOME/Workspace/gmt-data/ceo_data
-#$HOME/mnt/ceo
 # path to the FEM
 export FEM_REPO=$HOME/mnt/20250506_1715_zen_30_M1_202110_FSM_202305_Mount_202305_pier_202411_M1_actDamping
 # mount model 
