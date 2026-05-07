@@ -29,7 +29,7 @@ gmt_dos-clients_fem = { version = "5.3", features = ["cuda"] }
 gmt_dos-clients_io = { version = "4.3.1", features = ["serde"] }
 gmt_dos-clients_arrow = { version = "2.3.0" }
 gmt_dos-clients_transceiver = { version = "2.0.4", features = ["insecure"] }
-gmt_dos-clients_crseo = { version = "5.1.0" }
+gmt_dos-clients_crseo = { version = "5.2.0" }
 gmt_dos-clients_lom = { version = "1.2.1" }
 gmt_dos-systems_m1 = { version = "1.0.0" }
 gmt_dos-systems_m2 = { version = "0.1.2" }

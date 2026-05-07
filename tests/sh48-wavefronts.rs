@@ -5,13 +5,10 @@ use std::{
     path::Path,
 };
 
-use faer::MatRef;
 use gmt_dos_clients::gif::{self, FrameBuilder};
 use gmt_dos_clients_crseo::{
     DeviceInitialize, OpticalModel, OpticalModelBuilder,
-    calibration::{
-        ClosedLoopReconstructor, Reconstructor, algebra::CalibProps,
-    },
+    calibration::{ClosedLoopReconstructor, Reconstructor, algebra::CalibProps},
     centroiding::CentroidsProcessing,
     crseo::{FromBuilder, Gmt},
     sensors::{Camera, builders::WaveSensorBuilder},
@@ -29,6 +26,7 @@ use gmt_dos_systems_agws::{
     builder::shack_hartmann::{AgwsGuideStar, ShackHartmannBuilder},
     kernels::{KernelError, KernelFrame, KernelSpecs},
 };
+use gmt_ns_im::agws::differential_reconstructor::DifferentialStackedReconstructor;
 use interface::{Data, Read, TryRead, TryUpdate, TryWrite, Update, Write};
 
 const N: usize = 865;
@@ -350,62 +348,25 @@ fn slopesensor() -> Result<(), Box<dyn Error>> {
         .collect();
     println!("non zeros: {nzs:?}={}", nzs.iter().sum::<usize>());
 
-    // let diff_calib = calib.guide_stars_differentiation(3)?;
-    // let mut diff_recon = Reconstructor::from(diff_calib);
-    let mut diff_recon = recon.guide_stars_differentiation(3)?;
-    diff_recon.pseudoinverse();
-    println!("{diff_recon}");
-
-    serde_pickle::to_writer(
-        &mut File::create("differential_slopes.pkl")?,
-        &(&diff_recon, &diff_slopes),
-        Default::default(),
-    )?;
-
-    <_ as Read<SensorData>>::read(&mut diff_recon, diff_slopes.into());
-    diff_recon.update();
-    let estimate = <_ as Write<Estimate>>::write(&mut diff_recon).unwrap();
-    dbg!(&estimate);
-
-    let calib_m2_txy = recon.calib().nth(0).unwrap().mat_ref();
-    // dbg!(calib_m2_txy.shape());
-    let s_t: Vec<_> = (calib_m2_txy * MatRef::from_column_major_slice(&estimate[..2], 2, 1))
-        .col(0)
-        .iter()
-        .copied()
-        .collect::<Vec<f64>>();
-    // dbg!(s_t.len());
-    // dbg!(data.len());
-    let s_b: Vec<_> = data
-        .iter()
-        .zip(mask)
-        .filter_map(|(d, m)| m.then(|| *d))
-        .collect();
-    // dbg!(s_b.len());
-    let s: Vec<_> = s_b
-        .into_iter()
-        .zip(s_t.into_iter())
-        .map(|(x, y)| x - y)
-        .collect();
-
     let file_name = format!(
         "sh48_{}-{}_calib.pkl",
         config::m1::segment::N_MODE,
         config::m1::segment::MODES
     );
-    let mut m1_recon: Reconstructor = serde_pickle::from_reader(
+    let m1_recon: Reconstructor = serde_pickle::from_reader(
         File::open(format!(
             "/home/ubuntu/projects/gmt-ns-im/web_server/static/main/{file_name}"
         ))?,
         Default::default(),
     )?;
-    m1_recon.pseudoinverse();
-    // println!("{m1_recon}");
-    let imat = m1_recon.pinv_iter().nth(0).unwrap().mat_ref();
-    // dbg!(imat.shape());
-    let m = imat * MatRef::from_column_major_slice(&s, s.len(), 1);
-    dbg!(&m);
+    println!("{m1_recon}");
 
+    let mut ds_recon = DifferentialStackedReconstructor::new(3, recon, m1_recon)?;
+    let data = _data.as_slice().to_vec();
+    <_ as Read<SensorData>>::read(&mut ds_recon, data.into());
+    ds_recon.update();
+    let estimate = <_ as Write<Estimate>>::write(&mut ds_recon).unwrap();
+    dbg!(&estimate);
     Ok(())
 }
 
