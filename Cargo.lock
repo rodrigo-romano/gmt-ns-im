@@ -3940,6 +3940,7 @@ dependencies = [
  "matio-rs",
  "nalgebra",
  "object_store",
+ "serde",
  "serde-pickle 1.2.0",
  "skyangle",
  "thiserror 2.0.18",

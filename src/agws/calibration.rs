@@ -16,7 +16,9 @@ use gmt_dos_clients_crseo::{
 use gmt_dos_systems_agws::builder::shack_hartmann::ShackHartmannBuilder;
 use interface::filing::{Filing, FilingError};
 
-use crate::agws::TXY_RESIDUAL_SCALING;
+use crate::agws::{
+    TXY_RESIDUAL_SCALING, differential_reconstructor::{DSReconstructorError, DifferentialStackedReconstructor},
+};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Sh48CalibrationError {
@@ -24,6 +26,10 @@ pub enum Sh48CalibrationError {
     SaveRecon(#[from] FilingError),
     #[error("failed to calibration SH48")]
     Calibrate(#[from] CalibrationError),
+    #[error("failed to build differential & stacked reconstructor")]
+    DSRecon(#[from] DSReconstructorError),
+    #[error("Missing M1 bending modes reconstructor")]
+    MissingM1Recon
 }
 
 pub trait Sh48Reconstructor {
@@ -35,6 +41,10 @@ impl Sh48Reconstructor for Merge {
 }
 pub enum Stack {}
 impl Sh48Reconstructor for Stack {
+    const TXY_RESIDUAL_SCALING: f64 = 1.0;
+}
+pub enum DiffStack {}
+impl Sh48Reconstructor for DiffStack {
     const TXY_RESIDUAL_SCALING: f64 = 1.0;
 }
 
@@ -289,6 +299,27 @@ impl<T: M2RBMS> Sh48Calibration<Stack, T> {
         })
     }
 }
+impl<T: M2RBMS> Sh48Calibration<DiffStack, T> {
+    pub fn recon(self) -> Result<DifferentialStackedReconstructor> {
+        if let Some(m1_bm_recon) = self.m1_bm {
+            let file_name = format!(
+                "sh48_stacked-{}_{}-{}_recon.pkl",
+                <T as M2RBMS>::to_string(),
+                self.m1_n_mode,
+                self.m1_modes
+            );
+            if let Ok(recon) = DifferentialStackedReconstructor::from_data_repo(&file_name) {
+                Ok(recon)
+            } else {
+                let recon = DifferentialStackedReconstructor::new(3, self.m2_txy.clone(), m1_bm_recon)?;
+                recon.to_data_repo(&file_name)?;
+                Ok(recon)
+            }
+        } else {
+                Err(Sh48CalibrationError::MissingM1Recon)
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -421,7 +452,10 @@ mod tests {
         rbms[1] = 1e-6; // Ty
         rbms[2] = 1e-6; // Tz
         // OpticalState::m2(MirrorState::from(SegmentState::rbms(rbms)))
-        OpticalState::new(MirrorState::from(SegmentState::rbms(rbms)),MirrorState::rbms())
+        OpticalState::new(
+            MirrorState::from(SegmentState::rbms(rbms)),
+            MirrorState::rbms(),
+        )
         // OpticalState::new(
         //     MirrorState::from(
         //         SegmentState::modes(vec![0f64; config::m1::segment::N_MODE])

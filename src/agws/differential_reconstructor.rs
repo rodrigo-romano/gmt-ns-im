@@ -6,7 +6,8 @@ use gmt_dos_clients_crseo::calibration::{
     algebra::{CalibError, CalibProps},
 };
 use gmt_dos_clients_io::{Estimate, optics::SensorData};
-use interface::{Data, Read, UniqueIdentifier, Update, Write};
+use interface::{Data, Read, UniqueIdentifier, Update, Write, filing::Codec};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, thiserror::Error)]
 pub enum DSReconstructorError {
@@ -14,7 +15,7 @@ pub enum DSReconstructorError {
     New(#[from] CalibError),
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct DifferentialStackedReconstructor {
     m2: ClosedLoopReconstructor,
     m1: Reconstructor,
@@ -64,7 +65,7 @@ impl Update for DifferentialStackedReconstructor {
         let rbms = <_ as Write<Estimate>>::write(&mut self.diff_recon).unwrap();
         // M1 BMs
         let mut estimates = Vec::<f64>::new();
-        if  self.m1.pinv_as_ref().is_none() {
+        if self.m1.pinv_as_ref().is_none() {
             self.m1.pseudoinverse();
         }
         for ((calib_m2, rbms), imat) in self.m2.calib().zip(rbms.chunks(6)).zip(self.m1.pinv_iter())
@@ -115,3 +116,5 @@ where
         Some(self.estimate.clone().into())
     }
 }
+
+impl Codec for DifferentialStackedReconstructor {}

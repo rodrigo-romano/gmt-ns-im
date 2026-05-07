@@ -28,7 +28,7 @@ use gmt_dos_clients_io::{
 use gmt_dos_clients_servos::{GmtFem, GmtM1, GmtM2, GmtM2Hex, GmtServoMechanisms, M1SegmentFigure};
 
 use gmt_dos_clients_optics_state::{
-    M1State, MirrorState, OpticalState, OpticsState, arrow::OpticalStateArrow,
+    M1State, MirrorState, OpticalState, OpticsState, SegmentState, arrow::OpticalStateArrow,
 };
 use gmt_dos_clients_transceiver::{Monitor, Transceiver};
 use gmt_dos_clients_windloads::CfdLoads;
@@ -40,12 +40,12 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::agws::{Sh48Reconstructor, calibration as agws_calibration};
+use gmt_ns_im::agws::{Sh48DiffReconstructor, Sh48Reconstructor, calibration as agws_calibration};
 use interface::{Left, Right, Tick, filing::Filing};
 use matio_rs::MatFile;
 
-type K48 = Sh48Reconstructor<{ config::agws::sh48::RATE }>;
-type Sh48ReconstructorKind = agws_calibration::Stack;
+type K48 = Sh48DiffReconstructor<{ config::agws::sh48::RATE }>;
+type Sh48ReconstructorKind = agws_calibration::DiffStack;
 type Sh48Calibration =
     agws_calibration::Sh48Calibration<Sh48ReconstructorKind, agws_calibration::M2Txy>;
 const TXY_RESIDUAL_SCALING: f64 =
