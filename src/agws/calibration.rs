@@ -303,7 +303,7 @@ impl<T: M2RBMS> Sh48Calibration<DiffStack, T> {
     pub fn recon(self) -> Result<DifferentialStackedReconstructor> {
         if let Some(m1_bm_recon) = self.m1_bm {
             let file_name = format!(
-                "sh48_stacked-{}_{}-{}_recon.pkl",
+                "sh48_diff-stacked-{}_{}-{}_recon.pkl",
                 <T as M2RBMS>::to_string(),
                 self.m1_n_mode,
                 self.m1_modes

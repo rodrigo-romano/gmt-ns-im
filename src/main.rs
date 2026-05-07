@@ -40,11 +40,11 @@ use gmt_dos_systems_agws::{
 };
 use gmt_dos_systems_m1::SingularModes;
 use gmt_fem::FEM;
-use gmt_ns_im::agws::{Sh48DiffReconstructor, Sh48Reconstructor, calibration as agws_calibration};
+use gmt_ns_im::agws::{self, calibration as agws_calibration};
 use interface::{Left, Right, Tick, filing::Filing};
 use matio_rs::MatFile;
 
-type K48 = Sh48DiffReconstructor<{ config::agws::sh48::RATE }>;
+type K48 = agws::Sh48DiffReconstructor<{ config::agws::sh48::RATE }>;
 type Sh48ReconstructorKind = agws_calibration::DiffStack;
 type Sh48Calibration =
     agws_calibration::Sh48Calibration<Sh48ReconstructorKind, agws_calibration::M2Txy>;
@@ -421,7 +421,8 @@ async fn main() -> anyhow::Result<()> {
 
     // ===============================
     // -- GMT M1 STATE --
-    let m1_state = MirrorState::default().zeros_modes(config::m1::segment::N_MODE);
+    let m1_state = config::m1::init_control();
+    // MirrorState::default().zeros_modes(config::m1::segment::N_MODE);
     // .set_zero_point(
     //     MirrorState::default()
     //         .zeros_modes(config::m1::segment::N_MODE)
