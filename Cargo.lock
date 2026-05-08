@@ -7440,6 +7440,7 @@ dependencies = [
  "config",
  "env_logger",
  "faer 0.23.2",
+ "gmt-ns-im",
  "gmt_dos-actors",
  "gmt_dos-actors-clients_interface",
  "gmt_dos-clients",

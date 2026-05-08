@@ -26,6 +26,7 @@ gmt_dos-clients_scope = { version = "3.1.0", features = ["server"] }
 faer.workspace = true
 thiserror = "2.0.18"
 gmt_dos-clients_scope-client = "0.2.3"
+gmt-ns-im = { version = "0.1.0", path = ".." }
 
 [[bin]]
 name = "acoqp"
