@@ -10,7 +10,7 @@ use gmt_dos_clients::{
     integrator::Integrator,
     iir::IIRFilter,
     print::Print,
-    //sampler::Sampler,
+    sampler::Sampler,
     timer::Timer,
 };
 use gmt_dos_clients_crseo::{
@@ -63,14 +63,13 @@ async fn main() -> anyhow::Result<()> {
     let sh24_kern = Kernel::<Sh24TT<1>>::try_from(
         ShackHartmannBuilder::<Reconstructor>::sh24().reconstructor(recon),
     )?;
-    //.controller(Integrator::<M2RigidBodyMotions>::new(42).gain(0.5));
-    
+
 
     // // Double integrator IIR coefficients (segment TT controller)
-    // let b_coeffs = vec![0.0, -0.295, 0.2554]; // Feed-forward coefficients
-    // let a_coeffs = vec![-2.0, 1.0]; // Feedback coefficients (excluding a[0]=1.0)
-    let b_coeffs = vec![-0.5]; // Feed-forward coefficients
-    let a_coeffs = vec![-1.0]; // Feedback coefficients (excluding a[0]=1.0)
+    let b_coeffs = vec![-0.06997, -0.004859, 0.06511]; // Feed-forward coefficients
+    let a_coeffs = vec![-2.0, 1.0]; // Feedback coefficients (excluding a[0]=1.0)
+    // let b_coeffs = vec![-0.5]; // Feed-forward coefficients
+    // let a_coeffs = vec![-1.0]; // Feedback coefficients (excluding a[0]=1.0)
     let n_u = 42; // Number of inputs (M2 RBM)
     let dint_ttc = IIRFilter::new(b_coeffs, a_coeffs, n_u);
 
@@ -91,8 +90,8 @@ async fn main() -> anyhow::Result<()> {
         .build()?;
 
     let mirror = MirrorState::default()
-        .set_segment_state(1, SegmentState::rbms(&[100e-6, 0., 0., 0., 0., 0.]))
-        .set_segment_state(2, SegmentState::rbms(&[1e-5, 0., 0., 0., 0., 0.]));
+        .set_segment_state(1, SegmentState::rbms(&[100e-6, 0., 0., 4.0e-5, -4.0e-5, 0.]))
+        .set_segment_state(2, SegmentState::rbms(&[0.0*1e-5, 0., 0., 0., 0., 0.]));
     let optical_state = OpticalState::default().set_zero_point(OpticalState::m2(mirror));
     // let optical_state = OpticalState::default().zero_point(OpticalState::m1(mirror));
     // let optical_state = OpticalState::default().zero_point(OpticalState::m1(
@@ -114,23 +113,26 @@ async fn main() -> anyhow::Result<()> {
 
     let print = Print::default().tag("WFE RMS [nm]");
 
-    let timer: Timer = Timer::new(20*5);
+    let timer: Timer = Timer::new(80*5);
 
     let on_axis = OpticalModel::<NoSensor>::builder()
         .gmt(gmtb.clone())
         .build()?;
 
     let sh24_frame = Frame::<f32>::new("sh24-frame.gif", 24 * 12);
-    //let sampler = Sampler::default();
+    let sampler: Sampler<_, _, M2State> = Sampler::default();
 
-    let onaxis_wavefront_gif = Gif::new("on-axis_wavefront.gif", 512, 512)?;
-    let sh48_wavefront_gif = Gif::new("sh48_wavefront.gif", 512 * 3, 512)?;
+    let onaxis_wavefront_gif = Gif::new("on-axis_wavefront.gif", 512, 512)
+        .expect("REASON").delay(50);
+    let sh48_wavefront_gif = Gif::new("sh48_wavefront.gif", 512 * 3, 512)
+        .expect("REASON")
+        .delay(50*5);
 
     // let m1 = MirrorState::default();
     // let m1_scopes = M1RBMScope::new()?;
 
     let m2 = MirrorState::default();
-    let m2_scopes = M2RBMScope::new()?;
+    //let m2_scopes = M2RBMScope::new()?;
 
     type Sh24Frame = KernelFrame<Sh24TT<1>>;
     // type AgwsSh24 = Sh24<1>;
@@ -141,24 +143,39 @@ async fn main() -> anyhow::Result<()> {
         #[labels(
             timer="⏲",
             sh24="GMT\nAGWS SH24",
-            sh24_kern="AGWS SH24\nKernel",
-            dint_ttc="TT feedback\nController",
-            //fsm_cl_dyn="FSM CL\n Dynamics",
+            sh24_kern="AGWS SH24\nkernel",
+            dint_ttc="TT feedback\ncontroller",
+            fsm_cl_dyn="FSM CL\n dynamics",
             on_axis="On-axis\nGMT",
-            sh48_wave="SH48 GMT\nWFS",
+            sampler="One sample\ndelay",
+            //sh48_wave="SH48 GMT\nWFS",
             sh24_frame = "SH24\nframe")]
         1: timer[Tick] -> optical_state[OpticsState] -> sh24
         1: on_axis[Wavefront] -> onaxis_wavefront_gif
-        1: optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
+        //1: optical_state[OpticsState] -> optical_state_arrow
         5: sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] 
-            -> dint_ttc[M2RigidBodyMotions] //-> fsm_cl_dyn[M2RigidBodyMotions]
-            -> m2_state[M2State] -> optical_state
+            -> dint_ttc[M2RigidBodyMotions] -> fsm_cl_dyn[M2RigidBodyMotions] -> m2_state
+        /* ---
+        Choose one of the two line below. The first introduces a sample delay between 
+        the M2 state and the optical state, while the second assumes no delay (i.e., the 
+        optical state is updated immediately after the M2 state is updated).
+        */
+        1: m2_state[M2State] -> sampler[M2State]! -> optical_state
+        //5: m2_state[M2State] -> sampler[M2State] -> optical_state
+        // ---
         5: sh24[Sh24Frame] -> sh24_frame
-        5: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
+        //5: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
         //1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
-        //5: optical_state[M2State] -> m2[M2RBM<1>].. -> m2_scopes
+        //5: optical_state[M2State] -> m2[M2RBM<1>]${6}//~
+        5: optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
     );
 
+
+    /*
+     * Calibration of SH48 and M1 bending modes, and merging of the two calibrations
+     * into a single reconstructor with both Sx Txy and M1 bending modes.
+     * The merged reconstructor is then used to build the SH48 kernel.*/
+    
     {
         use gmt_dos_clients_crseo::{
             OpticalModelBuilder,
@@ -170,7 +187,15 @@ async fn main() -> anyhow::Result<()> {
         use gmt_dos_clients_io::Estimate;
         //use gmt_dos_systems_agws::agws::sh48::Sh48;
 
-        const R: usize = 100;
+        const R: usize = 1000;   //200 ms
+        println!("Using R={R} for the SH48 reconstructor.");
+ 
+        let m2p_cl_dyn = IIRFilter::new(
+            vec![0.00024136, 0.00048272, 0.00024136], // Feed-forward coefficients
+            vec![-1.95557865, 0.95654408], // Feedback coefficients (excluding a[0]=1.0)
+            105);        // Number of inputs (M2 RBM)
+
+        println!("M2 POS CL dynamics sampled at {} Hz", 1000/5);
 
         // closed-loop calibration of M2 Sx Txy with SH48
         let file_name = "sh48_closed-loop_Txy_calib.pkl";
@@ -273,13 +298,24 @@ async fn main() -> anyhow::Result<()> {
         let sh48_kern = Kernel::<Sh48MergerReconstructor<R>>::try_from(
             ShackHartmannBuilder::<Reconstructor<MixedMirrorMode>, R>::sh48().reconstructor(recon),
         )?
-        .controller(Integrator::<Estimate>::new(105).gain(0.6));
+        .controller(Integrator::<Estimate>::new(105).gain(0.7));
 
         let merge_agws = MergeAgws::new();
 
-        let timer: Timer = Timer::new(10);//200
+        let timer: Timer = Timer::new(3500);//200
 
         type Sh48Frame = KernelFrame<Sh48MergerReconstructor<R>>;
+
+        // ===============================
+        // -- SH48 ESTIMATE SPLITTER --
+        // Split the SH48 command vector between M2 RBMS and M1 bending modes coefficients
+        // The M2 RBMs are all zeros expect for Tx and Ty
+        // The command vector `c` is arranged segment wise i.e `c=[c1,c2,c3,c4,c5,c6,c7]`
+        // and each `ci` is the concantenation of the 6 M2 segment RBMS and the M1 bending modes
+        //let split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
+        //    6 + config::m1::segment::N_MODE,
+        //    6,
+        //);
 
         actorscript!(
             #[model(name=agws_sh24_48)]
@@ -289,6 +325,7 @@ async fn main() -> anyhow::Result<()> {
                 sh24_kern="AGWS SH24\nKernel",
                 dint_ttc="TT feedback\nController",
                 fsm_cl_dyn="FSM CL\n Dynamics",
+                m2p_cl_dyn="M2 POS CL\n Dynamics",
                 sh48="GMT\nAGWS SH48",
                 sh48_kern="AGWS SH48\nKernel",
                 on_axis="On-axis\nGMT",
@@ -296,21 +333,25 @@ async fn main() -> anyhow::Result<()> {
                 sh24_frame = "SH24\nframe",
                 optical_state_arrow = "Optics State\nLog")]
             1: timer[Tick] -> optical_state[OpticsState] -> sh24
-            5: sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> dint_ttc[M2RigidBodyMotions] 
-                -> fsm_cl_dyn[M2RigidBodyMotions] -> merge_agws[M2State]
-                -> optical_state[OpticsState] -> on_axis[WfeRms<-9>] -> print
-            1: merge_agws[M1State] -> optical_state[OpticsState] -> optical_state_arrow
+            1: optical_state[OpticsState] -> on_axis[Wavefront] -> onaxis_wavefront_gif
             1: optical_state[OpticsState] -> sh48
-            100: sh48[Sh48Frame]! -> sh48_kern[Estimate] -> merge_agws
-            // 100: sh48_kern[SensorData]${48*48*6}
-            5: sh24[Sh24Frame]
-            5: on_axis[Wavefront] -> onaxis_wavefront_gif
+            5: sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> dint_ttc[M2RigidBodyMotions] 
+                -> fsm_cl_dyn[M2RigidBodyMotions] -> merge_agws
+            1000: sh48[Sh48Frame]! -> sh48_kern
+            5: sh48_kern[Estimate] -> m2p_cl_dyn[Estimate] -> merge_agws
+            // Log/Debug info
+            1: merge_agws[OpticsState] -> optical_state[OpticsState] -> optical_state_arrow
             5: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
             // 1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
-            5: optical_state[M2State] -> m2[M2RBM<1>].. -> m2_scopes
+            5: on_axis[WfeRms<-9>] -> print
+            // R: sh48_kern[SensorData]${48*48*6}
         );
 
-        /*
+        /* No need to lock the scopes here, as they are not used in the main loop. If we 
+        wanted to use them, we would need to lock them before the select! macro, and then 
+        we would also need to handle the case where the scopes are closed (e.g., by breaking 
+        the loop). */
+         /*
         // let mut m1_scopes_lock = m1_scopes.lock().await;
         let mut m2_scopes_lock = m2_scopes.lock().await;
         println!("Running... press Ctrl-C to stop");
