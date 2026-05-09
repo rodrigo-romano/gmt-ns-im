@@ -8,8 +8,7 @@ else
 fi
 
 # path to CEO mirror modes files
-export GMT_MODES_PATH=$HOME/Workspace/gmt-data/ceo_data
-#$HOME/mnt/ceo
+export GMT_MODES_PATH=$HOME/mnt/ceo
 # path to the FEM
 export FEM_REPO=$HOME/mnt/20250506_1715_zen_30_M1_202110_FSM_202305_Mount_202305_pier_202411_M1_actDamping
 # mount model 
@@ -21,4 +20,4 @@ export CUDACXX=/usr/local/cuda-12.1/bin/nvcc
 # IP address to data server for scopes (only for AWS machine, comment out otherwise)
 # export SCOPE_SERVER_IP=`ec2metadata | sed -n 's/^local-ipv4: \(.*\)/\1/p'`
 # location where the model write its data
-export DATA_REPO=$HOME/Workspace/gr-ns-im/web_server/static
+export DATA_REPO=$HOME/projects/gmt-ns-im/web_server/static
