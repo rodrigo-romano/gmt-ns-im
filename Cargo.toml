@@ -91,21 +91,21 @@ inherits = "release"
 lto = "thin"
 codegen-units = 1
 
-[patch.crates-io]
-gmt_dos-actors = { path = "/home/ubuntu/projects/dos-actors/actors" }
-gmt_dos-actors_dsl = { path = "/home/ubuntu/projects/dos-actors/actors/dsl" }
-gmt_dos-clients = { path = "/home/ubuntu/projects/dos-actors/clients/core" }
-gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/interface" }
-gmt_dos-clients_fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem" }
-gmt_dos-clients_io = { path = "/home/ubuntu/projects/dos-actors/clients/io" }
-gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads" }
-# gmt_dos-clients_lom = { path = "/home/ubuntu/projects/dos-actors/clients/lom" }
-gmt_dos-clients_crseo = { path = "/home/ubuntu/projects/dos-actors/clients/crseo" }
-gmt_dos-clients_optics-state = { path = "/home/ubuntu/projects/dos-actors/clients/optics-state" }
-gmt-fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem/model" }
-gmt_dos-clients_servos = { path = "/home/ubuntu/projects/dos-actors/clients/servos" }
-gmt_dos-systems_m1 = { path = "/home/ubuntu/projects/dos-actors/systems/m1" }
-gmt_dos-systems_m2 = { path = "/home/ubuntu/projects/dos-actors/systems/m2" }
-gmt_dos-systems_agws = { path = "/home/ubuntu/projects/dos-actors/systems/agws" }
+# [patch.crates-io]
+# gmt_dos-actors = { path = "/home/ubuntu/projects/dos-actors/actors" }
+# gmt_dos-actors_dsl = { path = "/home/ubuntu/projects/dos-actors/actors/dsl" }
+# gmt_dos-clients = { path = "/home/ubuntu/projects/dos-actors/clients/core" }
+# gmt_dos-actors-clients_interface = { path = "/home/ubuntu/projects/dos-actors/interface" }
+# gmt_dos-clients_fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem" }
+# gmt_dos-clients_io = { path = "/home/ubuntu/projects/dos-actors/clients/io" }
+# gmt_dos-clients_windloads = { path = "/home/ubuntu/projects/dos-actors/clients/windloads" }
+# # gmt_dos-clients_lom = { path = "/home/ubuntu/projects/dos-actors/clients/lom" }
+# gmt_dos-clients_crseo = { path = "/home/ubuntu/projects/dos-actors/clients/crseo" }
+# gmt_dos-clients_optics-state = { path = "/home/ubuntu/projects/dos-actors/clients/optics-state" }
+# gmt-fem = { path = "/home/ubuntu/projects/dos-actors/clients/fem/model" }
+# gmt_dos-clients_servos = { path = "/home/ubuntu/projects/dos-actors/clients/servos" }
+# gmt_dos-systems_m1 = { path = "/home/ubuntu/projects/dos-actors/systems/m1" }
+# gmt_dos-systems_m2 = { path = "/home/ubuntu/projects/dos-actors/systems/m2" }
+# gmt_dos-systems_agws = { path = "/home/ubuntu/projects/dos-actors/systems/agws" }
 # gmt_dos-clients_transceiver = { path = "/home/ubuntu/projects/dos-actors/clients/transceiver" }
 # gmt_dos-clients_scope= { path = "/home/ubuntu/projects/dos-actors/clients/scope" }
