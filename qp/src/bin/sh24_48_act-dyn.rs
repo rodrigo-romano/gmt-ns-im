@@ -27,8 +27,8 @@ use gmt_dos_systems_agws::{
     builder::shack_hartmann::{AgwsGuideStar, ShackHartmannBuilder},
     kernels::{Kernel, KernelFrame},
 };
-use interface::{Tick, filing::Filing};
 
+use interface::{Left, Right, Tick, filing::Filing};
 use qp::sh24::*;
 
 #[tokio::main]
@@ -49,17 +49,18 @@ async fn main() -> anyhow::Result<()> {
     )?;
     println!("{recon}");
     let gmtb = Gmt::builder().m1(config::m1::segment::MODES, M1_N_MODE);
-
+    
     let sh24 = OpticalModelBuilder::from(
         &ShackHartmannBuilder::<Reconstructor>::sh24().use_calibration_src(),
     )
     .gmt(gmtb.clone())
     .build()?;
-
+    
     // SH24 kernel (no controller, just the reconstructor)
     let sh24_kern = Kernel::<Sh24TT<1>>::try_from(
         ShackHartmannBuilder::<Reconstructor>::sh24().reconstructor(recon),
     )?;
+    
 
     // // Double integrator IIR coefficients (segment TT controller)
     let b_coeffs = vec![-0.06997, -0.004859, 0.06511]; // Feed-forward coefficients
@@ -192,10 +193,16 @@ async fn main() -> anyhow::Result<()> {
         let m2p_cl_dyn = IIRFilter::new(
             vec![0.00024136, 0.00048272, 0.00024136], // Feed-forward coefficients
             vec![-1.95557865, 0.95654408],            // Feedback coefficients (excluding a[0]=1.0)
-            105,
+            42,//42,
         ); // Number of inputs (M2 RBM)
-
         println!("M2 POS CL dynamics sampled at {} Hz", 1000 / 5);
+
+        let m1_cl_dyn = IIRFilter::new(
+            vec![0.00024136, 0.00048272, 0.00024136], // Feed-forward coefficients
+            vec![-1.95557865, 0.95654408],            // Feedback coefficients (excluding a[0]=1.0)
+            M1_N_MODE * 7,
+        ); // Number of inputs (M2 RBM)
+        println!("M1 CL dynamics sampled at {} Hz", 1000 / 5);
 
         // closed-loop calibration of M2 Sx Txy with SH48
         let file_name = "sh48_closed-loop_Txy_calib.pkl";
@@ -312,7 +319,7 @@ async fn main() -> anyhow::Result<()> {
         // The command vector `c` is arranged segment wise i.e `c=[c1,c2,c3,c4,c5,c6,c7]`
         // and each `ci` is the concantenation of the 6 M2 segment RBMS and the M1 bending modes
         let split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
-            6 + config::m1::segment::N_MODE,
+            6 + M1_N_MODE,
             6,
         );
         // ===============================
@@ -324,21 +331,25 @@ async fn main() -> anyhow::Result<()> {
                 sh24="GMT\nAGWS SH24",
                 sh24_kern="AGWS SH24\nKernel",
                 dint_ttc="TT feedback\nController",
-                fsm_cl_dyn="FSM CL\n Dynamics",
-                m2p_cl_dyn="M2 POS CL\n Dynamics",
+                fsm_cl_dyn="FSM CL\nDynamics",
+                m2p_cl_dyn="M2 POS CL\nDynamics",
+                m1_cl_dyn="M1 Actuator\nDynamics",
+                merge_agws="Optical State\nMerger",
                 sh48="GMT\nAGWS SH48",
                 sh48_kern="AGWS SH48\nKernel",
+                split="Split AcO rec\ninto M2 RBM and\nM1 Shape coeffs",
                 on_axis="On-axis\nGMT",
                 sh48_wave="SH48 GMT\nWFS",
-                sh24_frame = "SH24\nframe",
+                sh24_frame = "SH24\nFrame",
                 optical_state_arrow = "Optics State\nLog")]
             1: timer[Tick] -> optical_state[OpticsState] -> sh24
             1: optical_state[OpticsState] -> on_axis[Wavefront] -> onaxis_wavefront_gif
             1: optical_state[OpticsState] -> sh48
             5: sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> dint_ttc[M2RigidBodyMotions]
                 -> fsm_cl_dyn[M2RigidBodyMotions] -> merge_agws
-            1000: sh48[Sh48Frame]! -> sh48_kern
-            5: sh48_kern[Estimate] -> m2p_cl_dyn[Estimate] -> merge_agws
+            1000: sh48[Sh48Frame]! -> sh48_kern[Estimate]${105} -> split
+            5: split[Left<Estimate>] -> m2p_cl_dyn[Left<Estimate>] -> merge_agws
+            5: split[Right<Estimate>] -> m1_cl_dyn[Right<Estimate>] -> merge_agws
             // Log/Debug info
             1: merge_agws[OpticsState] -> optical_state[OpticsState] -> optical_state_arrow
             5: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif

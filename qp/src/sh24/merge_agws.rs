@@ -2,7 +2,7 @@ use gmt_dos_clients_io::{Estimate, gmt_m2::M2RigidBodyMotions};
 use gmt_dos_clients_optics_state::{
     M1State, M2State, MirrorState, OpticalState, OpticsState, SegmentState,
 };
-use interface::{Data, Read, Update, Write};
+use interface::{Left, Right, Data, Read, Update, Write};
 
 use super::{M1_N_MODE, TXY_RESIDUAL_SCALING};
 
@@ -46,6 +46,36 @@ impl Read<Estimate> for MergeAgws {
             .zip(data.chunks(6 + M1_N_MODE))
             .for_each(|(modes, data)| {
                 modes.clone_from_slice(&data[6..]);
+            });
+    }
+}
+impl Read<Left<Estimate>> for MergeAgws {
+    fn read(&mut self, data: Data<Left<Estimate>>) {
+        //dbg!(&data);
+        self.m2_rbms
+            .chunks_mut(6)
+            .zip(data.chunks(6))
+            .for_each(|(rbms, data)| {
+                rbms[0] = data[0] * TXY_RESIDUAL_SCALING;
+                rbms[1] = data[1] * TXY_RESIDUAL_SCALING;
+                // AcO handles Tx and Ty only
+                //rbms[2] = data[2];
+                rbms[3] = data[3];
+                rbms[4] = data[4];
+                //rbms[5] = data[5];
+                //dbg!(data[3]);
+                //dbg!(data[4]);
+            });
+    }
+}
+impl Read<Right<Estimate>> for MergeAgws {
+    fn read(&mut self, data: Data<Right<Estimate>>) {
+        //dbg!(&data);
+        self.m1_modes
+            .chunks_mut(M1_N_MODE)
+            .zip(data.chunks(M1_N_MODE))
+            .for_each(|(modes, data)| {
+                modes.clone_from_slice(data);
             });
     }
 }
