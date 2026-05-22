@@ -19,6 +19,8 @@ impl MergeAgws {
     }
 }
 impl Update for MergeAgws {}
+
+// Read implementations
 impl Read<M2RigidBodyMotions> for MergeAgws {
     fn read(&mut self, data: Data<M2RigidBodyMotions>) {
         // dbg!(&data);
@@ -26,8 +28,12 @@ impl Read<M2RigidBodyMotions> for MergeAgws {
             .chunks_mut(6)
             .zip(data.chunks(6))
             .for_each(|(rbms, data)| {
+                rbms[0] = data[0] * TXY_RESIDUAL_SCALING;
+                rbms[1] = data[1] * TXY_RESIDUAL_SCALING;
+                rbms[2] = data[2];
                 rbms[3] = data[3];
                 rbms[4] = data[4];
+                rbms[5] = data[5];
             });
     }
 }
@@ -49,36 +55,38 @@ impl Read<Estimate> for MergeAgws {
             });
     }
 }
-impl Read<Left<Estimate>> for MergeAgws {
-    fn read(&mut self, data: Data<Left<Estimate>>) {
-        //dbg!(&data);
-        self.m2_rbms
-            .chunks_mut(6)
-            .zip(data.chunks(6))
-            .for_each(|(rbms, data)| {
-                rbms[0] = data[0] * TXY_RESIDUAL_SCALING;
-                rbms[1] = data[1] * TXY_RESIDUAL_SCALING;
-                // AcO handles Tx and Ty only
-                //rbms[2] = data[2];
-                rbms[3] = data[3];
-                rbms[4] = data[4];
-                //rbms[5] = data[5];
-                //dbg!(data[3]);
-                //dbg!(data[4]);
-            });
-    }
-}
-impl Read<Right<Estimate>> for MergeAgws {
-    fn read(&mut self, data: Data<Right<Estimate>>) {
-        //dbg!(&data);
-        self.m1_modes
-            .chunks_mut(M1_N_MODE)
-            .zip(data.chunks(M1_N_MODE))
-            .for_each(|(modes, data)| {
-                modes.clone_from_slice(data);
-            });
-    }
-}
+// impl Read<Left<Estimate>> for MergeAgws {
+//     fn read(&mut self, data: Data<Left<Estimate>>) {
+//         //dbg!(&data);
+//         self.m2_rbms
+//             .chunks_mut(6)
+//             .zip(data.chunks(6))
+//             .for_each(|(rbms, data)| {
+//                 rbms[0] = data[0] * TXY_RESIDUAL_SCALING;
+//                 rbms[1] = data[1] * TXY_RESIDUAL_SCALING;
+//                 // AcO handles Tx and Ty only
+//                 //rbms[2] = data[2];
+//                 rbms[3] = data[3];
+//                 //rbms[4] = data[4];
+//                 //rbms[5] = data[5];
+//                 //dbg!(data[3]);
+//                 //dbg!(data[4]);
+//             });
+//     }
+// }
+// impl Read<Right<Estimate>> for MergeAgws {
+//     fn read(&mut self, data: Data<Right<Estimate>>) {
+//         //dbg!(&data);
+//         self.m1_modes
+//             .chunks_mut(M1_N_MODE)
+//             .zip(data.chunks(M1_N_MODE))
+//             .for_each(|(modes, data)| {
+//                 modes.clone_from_slice(data);
+//             });
+//     }
+// }
+
+// Write implementations
 impl Write<M2State> for MergeAgws {
     fn write(&mut self) -> Option<Data<M2State>> {
         Some(Data::new(MirrorState::from_rbms(&self.m2_rbms).into()))

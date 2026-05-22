@@ -14,7 +14,7 @@ export FEM_REPO=$HOME/mnt/20250506_1715_zen_30_M1_202110_FSM_202305_Mount_202305
 # mount model 
 export MOUNT_MODEL=MOUNT_FDR_1kHz
 # flowchart layout (neato or dot)
-export FLOWCHART=neato
+export FLOWCHART=neato #dot #
 # full path to CUDA compiler
 export CUDACXX=/usr/local/cuda-12.1/bin/nvcc
 # IP address to data server for scopes (only for AWS machine, comment out otherwise)
