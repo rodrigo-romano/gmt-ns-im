@@ -6,7 +6,8 @@ use std::{
 
 use gmt_dos_actors::actorscript;
 use gmt_dos_clients::{
-    gif::{Frame, Gif}, iir::IIRFilter, integrator::Integrator, leftright, print::Print, sampler::Sampler, timer::Timer
+    gif::{Frame, Gif}, 
+    iir::IIRFilter, integrator::Integrator, leftright, print::Print, sampler::Sampler, timer::Timer, operator::Operator
 };
 use gmt_dos_clients_crseo::{
     OpticalModel, OpticalModelBuilder,
@@ -16,6 +17,7 @@ use gmt_dos_clients_crseo::{
 };
 use gmt_dos_clients_io::{
     gmt_m2::M2RigidBodyMotions,
+    gmt_m1::M1ModeShapes,
     optics::{Wavefront, WfeRms},
 };
 use gmt_dos_clients_optics_state::{
@@ -27,8 +29,8 @@ use gmt_dos_systems_agws::{
     builder::shack_hartmann::{AgwsGuideStar, ShackHartmannBuilder},
     kernels::{Kernel, KernelFrame},
 };
-use interface::{Tick, filing::Filing};
 
+use interface::{Left, Right, Tick, filing::Filing};
 use qp::sh24::*;
 
 #[tokio::main]
@@ -49,17 +51,18 @@ async fn main() -> anyhow::Result<()> {
     )?;
     println!("{recon}");
     let gmtb = Gmt::builder().m1(config::m1::segment::MODES, M1_N_MODE);
-
+    
     let sh24 = OpticalModelBuilder::from(
         &ShackHartmannBuilder::<Reconstructor>::sh24().use_calibration_src(),
     )
     .gmt(gmtb.clone())
     .build()?;
-
+    
     // SH24 kernel (no controller, just the reconstructor)
     let sh24_kern = Kernel::<Sh24TT<1>>::try_from(
         ShackHartmannBuilder::<Reconstructor>::sh24().reconstructor(recon),
     )?;
+    
 
     // // Double integrator IIR coefficients (segment TT controller)
     let b_coeffs = vec![-0.06997, -0.004859, 0.06511]; // Feed-forward coefficients
@@ -75,7 +78,7 @@ async fn main() -> anyhow::Result<()> {
         42,
     ); // Number of inputs (M2 RBM)
 
-    let sh48_wave = OpticalModel::<WaveSensor>::builder()
+    let _sh48_wave = OpticalModel::<WaveSensor>::builder()
         .gmt(gmtb.clone())
         .source(AgwsGuideStar::sh48())
         .sensor(
@@ -92,13 +95,16 @@ async fn main() -> anyhow::Result<()> {
         )
         .set_segment_state(2, SegmentState::rbms(&[0.0 * 1e-5, 0., 0., 0., 0., 0.]));
     let optical_state = OpticalState::default().set_zero_point(OpticalState::m2(mirror));
-    // let optical_state = OpticalState::default().zero_point(OpticalState::m1(mirror));
-    // let optical_state = OpticalState::default().zero_point(OpticalState::m1(
-    //     MirrorState::default().set_segment_state(
-    //         1,
-    //         SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(0, 1e-6),
+    // let optical_state = OpticalState::default()
+    //     .set_zero_point(OpticalState::m2(mirror))
+    //     .set_zero_point(OpticalState::m1(MirrorState::default()
+    //         .set_segment_state(
+    //             1,
+    //             SegmentState::modes(vec![0f64; M1_N_MODE]).set_mode(0, 1e-5),
     //     ),
     // ));
+
+    // let optical_state = OpticalState::default().zero_point(OpticalState::m1(mirror));
     // let optical_state = OpticalState::default().zero_point(OpticalState::new(
     //     MirrorState::default().set_segment_state(
     //         1,
@@ -108,7 +114,6 @@ async fn main() -> anyhow::Result<()> {
     // ));
     let optical_state_arrow =
         OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder().build(M1_N_MODE);
-    let m2_state = MirrorState::default();
 
     let print = Print::default().tag("WFE RMS [nm]");
 
@@ -124,14 +129,13 @@ async fn main() -> anyhow::Result<()> {
     let onaxis_wavefront_gif = Gif::new("on-axis_wavefront.gif", 512, 512)
         .expect("REASON")
         .delay(50);
-    let sh48_wavefront_gif = Gif::new("sh48_wavefront.gif", 512 * 3, 512)
-        .expect("REASON")
-        .delay(50 * 5);
+    //let sh48_wavefront_gif = Gif::new("sh48_wavefront.gif", 512 * 3, 512)
+    //    .expect("REASON")
+    //    .delay(50 * 5);
 
-    // let m1 = MirrorState::default();
-    // let m1_scopes = M1RBMScope::new()?;
-
-    let m2 = MirrorState::default();
+    let m1_state = MirrorState::default();
+    let _m1_scopes = M1RBMScope::new()?;
+    let m2_state = MirrorState::default();
     //let m2_scopes = M2RBMScope::new()?;
 
     type Sh24Frame = KernelFrame<Sh24TT<1>>;
@@ -142,7 +146,7 @@ async fn main() -> anyhow::Result<()> {
         #[model(name=agws_sh24)]
         #[labels(
             timer="⏲",
-            sh24="GMT\nAGWS SH24",
+            sh24="AGWS SH24",
             sh24_kern="AGWS SH24\nkernel",
             dint_ttc="TT feedback\ncontroller",
             fsm_cl_dyn="FSM CL\n dynamics",
@@ -192,10 +196,16 @@ async fn main() -> anyhow::Result<()> {
         let m2p_cl_dyn = IIRFilter::new(
             vec![0.00024136, 0.00048272, 0.00024136], // Feed-forward coefficients
             vec![-1.95557865, 0.95654408],            // Feedback coefficients (excluding a[0]=1.0)
-            105,
+            42,//42,
         ); // Number of inputs (M2 RBM)
-
         println!("M2 POS CL dynamics sampled at {} Hz", 1000 / 5);
+
+        let m1_cl_dyn = IIRFilter::new(
+            vec![0.00024136, 0.00048272, 0.00024136], // Feed-forward coefficients
+            vec![-1.95557865, 0.95654408],            // Feedback coefficients (excluding a[0]=1.0)
+            M1_N_MODE * 7,
+        ); // Number of inputs (M2 RBM)
+        println!("M1 CL dynamics sampled at {} Hz", 1000 / 5);
 
         // closed-loop calibration of M2 Sx Txy with SH48
         let file_name = "sh48_closed-loop_Txy_calib.pkl";
@@ -280,11 +290,24 @@ async fn main() -> anyhow::Result<()> {
                     .build()
             })
             .collect();
+        
         let mut recon = Reconstructor::<MixedMirrorMode>::new(d);
-        recon
-            .truncated_pseudoinverse(vec![2; 7])
-            // .pseudoinverse()
-            .to_data_repo("sh48_merged_recon.pkl")?;
+        recon.truncated_pseudoinverse(vec![2; 7]);
+        recon.pinv_iter_mut().for_each(|pinv| {
+            pinv.transform(|mat| {
+                // 1. Clone the entire matrix into a mutable owned matrix once
+                let mut owned_mat = mat.to_owned();
+                {
+                    // 2. Extract a mutable slice of just the first 2 rows
+                    let mut txy_rows = owned_mat.as_mut().subrows_mut(0, 2);
+                    // 3. Multiply only these two rows in place using faer's optimized math
+                    txy_rows.copy_from(&(txy_rows.as_ref() * TXY_RESIDUAL_SCALING));
+                } // Block ends here to drop the temporary mutable borrow
+                // 4. Return the updated matrix
+                owned_mat
+            });
+        });
+        recon.to_data_repo("sh48_merged_recon.pkl")?;
         println!("{recon}");
 
         let sh48 = OpticalModelBuilder::from(
@@ -297,11 +320,7 @@ async fn main() -> anyhow::Result<()> {
         let sh48_kern = Kernel::<Sh48MergerReconstructor<R>>::try_from(
             ShackHartmannBuilder::<Reconstructor<MixedMirrorMode>, R>::sh48().reconstructor(recon),
         )?
-        .controller(Integrator::<Estimate>::new(105).gain(0.7));
-
-        let merge_agws = MergeAgws::new();
-
-        let timer: Timer = Timer::new(3500); //200
+        .controller(Integrator::<Estimate>::new(105).gain(0.9));
 
         type Sh48Frame = KernelFrame<Sh48MergerReconstructor<R>>;
 
@@ -312,37 +331,56 @@ async fn main() -> anyhow::Result<()> {
         // The command vector `c` is arranged segment wise i.e `c=[c1,c2,c3,c4,c5,c6,c7]`
         // and each `ci` is the concantenation of the 6 M2 segment RBMS and the M1 bending modes
         let split = leftright::LeftRight::<Estimate, leftright::Split>::split_chunks_at(
-            6 + config::m1::segment::N_MODE,
+            6 + M1_N_MODE,
             6,
         );
         // ===============================
+        // -- M2 SH48 RBMS (TXY) and SH24 (RXY) adder --
+        let add_m2_rbms = Operator::plus();
+        // ===============================
+
+        let timer: Timer = Timer::new(50); //3500 //200
 
         actorscript!(
             #[model(name=agws_sh24_48)]
             #[labels(
                 timer="⏲",
-                sh24="GMT\nAGWS SH24",
+                sh24="AGWS SH24",
                 sh24_kern="AGWS SH24\nKernel",
                 dint_ttc="TT feedback\nController",
-                fsm_cl_dyn="FSM CL\n Dynamics",
-                m2p_cl_dyn="M2 POS CL\n Dynamics",
-                sh48="GMT\nAGWS SH48",
+                fsm_cl_dyn="FSM CL\nDynamics",
+                m2p_cl_dyn="M2 POS CL\nDynamics",
+                m1_cl_dyn="M1 Actuator\nDynamics",
+                //merge_agws="Optical State\nMerger",
+                sh48="AGWS SH48",
                 sh48_kern="AGWS SH48\nKernel",
+                split="Split AcO rec\ninto M2 RBM and\nM1 Shape coeffs",
+                add_m2_rbms="+",
                 on_axis="On-axis\nGMT",
-                sh48_wave="SH48 GMT\nWFS",
-                sh24_frame = "SH24\nframe",
+                //sh48_wave="SH48 GMT\nWFS",
+                sh24_frame = "SH24\nFrame",
                 optical_state_arrow = "Optics State\nLog")]
             1: timer[Tick] -> optical_state[OpticsState] -> sh24
-            1: optical_state[OpticsState] -> on_axis[Wavefront] -> onaxis_wavefront_gif
+            1: optical_state[OpticsState] -> on_axis//[Wavefront] -> onaxis_wavefront_gif
             1: optical_state[OpticsState] -> sh48
-            5: sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> dint_ttc[M2RigidBodyMotions]
-                -> fsm_cl_dyn[M2RigidBodyMotions] -> merge_agws
-            1000: sh48[Sh48Frame]! -> sh48_kern
-            5: sh48_kern[Estimate] -> m2p_cl_dyn[Estimate] -> merge_agws
+            5: sh24[Sh24Frame]!
+                -> sh24_kern[M2RigidBodyMotions]
+                    -> dint_ttc[M2RigidBodyMotions]
+                        -> fsm_cl_dyn[Right<M2RigidBodyMotions>]
+                            -> add_m2_rbms
+            //5: sh24[Sh24Frame]! -> sh24_kern[M2RigidBodyMotions] -> dint_ttc[M2RigidBodyMotions]
+            //    -> fsm_cl_dyn[Right<M2RigidBodyMotions>] -> add_m2_rbms[M2RigidBodyMotions] -> merge_agws
+            1000: sh48[Sh48Frame]! -> sh48_kern[Estimate]${105} -> split
+            5: split[Left<Estimate>]
+                -> m2p_cl_dyn[Left<Estimate>]
+                    -> add_m2_rbms[M2RigidBodyMotions]${42}
+                        -> m2_state
+            5: split[Right<Estimate>] -> m1_cl_dyn[M1ModeShapes] -> m1_state
             // Log/Debug info
-            1: merge_agws[OpticsState] -> optical_state[OpticsState] -> optical_state_arrow
-            5: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
-            // 1: optical_state[M1State] -> m1[M1RBM<1>].. -> m1_scopes
+            1: m2_state[M2State] -> optical_state[OpticsState]
+            1: m1_state[M1State] -> optical_state[OpticsState] -> optical_state_arrow
+            // 5: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
+            // 5: m1_state[M1RBM<1>].. -> m1_scopes
             5: on_axis[WfeRms<-9>] -> print
             // R: sh48_kern[SensorData]${48*48*6}
         );
