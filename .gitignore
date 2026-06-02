@@ -17,3 +17,5 @@ calibrations/m1/modes/m1_fem_bending_modes.ipynb
 .env
 *.log
 setup.sh
+analysis/*
+!analysis/*.ipynb
