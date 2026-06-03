@@ -1,6 +1,6 @@
 use std::{
     env,
-    fs::{self, File},
+    fs::{self},
     path::Path,
 };
 
@@ -17,7 +17,7 @@ use gmt_dos_clients::{
 };
 use gmt_dos_clients_crseo::{
     OpticalModel, OpticalModelBuilder,
-    calibration::{Calib, Calibration, MixedMirrorMode, Reconstructor, algebra::CalibProps},
+    calibration::{MixedMirrorMode, Reconstructor},
     crseo::{FromBuilder, Gmt},
     sensors::{NoSensor, WaveSensor},
 };
@@ -51,8 +51,8 @@ const TXY_RESIDUAL_SCALING: f64 =
 // cargo r -r --bin sh24_48_act-dyn --features gmt_dos-systems_agws/shk24 --features interface/serde-pickle
 async fn main() -> anyhow::Result<()> {
     let data_repo = Path::new(&env::var("DATA_REPO")?)
-        .join("qp")
-        .join("sh24_48_act-dyn");
+        .join("main")
+        .join("decoupled");
     fs::create_dir_all(&data_repo)?;
     unsafe {
         env::set_var("DATA_REPO", data_repo);
@@ -62,7 +62,7 @@ async fn main() -> anyhow::Result<()> {
     //     File::open("../calibrations/sh24/recon_sh24-to-rbm_pth.pkl")?,
     //     Default::default(),
     // )?;
-    let recon = Reconstructor::from_data_repo("recon_sh24-to-pzt_pth.pkl")?;
+    let recon = Reconstructor::from_path("calibrations/sh24/recon_sh24-to-rbm_pth.pkl")?;
     println!("{recon}");
     let gmtb = Gmt::builder().m1(config::m1::segment::MODES, config::m1::segment::N_MODE);
 
@@ -113,7 +113,7 @@ async fn main() -> anyhow::Result<()> {
     //     .set_zero_point(OpticalState::m1(MirrorState::default()
     //         .set_segment_state(
     //             1,
-    //             SegmentState::modes(vec![0f64; config::m1::segment::N_MODE]).set_mode(0, 1e-5),
+    //             SegmentState::modes(vec![0f64; config::m1::segment::N_MODE]).set_mode(0, 1e-5)/,
     //     ),
     // ));
 
@@ -130,7 +130,7 @@ async fn main() -> anyhow::Result<()> {
 
     let print = Print::default().tag("WFE RMS [nm]");
 
-    let timer: Timer = Timer::new(80 * 5);
+    let timer: Timer = Timer::new(200 * 5);
 
     let on_axis = OpticalModel::<NoSensor>::builder()
         .gmt(gmtb.clone())
@@ -193,13 +193,7 @@ async fn main() -> anyhow::Result<()> {
      * The merged reconstructor is then used to build the SH48 kernel.*/
 
     {
-        use gmt_dos_clients_crseo::{
-            OpticalModelBuilder,
-            calibration::{CalibrationMode, ClosedLoopCalibration, ClosedLoopReconstructor},
-            centroiding::CentroidsProcessing,
-            crseo::{Imaging, gmt::GmtM1, gmt::GmtM2},
-            sensors::builders::CameraBuilder,
-        };
+        use gmt_dos_clients_crseo::OpticalModelBuilder;
         use gmt_dos_clients_io::Estimate;
         //use gmt_dos_systems_agws::agws::sh48::Sh48;
 
@@ -230,13 +224,27 @@ async fn main() -> anyhow::Result<()> {
         .gmt(gmtb.clone())
         .build()?;
 
-        let recon = Sh48Calibration::new()?
+        let mut recon = Sh48Calibration::new()?
             .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
             .recon()?;
+        recon.pinv_iter_mut().for_each(|pinv| {
+            pinv.transform(|mat| {
+                // 1. Clone the entire matrix into a mutable owned matrix once
+                let mut owned_mat = mat.to_owned();
+                {
+                    // 2. Extract a mutable slice of just the first 2 rows
+                    let mut txy_rows = owned_mat.as_mut().subrows_mut(0, 2);
+                    // 3. Multiply only these two rows in place using faer's optimized math
+                    txy_rows.copy_from(&(txy_rows.as_ref() * TXY_RESIDUAL_SCALING));
+                } // Block ends here to drop the temporary mutable borrow
+                // 4. Return the updated matrix
+                owned_mat
+            });
+        });
         let sh48_kern = Kernel::<K48>::try_from(
             ShackHartmannBuilder::<Reconstructor<MixedMirrorMode>, {config::agws::sh48::RATE}>::sh48().reconstructor(recon),
         )?
-        .controller(Integrator::<Estimate>::new(105).gain(0.9));
+        .controller(Integrator::<Estimate>::new(config::m1::segment::N_MODE*7+42).gain(0.9));
 
         type Sh48Frame = KernelFrame<K48>;
 
@@ -255,7 +263,7 @@ async fn main() -> anyhow::Result<()> {
         let add_m2_rbms = Operator::plus();
         // ===============================
 
-        let timer: Timer = Timer::new(50); //3500 //200
+        let timer: Timer = Timer::new(6000); //200
 
         actorscript!(
             #[model(name=agws_sh24_48)]
@@ -294,7 +302,7 @@ async fn main() -> anyhow::Result<()> {
             5: split[Right<Estimate>] -> m1_cl_dyn[M1ModeShapes] -> m1_state
             // Log/Debug info
             1: m2_state[M2State] -> optical_state[OpticsState]
-            1: m1_state[M1State] -> optical_state[OpticsState] -> optical_state_arrow
+            1: m1_state[M1State] -> optical_state[OpticsState]! -> optical_state_arrow
             // 5: optical_state[OpticsState] -> sh48_wave[Wavefront] -> sh48_wavefront_gif
             // 5: m1_state[M1RBM<1>].. -> m1_scopes
             5: on_axis[WfeRms<-9>] -> print
