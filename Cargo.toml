@@ -81,6 +81,9 @@ criterion = { version = "0.8.2", features = ["async_tokio"] }
 [features]
 qp = []
 console = ["dep:console-subscriber"]
+merge = []
+stack = []
+diffstack = []
 
 [[bench]]
 name = "agws"

@@ -26,7 +26,7 @@ pub mod m1 {
     pub mod segment {
         // use crate::m1::POLISH_ERROR_MAPS;
 
-        pub const N_MODE: usize = 27;
+        pub const N_MODE: usize = 9;
         pub const N_RAW_MODE: usize = 335 + super::POLISH_ERROR_MAPS;
         pub const MODES: &str = concat!(env!("FEM_SHORT_ID"), "_m1_bending_modes");
         pub const RAW_MODES: &str = if super::POLISH_ERROR_MAPS == 0 {

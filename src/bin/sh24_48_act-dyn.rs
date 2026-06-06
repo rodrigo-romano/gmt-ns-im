@@ -36,13 +36,33 @@ use gmt_dos_systems_agws::{
     kernels::{Kernel, KernelFrame},
 };
 
-use gmt_ns_im::agws::{self, calibration as agws_calibration};
+use gmt_ns_im::agws::{
+    self, calibration as agws_calibration,
+    differential_reconstructor::DifferentialStackedReconstructor,
+};
 use interface::{Left, Right, Tick, filing::Filing};
-// use qp::sh24::*;
-type K48 = agws::Sh48Reconstructor<{ config::agws::sh48::RATE }>;
+
+/*
+There are 3 type of reconstructor each activated with a different feature:
+ * merged (`feature=merge`)
+ * stacked (`feature=stack`)
+ * stacked (`feature=stack`)
+ * differential stacked (`feature=diffstack`)
+*/
+
+#[cfg(any(feature = "merge", not(any(feature = "stack", feature = "diffstack"))))]
 type Sh48ReconstructorKind = agws_calibration::Merge;
+#[cfg(feature = "stack")]
+type Sh48ReconstructorKind = agws_calibration::Stack;
+#[cfg(feature = "diffstack")]
+type Sh48ReconstructorKind = agws_calibration::DiffStack;
+#[cfg(not(feature = "diffstack"))]
+type K48 = agws::Sh48Reconstructor<{ config::agws::sh48::RATE }>;
+#[cfg(feature = "diffstack")]
+type K48 = agws::Sh48DiffReconstructor<{ config::agws::sh48::RATE }>;
 type Sh48Calibration =
     agws_calibration::Sh48Calibration<Sh48ReconstructorKind, agws_calibration::M2Txy>;
+#[cfg(not(feature = "diffstack"))]
 const TXY_RESIDUAL_SCALING: f64 =
     <Sh48ReconstructorKind as agws_calibration::Sh48Reconstructor>::TXY_RESIDUAL_SCALING;
 
@@ -126,6 +146,10 @@ async fn main() -> anyhow::Result<()> {
     //     mirror,
     // ));
     let optical_state_arrow = OpticalStateArrow::<M1State, M2RigidBodyMotions>::builder()
+        .file_name(format!(
+            "optical_state_{}m1-mode.parquet",
+            config::m1::segment::N_MODE
+        ))
         .build(config::m1::segment::N_MODE);
 
     let print = Print::default().tag("WFE RMS [nm]");
@@ -227,6 +251,7 @@ async fn main() -> anyhow::Result<()> {
         let mut recon = Sh48Calibration::new()?
             .m1_modes(config::m1::segment::MODES, config::m1::segment::N_MODE)?
             .recon()?;
+        #[cfg(not(feature = "diffstack"))]
         recon.pinv_iter_mut().for_each(|pinv| {
             pinv.transform(|mat| {
                 // 1. Clone the entire matrix into a mutable owned matrix once
@@ -241,10 +266,15 @@ async fn main() -> anyhow::Result<()> {
                 owned_mat
             });
         });
+        #[cfg(not(feature = "diffstack"))]
+        type RECON = Reconstructor<MixedMirrorMode>;
+        #[cfg(feature = "diffstack")]
+        type RECON = DifferentialStackedReconstructor;
         let sh48_kern = Kernel::<K48>::try_from(
-            ShackHartmannBuilder::<Reconstructor<MixedMirrorMode>, {config::agws::sh48::RATE}>::sh48().reconstructor(recon),
+            ShackHartmannBuilder::<RECON, { config::agws::sh48::RATE }>::sh48()
+                .reconstructor(recon),
         )?
-        .controller(Integrator::<Estimate>::new(config::m1::segment::N_MODE*7+42).gain(0.9));
+        .controller(Integrator::<Estimate>::new(config::m1::segment::N_MODE * 7 + 42).gain(0.9));
 
         type Sh48Frame = KernelFrame<K48>;
 
@@ -263,7 +293,7 @@ async fn main() -> anyhow::Result<()> {
         let add_m2_rbms = Operator::plus();
         // ===============================
 
-        let timer: Timer = Timer::new(6000); //200
+        let timer: Timer = Timer::new(3500); //200
 
         actorscript!(
             #[model(name=agws_sh24_48)]

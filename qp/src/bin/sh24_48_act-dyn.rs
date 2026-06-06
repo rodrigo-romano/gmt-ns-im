@@ -117,7 +117,7 @@ async fn main() -> anyhow::Result<()> {
 
     let print = Print::default().tag("WFE RMS [nm]");
 
-    let timer: Timer = Timer::new(80 * 5);
+    let timer: Timer = Timer::new(200 * 5);
 
     let on_axis = OpticalModel::<NoSensor>::builder()
         .gmt(gmtb.clone())
@@ -339,7 +339,7 @@ async fn main() -> anyhow::Result<()> {
         let add_m2_rbms = Operator::plus();
         // ===============================
 
-        let timer: Timer = Timer::new(50); //3500 //200
+        let timer: Timer = Timer::new(3500); //3500 //200
 
         actorscript!(
             #[model(name=agws_sh24_48)]
