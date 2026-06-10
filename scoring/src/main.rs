@@ -42,6 +42,9 @@ async fn main() -> anyhow::Result<()> {
     unsafe {
         env::set_var("DATA_REPO", data_repo);
     }
+    unsafe {
+        env::set_var("FLOWCHART", "dot");
+    }
 
     let sim_sampling_frequency = 1000;
 

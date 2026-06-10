@@ -22,11 +22,11 @@ pub mod m1 {
     // M1 polishing residual error figures (0: without, 1: with)
     // M1 modes must have been augmented with M1 polishing error maps
     // using `calibrations/m1/modes/polishing_error_maps.py`
-    pub const POLISH_ERROR_MAPS: usize = 1;
+    pub const POLISH_ERROR_MAPS: usize = 0;
     pub mod segment {
         // use crate::m1::POLISH_ERROR_MAPS;
 
-        pub const N_MODE: usize = 27;
+        pub const N_MODE: usize = 9;
         pub const N_RAW_MODE: usize = 335 + super::POLISH_ERROR_MAPS;
         pub const MODES: &str = concat!(env!("FEM_SHORT_ID"), "_m1_bending_modes");
         pub const RAW_MODES: &str = if super::POLISH_ERROR_MAPS == 0 {
@@ -39,6 +39,7 @@ pub mod m1 {
     pub mod edge_sensor {
         pub const RBM_INTEGRATOR_GAIN: f64 = 0e-3;
     }
+    // Initial optical state
     pub fn zero_point() -> MirrorState {
         if POLISH_ERROR_MAPS == 0 {
             MirrorState::default() /* .set_segment_state(
@@ -59,11 +60,26 @@ pub mod m1 {
             )
         }
     }
+    // Initial control state
+    pub fn init_control() -> MirrorState {
+        MirrorState::default()
+            .zeros_modes(segment::N_MODE)
+            .set_zero_point(
+                MirrorState::default()
+                    .zeros_modes(segment::N_MODE)
+                    .set_segment_state(
+                        1,
+                        SegmentState::modes(vec![0.; segment::N_MODE])
+                            .set_mode(0, 1e-6),
+                    ),
+            )
+    }
 }
 
 pub mod m2 {
     use super::*;
 
+    // Initial optical state
     pub fn zero_point() -> MirrorState {
         MirrorState::default()//.set_segment_state(1, SegmentState::rbms([1e-6, 0., 0., 0., 0., 0.]))
     }
